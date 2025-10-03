@@ -1,0 +1,152 @@
+// JTM Community Management Platform - Database Schema
+// This schema defines the complete data model for the community platform
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String           @id @default(cuid())
+  email             String           @unique
+  firstName         String
+  lastName          String
+  mobileNumber      String
+  membershipType    MembershipType
+  isActive          Boolean          @default(false)
+  membershipExpiry  DateTime?
+  password          String?          // Hashed password
+  tempPassword      String?          // One-time temporary password
+  mustChangePassword Boolean         @default(false)
+  lastLogin         DateTime?
+  importedFromExcel Boolean          @default(false)
+  activatedBy       String?          // Admin ID who activated
+  activatedAt       DateTime?
+  address           Address?
+  familyMembers     FamilyMember[]
+  rsvpResponses     RSVPResponse[]
+  notifications     NotificationPreferences?
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+}
+
+model FamilyMember {
+  id            String   @id @default(cuid())
+  firstName     String
+  lastName      String
+  age           Int
+  contactNumber String?
+  email         String?
+  relationship  String
+  address       String?
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Address {
+  id       String  @id @default(cuid())
+  street   String
+  city     String
+  state    String
+  zipCode  String
+  country  String  @default("USA")
+  userId   String  @unique
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Event {
+  id              String         @id @default(cuid())
+  title           String
+  description     String
+  flyer           String?
+  date            DateTime
+  location        String
+  rsvpRequired    Boolean        @default(false)
+  rsvpDeadline    DateTime?
+  maxParticipants Int?
+  rsvpForm        Json?          // Dynamic form configuration
+  rsvpResponses   RSVPResponse[]
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+}
+
+model RSVPResponse {
+  id                String    @id @default(cuid())
+  eventId           String
+  userId            String
+  responses         Json      // Dynamic form responses
+  paymentConfirmed  Boolean   @default(false)
+  paymentReference  String?
+  qrCode            String?   // Generated QR code for check-in
+  checkedIn         Boolean   @default(false)
+  checkedInAt       DateTime?
+  event             Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([eventId, userId]) // One RSVP per user per event
+}
+
+model Admin {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  firstName String
+  lastName  String
+  role      AdminRole @default(ADMIN)
+  isActive  Boolean  @default(true)
+  year      Int      // Admin changes every year
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model NotificationPreferences {
+  id                String  @id @default(cuid())
+  email             Boolean @default(true)
+  push              Boolean @default(true)
+  eventReminders    Boolean @default(true)
+  membershipRenewal Boolean @default(true)
+  adminUpdates      Boolean @default(true)
+  userId            String  @unique
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model MembershipRenewal {
+  id                String         @id @default(cuid())
+  userId            String
+  previousType      MembershipType
+  newType           MembershipType
+  paymentReference  String
+  status            RenewalStatus  @default(PENDING)
+  adminNotes        String?
+  processedAt       DateTime?
+  processedBy       String?        // Admin ID
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+}
+
+enum MembershipType {
+  INDIVIDUAL
+  FAMILY
+  CUSTOM
+}
+
+enum AdminRole {
+  SUPER_ADMIN
+  ADMIN
+  MODERATOR
+}
+
+enum RenewalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
