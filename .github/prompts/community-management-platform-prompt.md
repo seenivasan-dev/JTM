@@ -13,28 +13,56 @@ Create a comprehensive community management platform that enables seamless inter
 
 ## 🛠️ Technology Stack
 
+### Development Environment (macOS)
+- **Operating System**: macOS (required for iOS development)
+- **Package Manager**: Homebrew for system dependencies
+- **Node.js**: Latest LTS via nvm (Node Version Manager)
+- **Database**: PostgreSQL (via Docker Desktop or Homebrew)
+- **Code Editor**: VS Code with GitHub Copilot extensions
+- **Version Control**: Git with GitHub
+- **Container**: Docker Desktop for local development
+- **iOS Simulator**: Xcode (for React Native iOS testing)
+
+### Required VS Code Extensions
+- GitHub Copilot
+- GitHub Copilot Chat  
+- Expo Tools
+- Prisma
+- ES7+ React/Redux/React-Native snippets
+- Tailwind CSS IntelliSense
+- Auto Rename Tag
+- Bracket Pair Colorizer
+- GitLens
+
 ### Frontend
 - **Mobile**: Expo + React Native (iOS & Android support)
-- **Web**: Next.js with React Native Web
+- **Web**: Next.js (standard React, not React Native Web)
 - **Language**: TypeScript
-- **UI Components**: NativeBase or Tamagui for cross-platform consistency
-- **State Management**: Zustand or Redux Toolkit
-- **Navigation**: React Navigation v6
+- **UI Components**: 
+  - **Web**: Tailwind CSS + Shadcn/ui or Chakra UI
+  - **Mobile**: NativeBase or Tamagui
+- **State Management**: Zustand (recommended) or Redux Toolkit
+- **Navigation**: 
+  - **Web**: Next.js file-based routing
+  - **Mobile**: React Navigation v6
 
 ### Backend
 - **API**: Next.js API Routes (TypeScript)
 - **Database**: PostgreSQL with Prisma ORM
-- **Authentication**: NextAuth.js
-- **File Storage**: Cloudinary (free tier)
-- **Email Service**: Resend or SendGrid (free tier)
+- **Authentication**: NextAuth.js (web) + JWT tokens (mobile)
+- **File Storage**: Cloudinary (free tier) for images and documents
+- **Email Service**: Resend (recommended) or SendGrid (free tier)
 - **QR Code**: qrcode library for generation, expo-barcode-scanner for scanning
+- **Validation**: Zod for schema validation
+- **ORM**: Prisma with type-safe database operations
 
 ### Deployment & Infrastructure (Low/No Cost)
-- **Database**: Railway, Supabase, or PlanetScale (free tiers)
-- **API Hosting**: Vercel (free tier)
-- **Mobile**: Expo Application Services (EAS)
-- **Web Hosting**: Vercel or Netlify
-- **CDN**: Cloudflare (free tier)
+- **Database**: Railway (recommended), Supabase, or Neon (free tiers)
+- **API & Web Hosting**: Vercel (free tier) - handles both web app and API routes
+- **Mobile**: Expo Application Services (EAS) for app store builds
+- **File Storage**: Cloudinary (free tier) integrated with web app
+- **CDN**: Cloudflare (free tier) or Vercel's built-in CDN
+- **Environment**: Docker for local PostgreSQL development
 
 ## 👥 Target Users
 
@@ -239,26 +267,112 @@ interface NotificationPreferences {
 
 ### Code Architecture
 ```
-project-root/
-├── apps/
-│   ├── mobile/          # Expo React Native app
-│   ├── web/             # Next.js web app
-│   └── api/             # Next.js API routes
-├── packages/
-│   ├── ui/              # Shared UI components
-│   ├── database/        # Prisma schema and client
-│   ├── auth/            # Authentication utilities
-│   └── utils/           # Shared utilities
-└── docs/                # Documentation
+📁 JTM/ (GitHub Organization or User)
+├── 📁 jtm-web/                  # Next.js Web App + API Routes
+│   ├── 📁 pages/
+│   │   ├── 📁 api/              # API endpoints (backend)
+│   │   │   ├── 📁 auth/         # Authentication APIs
+│   │   │   │   ├── login.ts
+│   │   │   │   ├── register.ts
+│   │   │   │   └── [...nextauth].ts
+│   │   │   ├── 📁 users/        # User management APIs
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── [id].ts
+│   │   │   │   └── bulk-import.ts
+│   │   │   ├── 📁 events/       # Event management APIs
+│   │   │   │   ├── index.ts
+│   │   │   │   ├── [id].ts
+│   │   │   │   └── rsvp.ts
+│   │   │   └── 📁 admin/        # Admin APIs
+│   │   │       ├── analytics.ts
+│   │   │       └── members.ts
+│   │   ├── index.tsx            # Homepage
+│   │   ├── dashboard.tsx        # Dashboard page
+│   │   ├── events/              # Events pages
+│   │   │   ├── index.tsx        # Events list
+│   │   │   └── [id].tsx         # Event details
+│   │   ├── auth/                # Auth pages
+│   │   │   ├── login.tsx
+│   │   │   └── register.tsx
+│   │   └── admin/               # Admin pages
+│   │       ├── dashboard.tsx
+│   │       └── members.tsx
+│   ├── 📁 components/           # Reusable React components
+│   │   ├── ui/                  # Basic UI components
+│   │   ├── forms/               # Form components
+│   │   └── layout/              # Layout components
+│   ├── 📁 lib/                  # Server utilities & configurations
+│   │   ├── prisma.ts            # Database client
+│   │   ├── auth.ts              # Auth configuration
+│   │   ├── email.ts             # Email utilities
+│   │   └── validations.ts       # Zod schemas
+│   ├── 📁 prisma/               # Database
+│   │   ├── schema.prisma        # Database schema
+│   │   ├── migrations/          # Database migrations
+│   │   └── seed.ts              # Database seeding
+│   ├── 📁 styles/               # Styling
+│   │   └── globals.css          # Global styles (Tailwind)
+│   ├── 📁 types/                # TypeScript type definitions
+│   ├── 📁 utils/                # Client-side utilities
+│   ├── .env.local               # Environment variables
+│   ├── .env.example             # Environment variables template
+│   ├── tailwind.config.js       # Tailwind configuration
+│   ├── next.config.js           # Next.js configuration
+│   └── package.json
+├── 📁 jtm-mobile/               # Expo React Native App
+│   ├── 📁 src/
+│   │   ├── 📁 api/              # API client calls
+│   │   │   ├── auth.ts
+│   │   │   ├── users.ts
+│   │   │   └── events.ts
+│   │   ├── 📁 screens/          # Mobile screens
+│   │   │   ├── 📁 auth/
+│   │   │   ├── 📁 events/
+│   │   │   ├── 📁 profile/
+│   │   │   └── 📁 admin/
+│   │   ├── 📁 components/       # Mobile UI components
+│   │   │   ├── ui/              # Basic components
+│   │   │   └── forms/           # Form components
+│   │   ├── 📁 navigation/       # Navigation configuration
+│   │   ├── 📁 utils/            # Mobile utilities
+│   │   ├── 📁 types/            # Mobile-specific types
+│   │   └── 📁 constants/        # App constants
+│   ├── App.tsx                  # Main app component
+│   ├── app.config.js            # Expo configuration
+│   ├── eas.json                 # EAS build configuration
+│   └── package.json
+├── 📁 jtm-shared/               # Shared types & utilities (npm package)
+│   ├── 📁 types/                # Shared TypeScript interfaces
+│   │   ├── user.ts
+│   │   ├── event.ts
+│   │   ├── api.ts
+│   │   └── index.ts
+│   ├── 📁 utils/                # Shared utility functions
+│   │   ├── validation.ts
+│   │   ├── date.ts
+│   │   └── format.ts
+│   ├── 📁 constants/            # Shared constants
+│   │   ├── api-endpoints.ts
+│   │   └── membership-types.ts
+│   ├── package.json
+│   └── README.md
+└── 📁 docs/                     # Documentation
+    ├── api.md                   # API documentation
+    ├── deployment.md            # Deployment guide
+    └── development.md           # Development setup
 ```
 
 ### Best Practices
-- **TypeScript**: Strict mode enabled, comprehensive type definitions
-- **Testing**: Jest + React Testing Library for unit tests, Detox for E2E mobile testing
-- **Linting**: ESLint + Prettier for code consistency
-- **Git Workflow**: Feature branches, conventional commits
-- **Error Handling**: Comprehensive error boundaries and logging
-- **Security**: Input validation, secure authentication, data encryption
+- **Architecture**: Separate repositories for web+API and mobile with shared types package
+- **TypeScript**: Strict mode enabled, comprehensive type definitions with Zod validation
+- **Testing**: Jest + React Testing Library for unit tests, Playwright for E2E web testing, Detox for E2E mobile testing
+- **Linting**: ESLint + Prettier for code consistency across all repositories
+- **Git Workflow**: Feature branches, conventional commits, semantic versioning
+- **Error Handling**: Comprehensive error boundaries, proper HTTP status codes, and structured logging
+- **Security**: Input validation with Zod, secure authentication, data encryption, CORS configuration
+- **API Design**: RESTful APIs with consistent response formats, proper HTTP methods, and error responses
+- **Development Environment**: Docker for local PostgreSQL, environment variables management
+- **Code Quality**: Husky pre-commit hooks, automated testing in CI/CD
 
 ### Production-Ready Requirements
 - **Input Validation**: Server-side validation for all forms and API endpoints
@@ -419,26 +533,74 @@ enum RenewalStatus {
 
 ## 🚀 Deployment Strategy
 
+### Repository Structure
+1. **jtm-web**: Next.js web app + API routes + database (single repo)
+2. **jtm-mobile**: Expo React Native app (separate repo)
+3. **jtm-shared**: Shared TypeScript types and utilities (optional npm package)
+
 ### Environment Setup
-1. **Development**: Local development with Docker Compose
-2. **Staging**: Preview deployments on Vercel/Railway
-3. **Production**: Vercel (web/API) + EAS (mobile) + Railway (database)
+1. **Development**: 
+   - Local PostgreSQL via Docker Compose or Homebrew
+   - jtm-web runs on localhost:3000 (web + API)
+   - jtm-mobile connects to local API for development
+   - Hot reloading enabled for both web and mobile
+2. **Staging**: 
+   - Preview deployments on Vercel (web+API) 
+   - Staging database on Railway/Supabase
+   - EAS Preview builds for mobile testing
+3. **Production**: 
+   - Vercel (web+API) with production database
+   - EAS production builds for App Store/Google Play
+   - Environment variables managed securely
 
 ### CI/CD Pipeline
-- **GitHub Actions**: Automated testing and deployment
+- **GitHub Actions**: Separate workflows for web and mobile repositories
+- **Web**: Vercel automatic deployments from main branch (web + API together)
 - **Mobile**: EAS Build for iOS/Android app store deployment
-- **Web**: Vercel automatic deployments from main branch
-- **Database**: Prisma migrations with Railway
+- **Database**: Prisma migrations with Railway/Supabase
+
+### API Communication
+- **Web Frontend**: Direct API calls to `/api/*` routes (same domain)
+- **Mobile App**: HTTP calls to `https://your-app.vercel.app/api/*` endpoints
+- **Authentication**: JWT tokens for stateless authentication across platforms
 
 ## 📋 Development Checklist
 
+### Pre-Development Setup (macOS)
+- [ ] **Install System Dependencies**:
+  ```bash
+  # Install Homebrew
+  /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  
+  # Install Node.js via nvm
+  curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+  nvm install --lts
+  nvm use --lts
+  
+  # Install PostgreSQL and Docker
+  brew install postgresql
+  brew install --cask docker
+  
+  # Start PostgreSQL service
+  brew services start postgresql
+  ```
+- [ ] **VS Code Setup**: Install required extensions listed above
+- [ ] **GitHub Setup**: Configure Git with your GitHub credentials
+- [ ] **Docker Setup**: Start Docker Desktop and verify it's running
+
 ### Phase 1: Foundation
-- [ ] Set up monorepo structure with TypeScript
-- [ ] Configure Prisma with PostgreSQL and all models
-- [ ] Implement authentication system with NextAuth.js
-- [ ] Create comprehensive design system with theme support
-- [ ] Set up development environment with proper tooling
-- [ ] Configure ESLint, Prettier, and Husky pre-commit hooks
+- [ ] **macOS Development Setup**: Install Homebrew, Node.js (via nvm), PostgreSQL, Docker Desktop
+- [ ] **VS Code Configuration**: Install GitHub Copilot, Copilot Chat, Expo Tools, Prisma extensions
+- [ ] Set up separate repositories for web and mobile applications
+- [ ] Create jtm-web repository with Next.js + API routes structure
+- [ ] Create jtm-mobile repository with Expo React Native
+- [ ] Configure local PostgreSQL database (Docker or Homebrew)
+- [ ] Configure Prisma with PostgreSQL in web repository
+- [ ] Set up jtm-shared package for consistency across platforms
+- [ ] Implement authentication system with NextAuth.js (web) and JWT (mobile)
+- [ ] Create comprehensive design system with Tailwind CSS (web) and NativeBase (mobile)
+- [ ] Set up development environment with proper tooling (ESLint, Prettier, Husky)
+- [ ] Configure environment variables and secrets management
 
 ### Phase 2: User Management
 - [ ] Build complete registration flow with validation
@@ -493,6 +655,56 @@ When working with this project, use these prompts for better assistance:
 3. **API Endpoints**: "Create Next.js API route for [functionality] with input validation and error handling"
 4. **Testing**: "Write comprehensive tests for [component/function] using Jest and React Testing Library"
 5. **Styling**: "Create styles for [component] supporting both light and dark themes"
+6. **Cross-platform Development**: "Create shared business logic for jtm-shared package that works with both jtm-web and jtm-mobile"
+
+## 🤖 GitHub Copilot Agent Mode Guidelines
+
+### For Full-Stack Development
+When using GitHub Copilot agent mode in VS Code, use these specific prompts:
+
+#### **Project Setup**
+- "Set up a new Next.js project with TypeScript, Tailwind CSS, and Prisma"
+- "Configure NextAuth.js with database sessions and JWT tokens"
+- "Create a new Expo React Native project with TypeScript"
+- "Set up Docker Compose for local PostgreSQL development"
+
+#### **Database & API Development**
+- "Create Prisma schema for [specific model] with proper relationships"
+- "Generate Prisma migrations and update database schema"
+- "Create Next.js API route for [specific endpoint] with Zod validation"
+- "Implement CRUD operations for [model] with proper error handling"
+
+#### **Authentication & Security**
+- "Implement NextAuth.js configuration with email/password provider"
+- "Create JWT token validation middleware for API routes"
+- "Add role-based access control for admin and member routes"
+- "Implement secure password reset flow with temporary tokens"
+
+#### **UI Components & Styling**
+- "Create responsive React component with Tailwind CSS"
+- "Build React Native screen component with proper navigation"
+- "Implement dark/light theme toggle across the application"
+- "Create form component with React Hook Form and Zod validation"
+
+#### **Testing & Quality**
+- "Write unit tests for [component/function] with Jest"
+- "Create E2E tests for user authentication flow"
+- "Set up ESLint and Prettier configuration for TypeScript"
+- "Implement error boundary components for React"
+
+#### **Deployment & DevOps**
+- "Configure Vercel deployment for Next.js with environment variables"
+- "Set up EAS build configuration for React Native app"
+- "Create GitHub Actions workflow for automated testing"
+- "Configure Docker development environment"
+
+### Development Workflow with Copilot
+1. **Start with Architecture**: Ask Copilot to explain or set up the project structure
+2. **Build Incrementally**: Create one feature at a time with proper testing
+3. **Type Safety First**: Always request TypeScript types and Zod schemas
+4. **Security Focused**: Ask for input validation and error handling in every API
+5. **Cross-Platform Aware**: Specify platform when creating shared logic
+6. **Testing Driven**: Request tests alongside feature implementation
 
 ## 📞 Support & Maintenance
 
