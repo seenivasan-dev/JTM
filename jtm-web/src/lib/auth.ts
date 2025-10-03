@@ -74,18 +74,18 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
-    async jwt({ token, user }: { token: JWT; user: any }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.id = user.id
-        token.firstName = user.firstName
-        token.lastName = user.lastName
-        token.membershipType = user.membershipType
-        token.isActive = user.isActive
-        token.mustChangePassword = user.mustChangePassword
+        token.id = (user as any).id
+        token.firstName = (user as any).firstName
+        token.lastName = (user as any).lastName
+        token.membershipType = (user as any).membershipType
+        token.isActive = (user as any).isActive
+        token.mustChangePassword = (user as any).mustChangePassword
       }
       return token
     },
-    async session({ session, token }: { session: Session; token: JWT }) {
+    async session({ session, token }) {
       if (token && session.user) {
         (session.user as any).id = token.id
         ;(session.user as any).firstName = token.firstName

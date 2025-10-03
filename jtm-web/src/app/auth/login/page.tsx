@@ -15,7 +15,7 @@ export default function LoginPage() {
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">
             <p className="text-lg">
-              "This platform has revolutionized how we manage our community events and member engagement."
+              &ldquo;This platform has revolutionized how we manage our community events and member engagement.&rdquo;
             </p>
             <footer className="text-sm">Community Administrator</footer>
           </blockquote>
