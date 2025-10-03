@@ -57,6 +57,9 @@ export function Header() {
                 <Link href="/admin/members" className="hover:text-primary transition-colors">
                   Members
                 </Link>
+                <Link href="/admin/bulk-import" className="hover:text-primary transition-colors">
+                  Bulk Import
+                </Link>
                 <Link href="/admin/renewals" className="hover:text-primary transition-colors">
                   Renewals
                 </Link>
@@ -126,6 +129,9 @@ export function Header() {
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/admin/members">Manage Members</Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/bulk-import">Bulk Import</Link>
                       </DropdownMenuItem>
                       <DropdownMenuItem asChild>
                         <Link href="/admin/renewals">Renewals</Link>

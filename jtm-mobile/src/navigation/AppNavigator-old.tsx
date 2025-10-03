@@ -4,7 +4,7 @@ import { Text, View, TouchableOpacity, StyleSheet } from 'react-native'
 
 // Import screens
 import LoginScreen from '../screens/auth/LoginScreen'
-import DashboardScreen from '../screens/member/DashboardScreen'
+import DashboardScreen from '../screens/member/MemberDashboardScreen'
 import ProfileScreen from '../screens/member/ProfileScreen'
 
 // Simple icon component
