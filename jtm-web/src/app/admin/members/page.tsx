@@ -17,7 +17,7 @@ interface SearchParams {
 export default async function AdminMembersPage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
   const session = await getServerSession(authOptions)
   
@@ -34,11 +34,13 @@ export default async function AdminMembersPage({
     redirect('/dashboard')
   }
 
-  const search = searchParams.search || ''
-  const status = searchParams.status || 'all'
-  const membershipType = searchParams.membershipType || 'all'
-  const page = parseInt(searchParams.page || '1')
-  const limit = parseInt(searchParams.limit || '10')
+  // Await searchParams
+  const params = await searchParams
+  const search = params.search || ''
+  const status = params.status || 'all'
+  const membershipType = params.membershipType || 'all'
+  const page = parseInt(params.page || '1')
+  const limit = parseInt(params.limit || '10')
 
   // Build where clause for filtering
   const where: any = {}
@@ -60,7 +62,7 @@ export default async function AdminMembersPage({
   }
 
   // Get members with pagination
-  const [members, totalCount] = await Promise.all([
+  const [membersData, totalCount] = await Promise.all([
     prisma.user.findMany({
       where,
       include: {
@@ -78,6 +80,27 @@ export default async function AdminMembersPage({
     }),
     prisma.user.count({ where }),
   ])
+
+  // Serialize members data for client component
+  const members = membersData.map(member => ({
+    id: member.id,
+    firstName: member.firstName,
+    lastName: member.lastName,
+    email: member.email,
+    mobileNumber: member.mobileNumber,
+    membershipType: member.membershipType,
+    isActive: member.isActive,
+    createdAt: member.createdAt.toISOString(),
+    address: member.address ? {
+      street: member.address.street,
+      city: member.address.city,
+      state: member.address.state,
+      zipCode: member.address.zipCode,
+    } : undefined,
+    _count: {
+      familyMembers: member._count.familyMembers,
+    },
+  }))
 
   const totalPages = Math.ceil(totalCount / limit)
 

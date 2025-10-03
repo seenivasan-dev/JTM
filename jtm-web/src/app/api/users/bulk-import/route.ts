@@ -32,6 +32,7 @@ const bulkUserSchema = z.object({
 
 const bulkActivationSchema = z.object({
   userIds: z.array(z.string()),
+  action: z.enum(['activate', 'deactivate']),
 });
 
 // POST /api/users/bulk-import - Import users from Excel data
@@ -54,26 +55,43 @@ export async function POST(request: NextRequest) {
 
     const body = await request.json();
     
-    // Check if this is a bulk activation request
-    if (body.action === 'activate') {
-      const { userIds } = bulkActivationSchema.parse(body);
+    // Check if this is a bulk activation/deactivation request
+    if (body.action === 'activate' || body.action === 'deactivate') {
+      const { userIds, action } = bulkActivationSchema.parse(body);
       
-      const activatedUsers = await prisma.user.updateMany({
-        where: {
-          id: { in: userIds },
-          isActive: false, // Only activate inactive users
-        },
-        data: {
-          isActive: true,
-          activatedBy: admin.id,
-          activatedAt: new Date(),
-        },
-      });
+      if (action === 'activate') {
+        const activatedUsers = await prisma.user.updateMany({
+          where: {
+            id: { in: userIds },
+            isActive: false, // Only activate inactive users
+          },
+          data: {
+            isActive: true,
+            activatedBy: admin.id,
+            activatedAt: new Date(),
+          },
+        });
 
-      return NextResponse.json({
-        message: `Successfully activated ${activatedUsers.count} users`,
-        activatedCount: activatedUsers.count,
-      });
+        return NextResponse.json({
+          message: `Successfully activated ${activatedUsers.count} users`,
+          activatedCount: activatedUsers.count,
+        });
+      } else if (action === 'deactivate') {
+        const deactivatedUsers = await prisma.user.updateMany({
+          where: {
+            id: { in: userIds },
+            isActive: true, // Only deactivate active users
+          },
+          data: {
+            isActive: false,
+          },
+        });
+
+        return NextResponse.json({
+          message: `Successfully deactivated ${deactivatedUsers.count} users`,
+          deactivatedCount: deactivatedUsers.count,
+        });
+      }
     }
 
     // Otherwise, handle bulk import

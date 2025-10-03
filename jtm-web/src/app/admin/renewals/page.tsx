@@ -15,7 +15,7 @@ interface SearchParams {
 export default async function AdminRenewalsPage({
   searchParams,
 }: {
-  searchParams: SearchParams
+  searchParams: Promise<SearchParams>
 }) {
   const session = await getServerSession(authOptions)
   
@@ -32,9 +32,11 @@ export default async function AdminRenewalsPage({
     redirect('/dashboard')
   }
 
-  const status = searchParams.status || 'all'
-  const page = parseInt(searchParams.page || '1')
-  const limit = parseInt(searchParams.limit || '10')
+  // Await searchParams
+  const params = await searchParams
+  const status = params.status || 'all'
+  const page = parseInt(params.page || '1')
+  const limit = parseInt(params.limit || '10')
 
   // Build where clause for filtering
   const where: any = {}
@@ -43,7 +45,7 @@ export default async function AdminRenewalsPage({
   }
 
   // Get renewals with pagination
-  const [renewals, totalCount] = await Promise.all([
+  const [renewalsData, totalCount] = await Promise.all([
     prisma.membershipRenewal.findMany({
       where,
       include: {
@@ -59,6 +61,30 @@ export default async function AdminRenewalsPage({
     }),
     prisma.membershipRenewal.count({ where }),
   ])
+
+  // Serialize renewals data for client component
+  const renewals = renewalsData.map(renewal => ({
+    id: renewal.id,
+    previousType: renewal.previousType,
+    newType: renewal.newType,
+    paymentReference: renewal.paymentReference,
+    status: renewal.status,
+    adminNotes: renewal.adminNotes || undefined,
+    createdAt: renewal.createdAt.toISOString(),
+    user: {
+      id: renewal.user.id,
+      firstName: renewal.user.firstName,
+      lastName: renewal.user.lastName,
+      email: renewal.user.email,
+      mobileNumber: renewal.user.mobileNumber,
+      address: renewal.user.address ? {
+        street: renewal.user.address.street,
+        city: renewal.user.address.city,
+        state: renewal.user.address.state,
+        zipCode: renewal.user.address.zipCode,
+      } : undefined,
+    },
+  }))
 
   const totalPages = Math.ceil(totalCount / limit)
 

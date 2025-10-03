@@ -84,7 +84,7 @@ export default function MemberManagement({
     const params = new URLSearchParams(searchParams.toString())
     
     Object.entries(newFilters).forEach(([key, value]) => {
-      if (value && value !== 'all') {
+      if (value && value !== 'all' && value !== '') {
         params.set(key, value)
       } else {
         params.delete(key)
@@ -95,6 +95,11 @@ export default function MemberManagement({
     
     router.push(`/admin/members?${params.toString()}`)
   }, [router, searchParams])
+
+  // Get selected members info for smart bulk actions
+  const selectedMembersInfo = members.filter(member => selectedMembers.includes(member.id))
+  const selectedActiveCount = selectedMembersInfo.filter(member => member.isActive).length
+  const selectedInactiveCount = selectedMembersInfo.filter(member => !member.isActive).length
 
   // Handle member selection
   const toggleMemberSelection = (memberId: string) => {
@@ -149,12 +154,14 @@ export default function MemberManagement({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
-            action: bulkAction === 'activate' ? 'activate' : 'deactivate',
+            action: bulkAction,
             userIds: selectedMembers 
           }),
         })
 
         if (response.ok) {
+          const result = await response.json()
+          
           // Update members in local state
           setMembers(prev =>
             prev.map(member =>
@@ -164,6 +171,12 @@ export default function MemberManagement({
             )
           )
           clearSelection()
+          
+          // Show success message (you can add a toast here)
+          console.log(result.message)
+        } else {
+          const error = await response.json()
+          console.error('Bulk action failed:', error.error)
         }
       }
     } catch (error) {
@@ -241,23 +254,34 @@ export default function MemberManagement({
       {selectedMembers.length > 0 && (
         <Alert>
           <AlertDescription className="flex items-center justify-between">
-            <span>{selectedMembers.length} member(s) selected</span>
+            <span>
+              {selectedMembers.length} member(s) selected
+              {selectedActiveCount > 0 && selectedInactiveCount > 0 && (
+                <span className="text-muted-foreground ml-2">
+                  ({selectedActiveCount} active, {selectedInactiveCount} inactive)
+                </span>
+              )}
+            </span>
             <div className="flex gap-2">
-              <Button 
-                size="sm" 
-                onClick={() => { setBulkAction('activate'); setShowBulkDialog(true) }}
-              >
-                <UserCheck className="h-4 w-4 mr-1" />
-                Activate
-              </Button>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => { setBulkAction('deactivate'); setShowBulkDialog(true) }}
-              >
-                <UserX className="h-4 w-4 mr-1" />
-                Deactivate
-              </Button>
+              {selectedInactiveCount > 0 && (
+                <Button 
+                  size="sm" 
+                  onClick={() => { setBulkAction('activate'); setShowBulkDialog(true) }}
+                >
+                  <UserCheck className="h-4 w-4 mr-1" />
+                  Activate ({selectedInactiveCount})
+                </Button>
+              )}
+              {selectedActiveCount > 0 && (
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  onClick={() => { setBulkAction('deactivate'); setShowBulkDialog(true) }}
+                >
+                  <UserX className="h-4 w-4 mr-1" />
+                  Deactivate ({selectedActiveCount})
+                </Button>
+              )}
               <Button size="sm" variant="ghost" onClick={clearSelection}>
                 Clear
               </Button>
