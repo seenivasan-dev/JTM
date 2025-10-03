@@ -33,6 +33,9 @@ dist/
 *.tsbuildinfo
 .tscache/
 
+# Shadcn/UI generated files (keep components.json, ignore if needed later)
+# components.json
+
 # IDE and Editor files
 .vscode/
 .idea/
@@ -150,6 +153,18 @@ Icon?
 ehthumbs.db
 Thumbs.db
 Desktop.ini
+
+# Temporary and swap files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Editor backup files
+*~
+*.orig
+\#*\#
+.\#*
 
 # Git
 .git

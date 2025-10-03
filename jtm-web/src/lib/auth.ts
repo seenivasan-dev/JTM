@@ -1,0 +1,104 @@
+// JTM Web - NextAuth.js Configuration
+import NextAuth, { type NextAuthOptions } from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
+import { PrismaAdapter } from '@auth/prisma-adapter'
+import { prisma } from '@/lib/prisma'
+import bcrypt from 'bcryptjs'
+import type { JWT } from 'next-auth/jwt'
+import type { Session } from 'next-auth'
+
+export const authOptions: NextAuthOptions = {
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    CredentialsProvider({
+      name: 'credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' }
+      },
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
+          return null
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+          include: {
+            address: true,
+            notifications: true,
+          },
+        })
+
+        if (!user) {
+          return null
+        }
+
+        // Check if user is active
+        if (!user.isActive) {
+          throw new Error('Account is not active. Please contact admin.')
+        }
+
+        // Verify password
+        const isValidPassword = user.password 
+          ? await bcrypt.compare(credentials.password, user.password)
+          : user.tempPassword === credentials.password
+
+        if (!isValidPassword) {
+          return null
+        }
+
+        // Update last login
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { lastLogin: new Date() },
+        })
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: `${user.firstName} ${user.lastName}`,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          membershipType: user.membershipType,
+          isActive: user.isActive,
+          mustChangePassword: user.mustChangePassword,
+        }
+      }
+    })
+  ],
+  session: {
+    strategy: 'jwt',
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+  },
+  callbacks: {
+    async jwt({ token, user }: { token: JWT; user: any }) {
+      if (user) {
+        token.id = user.id
+        token.firstName = user.firstName
+        token.lastName = user.lastName
+        token.membershipType = user.membershipType
+        token.isActive = user.isActive
+        token.mustChangePassword = user.mustChangePassword
+      }
+      return token
+    },
+    async session({ session, token }: { session: Session; token: JWT }) {
+      if (token && session.user) {
+        (session.user as any).id = token.id
+        ;(session.user as any).firstName = token.firstName
+        ;(session.user as any).lastName = token.lastName
+        ;(session.user as any).membershipType = token.membershipType
+        ;(session.user as any).isActive = token.isActive
+        ;(session.user as any).mustChangePassword = token.mustChangePassword
+      }
+      return session
+    },
+  },
+  pages: {
+    signIn: '/auth/login',
+    error: '/auth/error',
+  },
+}
