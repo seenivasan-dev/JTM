@@ -11,44 +11,39 @@ import {
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
 import { apiConfig, handleApiResponse, getHeaders } from '../../api/config'
-
-interface User {
-  id: string
-  firstName: string
-  lastName: string
-  email: string
-  membershipType: string
-  isActive: boolean
-  membershipExpiry?: string
-  mustChangePassword: boolean
-  familyMembers: any[]
-}
+import { useUser } from '../../context/UserContext'
 
 interface MemberDashboardProps {
   navigation: any
 }
 
 export default function MemberDashboardScreen({ navigation }: MemberDashboardProps) {
-  const [user, setUser] = useState<User | null>(null)
+  const { user: contextUser, setUser } = useUser()
+  const [user, setLocalUser] = useState(contextUser)
   const [recentEvents, setRecentEvents] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
 
   const fetchDashboardData = async () => {
     try {
-      // Use mobile-specific endpoints for testing
-      // In production, you'd implement proper authentication
+      if (!contextUser?.email) {
+        Alert.alert('Error', 'Please log in again')
+        navigation.navigate('Login')
+        return
+      }
+
       const headers = getHeaders()
 
-      // Fetch user data and recent events
+      // Fetch updated user data and recent events
       const [userResponse, eventsResponse] = await Promise.all([
-        fetch(`${apiConfig.baseUrl}/mobile/user`, { headers }),
-        fetch(`${apiConfig.baseUrl}/mobile/events`, { headers })
+        fetch(`${apiConfig.baseUrl}/mobile/user?email=${encodeURIComponent(contextUser.email)}`, { headers }),
+        fetch(`${apiConfig.baseUrl}/mobile/events?limit=3`, { headers })
       ])
 
       if (userResponse.ok) {
         const userData = await handleApiResponse(userResponse)
-        setUser(userData)
+        setLocalUser(userData)
+        setUser(userData) // Update context with latest data
         console.log('✅ User data loaded successfully:', userData.firstName)
       } else {
         console.log('❌ User response not ok:', userResponse.status, await userResponse.text())
@@ -163,7 +158,7 @@ export default function MemberDashboardScreen({ navigation }: MemberDashboardPro
         
         <View style={styles.statCard}>
           <Ionicons name="people" size={24} color="#10b981" />
-          <Text style={styles.statNumber}>{user.familyMembers.length}</Text>
+          <Text style={styles.statNumber}>{user.familyMembers?.length || 0}</Text>
           <Text style={styles.statLabel}>Family Members</Text>
         </View>
         

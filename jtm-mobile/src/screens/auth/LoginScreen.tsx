@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native'
 import { authApi } from '../../api/auth'
+import { useUser } from '../../context/UserContext'
 
 interface LoginScreenProps {
   navigation: any // Will be properly typed with React Navigation
@@ -21,6 +22,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const { setUser } = useUser()
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -33,6 +35,12 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const response = await authApi.login({ email, password })
       
       if (response.success && response.data) {
+        // Store user data in context
+        setUser({
+          ...response.data.user,
+          isAdmin: false // Will be determined by subsequent API call
+        })
+
         // Handle successful login
         if (response.data.user.mustChangePassword) {
           // Navigate to change password screen
@@ -45,7 +53,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
         Alert.alert('Login Failed', response.error || 'Invalid credentials')
       }
     } catch (error) {
-      Alert.alert('Error', 'An error occurred. Please try again.')
+      console.error('Login error:', error)
+      Alert.alert('Error', 'Failed to connect to server. Please check your network connection.')
     } finally {
       setIsLoading(false)
     }
