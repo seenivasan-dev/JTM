@@ -11,9 +11,12 @@ import RegisterScreen from '../screens/auth/RegisterScreen'
 import MemberDashboardScreen from '../screens/member/MemberDashboardScreen'
 import ProfileScreen from '../screens/member/ProfileScreen'
 import EventsScreen from '../screens/member/EventsScreen'
+import EventDetailScreen from '../screens/member/EventDetailScreen'
 import ChangePasswordScreen from '../screens/member/ChangePasswordScreen'
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen'
 import MemberManagementScreen from '../screens/admin/MemberManagementScreen'
+import CreateEventScreen from '../screens/admin/CreateEventScreen'
+import QRScannerScreen from '../screens/admin/QRScannerScreen'
 import AnalyticsScreen from '../screens/admin/AnalyticsScreen'
 
 // Type definitions for navigation
@@ -21,6 +24,9 @@ export type RootStackParamList = {
   Auth: undefined
   MainTabs: undefined
   ChangePassword: { userId: string }
+  EventDetail: { event: any }
+  CreateEvent: undefined
+  QRScanner: { eventId?: string }
   AdminTabs: undefined
 }
 
@@ -195,6 +201,27 @@ export default function AppNavigator() {
               backgroundColor: '#3b82f6',
             },
             headerTintColor: '#fff',
+          }}
+        />
+        <Stack.Screen 
+          name="EventDetail" 
+          component={EventDetailScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="CreateEvent" 
+          component={CreateEventScreen}
+          options={{
+            headerShown: false,
+          }}
+        />
+        <Stack.Screen 
+          name="QRScanner" 
+          component={QRScannerScreen}
+          options={{
+            headerShown: false,
           }}
         />
         <Stack.Screen name="MainTabs" component={MemberTabNavigator} />

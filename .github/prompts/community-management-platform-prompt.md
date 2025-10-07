@@ -616,7 +616,6 @@ enum RenewalStatus {
 - [ ] Implement dynamic RSVP form builder with drag-and-drop
 - [ ] Create event listing with filtering and search
 - [ ] Build RSVP submission with real-time validation
-- [ ] Add QR code generation after payment verification
 - [ ] Implement mobile QR code scanner for check-ins
 - [ ] Add RSVP deadline management (snooze/extend)
 

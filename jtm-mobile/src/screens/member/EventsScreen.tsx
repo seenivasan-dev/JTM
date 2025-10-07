@@ -8,7 +8,11 @@ import {
   TouchableOpacity,
   Image,
   RefreshControl,
+  ActivityIndicator,
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { useUser } from '../../context/UserContext'
+import { apiConfig, getHeaders } from '../../api/config'
 
 interface Event {
   id: string
@@ -17,8 +21,11 @@ interface Event {
   date: string
   location: string
   rsvpRequired: boolean
+  rsvpDeadline?: string
   maxParticipants?: number
+  currentAttendees: number
   flyer?: string
+  rsvpForm?: any
 }
 
 interface EventsScreenProps {
@@ -26,39 +33,10 @@ interface EventsScreenProps {
 }
 
 export default function EventsScreen({ navigation }: EventsScreenProps) {
+  const { user } = useUser()
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
-
-  // Mock data for now
-  const mockEvents: Event[] = [
-    {
-      id: '1',
-      title: 'Community Picnic 2025',
-      description: 'Join us for our annual community picnic with food, games, and fun activities for the whole family.',
-      date: '2025-03-15T14:00:00Z',
-      location: 'Central Park',
-      rsvpRequired: true,
-      maxParticipants: 100,
-    },
-    {
-      id: '2',
-      title: 'Cultural Night',
-      description: 'Celebrate our diverse community with performances, food, and cultural exhibitions.',
-      date: '2025-04-20T18:00:00Z',
-      location: 'Community Center',
-      rsvpRequired: true,
-      maxParticipants: 150,
-    },
-    {
-      id: '3',
-      title: 'Volunteer Cleanup Day',
-      description: 'Help us keep our community beautiful by participating in our quarterly cleanup event.',
-      date: '2025-05-10T09:00:00Z',
-      location: 'Various Locations',
-      rsvpRequired: false,
-    },
-  ]
 
   useEffect(() => {
     loadEvents()
@@ -66,18 +44,24 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
 
   const loadEvents = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/events')
-      // const data = await response.json()
-      // setEvents(data.events)
-      
-      // For now, use mock data
-      setTimeout(() => {
-        setEvents(mockEvents)
-        setLoading(false)
-      }, 1000)
+      const response = await fetch(`${apiConfig.baseUrl}/events`, {
+        method: 'GET',
+        headers: getHeaders(),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setEvents(data.events || [])
+      } else {
+        console.error('Failed to load events')
+        // Fall back to empty array if API fails
+        setEvents([])
+      }
     } catch (error) {
       console.error('Error loading events:', error)
+      // Fall back to empty array if network fails
+      setEvents([])
+    } finally {
       setLoading(false)
     }
   }
@@ -86,6 +70,14 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
     setRefreshing(true)
     await loadEvents()
     setRefreshing(false)
+  }
+
+  const handleEventPress = (event: Event) => {
+    navigation?.navigate('EventDetail', { event })
+  }
+
+  const handleCreateEvent = () => {
+    navigation?.navigate('CreateEvent')
   }
 
   const formatDate = (dateString: string) => {
@@ -98,11 +90,6 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
       hour: '2-digit',
       minute: '2-digit',
     })
-  }
-
-  const handleEventPress = (event: Event) => {
-    // TODO: Navigate to event details screen
-    console.log('Event pressed:', event.title)
   }
 
   if (loading) {
@@ -121,10 +108,17 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
       }
     >
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Upcoming Events</Text>
-        <Text style={styles.headerSubtitle}>
-          Stay connected with your community
-        </Text>
+        <View style={styles.headerContent}>
+          <Text style={styles.headerTitle}>Upcoming Events</Text>
+          <Text style={styles.headerSubtitle}>
+            Stay connected with your community
+          </Text>
+        </View>
+        {user?.isAdmin && (
+          <TouchableOpacity style={styles.createButton} onPress={handleCreateEvent}>
+            <Ionicons name="add" size={24} color="white" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {events.length === 0 ? (
@@ -153,17 +147,20 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
                 </Text>
                 
                 <View style={styles.eventFooter}>
-                  {event.rsvpRequired && (
-                    <View style={styles.rsvpBadge}>
-                      <Text style={styles.rsvpText}>RSVP Required</Text>
-                    </View>
-                  )}
+                  <View style={styles.badgeContainer}>
+                    {event.rsvpRequired && (
+                      <View style={styles.rsvpBadge}>
+                        <Text style={styles.rsvpText}>RSVP Required</Text>
+                      </View>
+                    )}
+                  </View>
                   
-                  {event.maxParticipants && (
+                  <View style={styles.attendeeInfo}>
                     <Text style={styles.participantsText}>
-                      Max: {event.maxParticipants} people
+                      {event.currentAttendees} attending
+                      {event.maxParticipants && ` / ${event.maxParticipants}`}
                     </Text>
-                  )}
+                  </View>
                 </View>
               </View>
             </TouchableOpacity>
@@ -189,20 +186,33 @@ const styles = StyleSheet.create({
     color: '#6b7280',
   },
   header: {
+    backgroundColor: '#dc2626',
     padding: 20,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
+    paddingTop: 50,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  headerContent: {
+    flex: 1,
   },
   headerTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    color: '#1f2937',
+    color: '#fff',
   },
   headerSubtitle: {
     fontSize: 16,
-    color: '#6b7280',
+    color: '#fecaca',
     marginTop: 4,
+  },
+  createButton: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   emptyContainer: {
     padding: 40,
@@ -271,6 +281,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
   },
+  badgeContainer: {
+    flexDirection: 'row',
+  },
   rsvpBadge: {
     backgroundColor: '#fef3c7',
     paddingHorizontal: 8,
@@ -281,6 +294,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#92400e',
     fontWeight: '600',
+  },
+  attendeeInfo: {
+    alignItems: 'flex-end',
   },
   participantsText: {
     fontSize: 12,

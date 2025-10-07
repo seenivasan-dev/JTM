@@ -53,6 +53,15 @@ export const eventCreationSchema = z.object({
   rsvpDeadline: z.string().datetime().optional(),
   maxParticipants: z.number().positive().optional(),
   flyer: z.string().url().optional(),
+  rsvpForm: z.object({
+    fields: z.array(z.object({
+      id: z.string(),
+      type: z.enum(['text', 'number', 'select', 'checkbox', 'radio']),
+      label: z.string().min(1, 'Field label is required'),
+      required: z.boolean().default(false),
+      options: z.array(z.string()).optional(),
+    }))
+  }).optional(),
 })
 
 export type MemberRegistrationInput = z.infer<typeof memberRegistrationSchema>
