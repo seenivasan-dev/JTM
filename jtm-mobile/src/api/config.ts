@@ -1,6 +1,9 @@
 // JTM Mobile - API Configuration
+// For iOS Simulator: use localhost:3000
+// For Physical Device: use your computer's IP address (192.168.1.103:3000)
+// For Android Emulator: use 10.0.2.2:3000
 const API_BASE_URL = __DEV__ 
-  ? 'http://localhost:3000/api' 
+  ? 'http://localhost:3000/api'  // iOS Simulator
   : 'https://your-app.vercel.app/api'
 
 export const apiConfig = {

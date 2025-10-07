@@ -169,6 +169,30 @@ export async function POST(request: NextRequest) {
       });
     }
 
+    // TODO: Send email notification to member confirming renewal request submission
+    // await sendRenewalRequestConfirmationEmail(user.email, {
+    //   memberName: `${user.firstName} ${user.lastName}`,
+    //   membershipType: validatedData.newMembershipType,
+    //   paymentReference: validatedData.paymentReference,
+    //   submissionDate: new Date().toISOString()
+    // })
+    
+    console.log(`📧 [EMAIL PLACEHOLDER] Renewal request confirmation sent to ${user.email}`)
+    console.log(`   Member: ${user.firstName} ${user.lastName}`)
+    console.log(`   Membership Type: ${validatedData.newMembershipType}`)
+    console.log(`   Payment Reference: ${validatedData.paymentReference}`)
+
+    // TODO: Send email notification to admin about new renewal request
+    // await sendAdminRenewalNotificationEmail({
+    //   memberName: `${user.firstName} ${user.lastName}`,
+    //   memberEmail: user.email,
+    //   membershipType: validatedData.newMembershipType,
+    //   paymentReference: validatedData.paymentReference,
+    //   renewalId: renewal.id
+    // })
+    
+    console.log(`📧 [EMAIL PLACEHOLDER] Admin notification sent for renewal request ${renewal.id}`)
+
     return NextResponse.json({
       message: 'Renewal request submitted successfully',
       renewal,

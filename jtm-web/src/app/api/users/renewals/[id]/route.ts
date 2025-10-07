@@ -82,6 +82,32 @@ export async function PUT(
           isActive: true,
         },
       });
+
+      // TODO: Send approval email notification to member
+      // await sendRenewalApprovalEmail(updatedRenewal.user.email, {
+      //   memberName: `${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`,
+      //   membershipType: renewal.newType,
+      //   expiryDate: new Date(new Date().getFullYear() + 1, 11, 31, 23, 59, 59).toISOString(),
+      //   adminNotes
+      // })
+      
+      console.log(`📧 [EMAIL PLACEHOLDER] Renewal approval sent to ${updatedRenewal.user.email}`)
+      console.log(`   Member: ${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`)
+      console.log(`   Approved Membership: ${renewal.newType}`)
+      console.log(`   New Expiry: Dec 31, ${new Date().getFullYear() + 1}`)
+    } else {
+      // TODO: Send rejection email notification to member
+      // await sendRenewalRejectionEmail(updatedRenewal.user.email, {
+      //   memberName: `${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`,
+      //   membershipType: renewal.newType,
+      //   rejectionReason: adminNotes || 'No specific reason provided',
+      //   contactInfo: 'admin@jtm.org'
+      // })
+      
+      console.log(`📧 [EMAIL PLACEHOLDER] Renewal rejection sent to ${updatedRenewal.user.email}`)
+      console.log(`   Member: ${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`)
+      console.log(`   Rejected Membership: ${renewal.newType}`)
+      console.log(`   Reason: ${adminNotes || 'No specific reason provided'}`)
     }
 
     return NextResponse.json({

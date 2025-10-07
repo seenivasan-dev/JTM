@@ -22,7 +22,9 @@ import {
   CreditCard,
   ChevronLeft,
   ChevronRight,
-  FileText
+  FileText,
+  Send,
+  TrendingUp
 } from 'lucide-react'
 
 interface Renewal {
@@ -75,6 +77,8 @@ export default function RenewalManagement({
   const [processAction, setProcessAction] = useState<'approve' | 'reject'>('approve')
   const [adminNotes, setAdminNotes] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [isLoadingReminders, setIsLoadingReminders] = useState(false)
+  const [reminderResults, setReminderResults] = useState<any>(null)
 
   // Update URL with new status filter
   const updateStatus = useCallback((newStatus: string) => {
@@ -90,6 +94,32 @@ export default function RenewalManagement({
     
     router.push(`/admin/renewals?${params.toString()}`)
   }, [router, searchParams])
+
+  // Handle sending renewal reminders
+  const handleSendReminders = async () => {
+    setIsLoadingReminders(true)
+    try {
+      const response = await fetch('/api/admin/renewal-reminders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setReminderResults(result)
+        
+        // Show success message
+        console.log('Renewal reminders sent successfully:', result)
+      } else {
+        const error = await response.json()
+        console.error('Failed to send renewal reminders:', error.error)
+      }
+    } catch (error) {
+      console.error('Error sending renewal reminders:', error)
+    } finally {
+      setIsLoadingReminders(false)
+    }
+  }
 
   // Handle renewal processing
   const handleProcessRenewal = async () => {
@@ -156,6 +186,30 @@ export default function RenewalManagement({
 
   return (
     <div className="space-y-6">
+      {/* Header with Actions */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold">Renewal Management</h1>
+          <p className="text-gray-600">Manage membership renewal requests</p>
+        </div>
+        
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleSendReminders}
+            disabled={isLoadingReminders}
+          >
+            {isLoadingReminders ? 'Sending...' : 'Send Renewal Reminders'}
+          </Button>
+          
+          {reminderResults && (
+            <Badge variant="secondary" className="text-xs">
+              Sent {reminderResults.sentCount} reminders to {reminderResults.totalMembers} members
+            </Badge>
+          )}
+        </div>
+      </div>
+
       {/* Status Filter and Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         <Card className="md:col-span-1">

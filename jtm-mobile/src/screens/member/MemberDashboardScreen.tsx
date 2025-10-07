@@ -10,6 +10,7 @@ import {
   RefreshControl,
 } from 'react-native'
 import { Ionicons } from '@expo/vector-icons'
+import { apiConfig, handleApiResponse, getHeaders } from '../../api/config'
 
 interface User {
   id: string
@@ -35,24 +36,41 @@ export default function MemberDashboardScreen({ navigation }: MemberDashboardPro
 
   const fetchDashboardData = async () => {
     try {
+      // Use mobile-specific endpoints for testing
+      // In production, you'd implement proper authentication
+      const headers = getHeaders()
+
       // Fetch user data and recent events
       const [userResponse, eventsResponse] = await Promise.all([
-        fetch('/api/users/me'),
-        fetch('/api/events?limit=3')
+        fetch(`${apiConfig.baseUrl}/mobile/user`, { headers }),
+        fetch(`${apiConfig.baseUrl}/mobile/events`, { headers })
       ])
 
       if (userResponse.ok) {
-        const userData = await userResponse.json()
+        const userData = await handleApiResponse(userResponse)
         setUser(userData)
+        console.log('✅ User data loaded successfully:', userData.firstName)
+      } else {
+        console.log('❌ User response not ok:', userResponse.status, await userResponse.text())
       }
 
       if (eventsResponse.ok) {
-        const eventsData = await eventsResponse.json()
+        const eventsData = await handleApiResponse(eventsResponse)
         setRecentEvents(eventsData.events || [])
+        console.log('✅ Events data loaded successfully:', eventsData.events.length, 'events')
+      } else {
+        console.log('❌ Events response not ok:', eventsResponse.status, await eventsResponse.text())
       }
     } catch (error) {
-      console.error('Error fetching dashboard data:', error)
-      Alert.alert('Error', 'Failed to load dashboard data')
+      console.error('❌ Error fetching dashboard data:', error)
+      Alert.alert(
+        'Network Error', 
+        'Failed to load dashboard data. Please ensure:\n\n1. Your development server is running\n2. Your device is on the same network\n3. Try refreshing the app',
+        [
+          { text: 'Retry', onPress: () => fetchDashboardData() },
+          { text: 'OK' }
+        ]
+      )
     } finally {
       setIsLoading(false)
     }
