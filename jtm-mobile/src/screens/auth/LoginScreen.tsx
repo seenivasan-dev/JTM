@@ -12,6 +12,7 @@ import {
   ScrollView,
 } from 'react-native'
 import { authApi } from '../../api/auth'
+import { apiConfig, getHeaders } from '../../api/config'
 import { useUser } from '../../context/UserContext'
 
 interface LoginScreenProps {
@@ -35,19 +36,26 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       const response = await authApi.login({ email, password })
       
       if (response.success && response.data) {
-        // Store user data in context
-        setUser({
-          ...response.data.user,
-          isAdmin: false // Will be determined by subsequent API call
+        // Fetch full user data after successful login
+        const userDataResponse = await fetch(`${apiConfig.baseUrl}/mobile/user?email=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: getHeaders(),
         })
 
-        // Handle successful login
-        if (response.data.user.mustChangePassword) {
-          // Navigate to change password screen
-          navigation.navigate('ChangePassword', { userId: response.data.user.id })
+        if (userDataResponse.ok) {
+          const fullUserData = await userDataResponse.json()
+          setUser(fullUserData)
+
+          // Handle successful login
+          if (response.data.user.mustChangePassword) {
+            // Navigate to change password screen
+            navigation.navigate('ChangePassword', { userId: response.data.user.id })
+          } else {
+            // Navigate to main app
+            navigation.navigate('MainTabs')
+          }
         } else {
-          // Navigate to main app
-          navigation.navigate('MainTabs')
+          Alert.alert('Error', 'Failed to load user data')
         }
       } else {
         Alert.alert('Login Failed', response.error || 'Invalid credentials')

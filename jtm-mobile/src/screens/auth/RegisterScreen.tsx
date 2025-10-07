@@ -10,7 +10,10 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+import { apiConfig, getHeaders, handleApiResponse } from '../../api/config'
 
 interface RegisterScreenProps {
   navigation: any
@@ -21,11 +24,28 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
     firstName: '',
     lastName: '',
     email: '',
-    phone: '',
-    address: '',
-    membershipType: 'Individual',
-    password: '',
-    confirmPassword: '',
+    mobileNumber: '',
+    membershipType: 'INDIVIDUAL',
+    // Address fields
+    street: '',
+    city: '',
+    state: '',
+    zipCode: '',
+    country: 'USA',
+  })
+  const [familyMembers, setFamilyMembers] = useState<Array<{
+    firstName: string
+    lastName: string
+    relationship: string
+    age: string
+    email: string
+  }>>([])
+  const [newFamilyMember, setNewFamilyMember] = useState({
+    firstName: '',
+    lastName: '',
+    relationship: '',
+    age: '',
+    email: '',
   })
   const [loading, setLoading] = useState(false)
 
@@ -50,50 +70,132 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       Alert.alert('Error', 'Please enter a valid email address')
       return false
     }
-    if (formData.password.length < 6) {
-      Alert.alert('Error', 'Password must be at least 6 characters')
+    if (!formData.mobileNumber.trim()) {
+      Alert.alert('Error', 'Mobile number is required')
       return false
     }
-    if (formData.password !== formData.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match')
+    
+    // Validate mobile number format (10 digits)
+    const mobileRegex = /^\d{10}$/
+    if (!mobileRegex.test(formData.mobileNumber.replace(/\D/g, ''))) {
+      Alert.alert('Error', 'Mobile number must be exactly 10 digits')
+      return false
+    }
+    if (!formData.street.trim()) {
+      Alert.alert('Error', 'Street address is required')
+      return false
+    }
+    if (!formData.city.trim()) {
+      Alert.alert('Error', 'City is required')
+      return false
+    }
+    if (!formData.state.trim()) {
+      Alert.alert('Error', 'State is required')
+      return false
+    }
+    if (!formData.zipCode.trim()) {
+      Alert.alert('Error', 'ZIP code is required')
+      return false
+    }
+    
+    // Validate ZIP code format
+    const zipRegex = /^\d{5}(-\d{4})?$/
+    if (!zipRegex.test(formData.zipCode.trim())) {
+      Alert.alert('Error', 'ZIP code must be in format 12345 or 12345-6789')
       return false
     }
     return true
   }
 
+  const addFamilyMember = () => {
+    if (!newFamilyMember.firstName.trim() || !newFamilyMember.lastName.trim() || !newFamilyMember.relationship.trim()) {
+      Alert.alert('Error', 'First name, last name, and relationship are required for family members')
+      return
+    }
+
+    // Validate email if provided
+    if (newFamilyMember.email.trim() && !newFamilyMember.email.includes('@')) {
+      Alert.alert('Error', 'Please enter a valid email address for family member')
+      return
+    }
+
+    // Validate age if provided
+    if (newFamilyMember.age && (isNaN(parseInt(newFamilyMember.age)) || parseInt(newFamilyMember.age) < 0 || parseInt(newFamilyMember.age) > 120)) {
+      Alert.alert('Error', 'Please enter a valid age (0-120) for family member')
+      return
+    }
+
+    setFamilyMembers([...familyMembers, { ...newFamilyMember }])
+    setNewFamilyMember({
+      firstName: '',
+      lastName: '',
+      relationship: '',
+      age: '',
+      email: '',
+    })
+  }
+
+  const removeFamilyMember = (index: number) => {
+    const updated = familyMembers.filter((_, i) => i !== index)
+    setFamilyMembers(updated)
+  }
+
   const handleRegister = async () => {
     if (!validateForm()) return
 
+    const registrationData = {
+      firstName: formData.firstName.trim(),
+      lastName: formData.lastName.trim(),
+      email: formData.email.trim().toLowerCase(),
+      mobileNumber: formData.mobileNumber.replace(/\D/g, ''), // Remove non-digits
+      membershipType: formData.membershipType,
+      address: {
+        street: formData.street.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
+        zipCode: formData.zipCode.trim(),
+        country: formData.country.trim(),
+      },
+      ...(formData.membershipType === 'FAMILY' && familyMembers.length > 0 && {
+        familyMembers: familyMembers.map(member => ({
+          firstName: member.firstName.trim(),
+          lastName: member.lastName.trim(),
+          relationship: member.relationship.trim(),
+          age: member.age ? parseInt(member.age) : 0,
+          email: member.email.trim() || '',
+        }))
+      }),
+    }
+
     setLoading(true)
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/auth/register', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     name: `${formData.firstName} ${formData.lastName}`,
-      //     email: formData.email,
-      //     phone: formData.phone,
-      //     address: formData.address,
-      //     membershipType: formData.membershipType,
-      //     password: formData.password,
-      //   }),
-      // })
+      const response = await fetch(`${apiConfig.baseUrl}/auth/register`, {
+        method: 'POST',
+        headers: getHeaders(),
+        body: JSON.stringify(registrationData),
+      })
 
-      // Mock registration for now
-      setTimeout(() => {
-        setLoading(false)
+      if (response.ok) {
+        const result = await handleApiResponse(response)
         Alert.alert(
           'Registration Successful',
-          'Your membership application has been submitted for review. You will receive an email once your account is activated.',
+          'Your membership application has been submitted for review. You will receive an email with login credentials once your account is activated.',
           [
             { text: 'OK', onPress: () => navigation.navigate('Login') }
           ]
         )
-      }, 2000)
+      } else {
+        const error = await response.json()
+        console.log('Registration error response:', error)
+        console.log('Registration data sent:', registrationData)
+        Alert.alert('Registration Failed', error.error || 'Registration failed. Please try again.')
+      }
     } catch (error) {
+      console.error('Registration error:', error)
+      console.log('Registration data sent:', registrationData)
+      Alert.alert('Error', 'Registration failed. Please check your network connection.')
+    } finally {
       setLoading(false)
-      Alert.alert('Error', 'Registration failed. Please try again.')
     }
   }
 
@@ -139,26 +241,56 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
           <TextInput
             style={styles.input}
-            placeholder="Phone Number"
-            value={formData.phone}
-            onChangeText={(text) => handleInputChange('phone', text)}
+            placeholder="Mobile Number"
+            value={formData.mobileNumber}
+            onChangeText={(text) => handleInputChange('mobileNumber', text)}
             keyboardType="phone-pad"
           />
 
+          <Text style={styles.sectionTitle}>Address Information</Text>
           <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Address"
-            value={formData.address}
-            onChangeText={(text) => handleInputChange('address', text)}
+            style={styles.input}
+            placeholder="Street Address"
+            value={formData.street}
+            onChangeText={(text) => handleInputChange('street', text)}
             multiline
-            numberOfLines={3}
-            textAlignVertical="top"
           />
+
+          <View style={styles.nameContainer}>
+            <TextInput
+              style={[styles.input, styles.nameInput]}
+              placeholder="City"
+              value={formData.city}
+              onChangeText={(text) => handleInputChange('city', text)}
+            />
+            <TextInput
+              style={[styles.input, styles.nameInput]}
+              placeholder="State"
+              value={formData.state}
+              onChangeText={(text) => handleInputChange('state', text)}
+            />
+          </View>
+
+          <View style={styles.nameContainer}>
+            <TextInput
+              style={[styles.input, styles.nameInput]}
+              placeholder="ZIP Code"
+              value={formData.zipCode}
+              onChangeText={(text) => handleInputChange('zipCode', text)}
+              keyboardType="numeric"
+            />
+            <TextInput
+              style={[styles.input, styles.nameInput]}
+              placeholder="Country"
+              value={formData.country}
+              onChangeText={(text) => handleInputChange('country', text)}
+            />
+          </View>
 
           <View style={styles.membershipSection}>
             <Text style={styles.sectionTitle}>Membership Type</Text>
             <View style={styles.membershipOptions}>
-              {['Individual', 'Family', 'Student'].map((type) => (
+              {['INDIVIDUAL', 'FAMILY', 'CUSTOM'].map((type) => (
                 <TouchableOpacity
                   key={type}
                   style={[
@@ -171,37 +303,103 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                     styles.membershipOptionText,
                     formData.membershipType === type && styles.membershipOptionTextSelected
                   ]}>
-                    {type}
+                    {type.charAt(0) + type.slice(1).toLowerCase()}
                   </Text>
                 </TouchableOpacity>
               ))}
             </View>
           </View>
 
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            value={formData.password}
-            onChangeText={(text) => handleInputChange('password', text)}
-            secureTextEntry
-          />
+          {/* Family Members Section - Only show for FAMILY membership */}
+          {formData.membershipType === 'FAMILY' && (
+            <View style={styles.familySection}>
+              <Text style={styles.sectionTitle}>Family Members</Text>
+              
+              {/* Existing Family Members */}
+              {familyMembers.map((member, index) => (
+                <View key={index} style={styles.familyMemberCard}>
+                  <View style={styles.familyMemberInfo}>
+                    <Text style={styles.familyMemberName}>
+                      {member.firstName} {member.lastName}
+                    </Text>
+                    <Text style={styles.familyMemberDetails}>
+                      {member.relationship}{member.age ? ` • ${member.age} years old` : ''}
+                    </Text>
+                    {member.email && (
+                      <Text style={styles.familyMemberEmail}>{member.email}</Text>
+                    )}
+                  </View>
+                  <TouchableOpacity
+                    style={styles.removeFamilyMember}
+                    onPress={() => removeFamilyMember(index)}
+                  >
+                    <Ionicons name="trash-outline" size={20} color="#dc2626" />
+                  </TouchableOpacity>
+                </View>
+              ))}
 
-          <TextInput
-            style={styles.input}
-            placeholder="Confirm Password"
-            value={formData.confirmPassword}
-            onChangeText={(text) => handleInputChange('confirmPassword', text)}
-            secureTextEntry
-          />
+              {/* Add New Family Member Form */}
+              <View style={styles.addFamilyMemberForm}>
+                <Text style={styles.addFamilyMemberTitle}>Add Family Member</Text>
+                
+                <View style={styles.nameRow}>
+                  <TextInput
+                    style={[styles.input, styles.nameInput]}
+                    placeholder="First Name"
+                    value={newFamilyMember.firstName}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, firstName: text }))}
+                  />
+                  <TextInput
+                    style={[styles.input, styles.nameInput]}
+                    placeholder="Last Name"
+                    value={newFamilyMember.lastName}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, lastName: text }))}
+                  />
+                </View>
+
+                <TextInput
+                  style={styles.input}
+                  placeholder="Relationship (e.g., Spouse, Child, Parent)"
+                  value={newFamilyMember.relationship}
+                  onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, relationship: text }))}
+                />
+
+                <View style={styles.nameRow}>
+                  <TextInput
+                    style={[styles.input, styles.nameInput]}
+                    placeholder="Age (optional)"
+                    value={newFamilyMember.age}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, age: text }))}
+                    keyboardType="numeric"
+                  />
+                  <TextInput
+                    style={[styles.input, styles.nameInput]}
+                    placeholder="Email (optional)"
+                    value={newFamilyMember.email}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, email: text }))}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                </View>
+
+                <TouchableOpacity style={styles.addFamilyMemberButton} onPress={addFamilyMember}>
+                  <Ionicons name="add" size={20} color="white" />
+                  <Text style={styles.addFamilyMemberButtonText}>Add Family Member</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
 
           <TouchableOpacity
             style={[styles.registerButton, loading && styles.buttonDisabled]}
             onPress={handleRegister}
             disabled={loading}
           >
-            <Text style={styles.registerButtonText}>
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </Text>
+            {loading ? (
+              <ActivityIndicator size="small" color="white" />
+            ) : (
+              <Text style={styles.registerButtonText}>Create Account</Text>
+            )}
           </TouchableOpacity>
 
           <View style={styles.loginLink}>
@@ -325,5 +523,71 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#dc2626',
     fontWeight: '600',
+  },
+  familySection: {
+    marginBottom: 16,
+  },
+  familyMemberCard: {
+    backgroundColor: '#f3f4f6',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  familyMemberInfo: {
+    flex: 1,
+  },
+  familyMemberName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  familyMemberDetails: {
+    fontSize: 14,
+    color: '#6b7280',
+    marginTop: 2,
+  },
+  familyMemberEmail: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginTop: 2,
+  },
+  removeFamilyMember: {
+    padding: 8,
+  },
+  addFamilyMemberForm: {
+    backgroundColor: '#f9fafb',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    marginTop: 8,
+  },
+  addFamilyMemberTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  nameRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  addFamilyMemberButton: {
+    backgroundColor: '#059669',
+    padding: 12,
+    borderRadius: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  addFamilyMemberButtonText: {
+    color: 'white',
+    fontSize: 14,
+    fontWeight: '600',
+    marginLeft: 6,
   },
 })

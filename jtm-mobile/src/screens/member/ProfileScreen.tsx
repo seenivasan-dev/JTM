@@ -34,6 +34,17 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
   const [zipCode, setZipCode] = useState(contextUser?.address?.zipCode || '')
   const [country, setCountry] = useState(contextUser?.address?.country || '')
 
+  // Family members state
+  const [familyMembers, setFamilyMembers] = useState(contextUser?.familyMembers || [])
+  const [isAddingFamily, setIsAddingFamily] = useState(false)
+  const [newFamilyMember, setNewFamilyMember] = useState({
+    firstName: '',
+    lastName: '',
+    relationship: '',
+    age: '',
+    email: '',
+  })
+
   // Update form when context user changes
   useEffect(() => {
     if (contextUser) {
@@ -45,6 +56,7 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
       setState(contextUser.address?.state || '')
       setZipCode(contextUser.address?.zipCode || '')
       setCountry(contextUser.address?.country || '')
+      setFamilyMembers(contextUser.familyMembers || [])
     }
   }, [contextUser])
 
@@ -77,6 +89,13 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
           zipCode: zipCode.trim(),
           country: country.trim(),
         },
+        familyMembers: familyMembers.map(member => ({
+          firstName: member.firstName,
+          lastName: member.lastName,
+          relationship: member.relationship,
+          age: member.age,
+          email: member.email || undefined,
+        })),
       }
 
       const response = await fetch(`${apiConfig.baseUrl}/mobile/user`, {
@@ -89,6 +108,7 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
         const updatedUser = await handleApiResponse(response)
         setUser(updatedUser) // Update context
         setIsEditing(false)
+        setIsAddingFamily(false)
         Alert.alert('Success', 'Profile updated successfully!')
       } else {
         const error = await response.json()
@@ -102,6 +122,50 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
     }
   }
 
+  const addFamilyMember = () => {
+    if (!newFamilyMember.firstName.trim() || !newFamilyMember.lastName.trim() || !newFamilyMember.relationship.trim()) {
+      Alert.alert('Error', 'First name, last name, and relationship are required')
+      return
+    }
+
+    const member = {
+      id: Date.now().toString(), // Temporary ID for new members
+      firstName: newFamilyMember.firstName.trim(),
+      lastName: newFamilyMember.lastName.trim(),
+      relationship: newFamilyMember.relationship.trim(),
+      age: newFamilyMember.age ? parseInt(newFamilyMember.age) : undefined,
+      email: newFamilyMember.email.trim() || undefined,
+    }
+
+    setFamilyMembers([...familyMembers, member])
+    setNewFamilyMember({
+      firstName: '',
+      lastName: '',
+      relationship: '',
+      age: '',
+      email: '',
+    })
+    setIsAddingFamily(false)
+  }
+
+  const removeFamilyMember = (index: number) => {
+    Alert.alert(
+      'Remove Family Member',
+      'Are you sure you want to remove this family member?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Remove',
+          style: 'destructive',
+          onPress: () => {
+            const updated = familyMembers.filter((_, i) => i !== index)
+            setFamilyMembers(updated)
+          },
+        },
+      ]
+    )
+  }
+
   const handleCancel = () => {
     // Reset form to original values
     if (contextUser) {
@@ -113,8 +177,17 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
       setState(contextUser.address?.state || '')
       setZipCode(contextUser.address?.zipCode || '')
       setCountry(contextUser.address?.country || '')
+      setFamilyMembers(contextUser.familyMembers || [])
     }
     setIsEditing(false)
+    setIsAddingFamily(false)
+    setNewFamilyMember({
+      firstName: '',
+      lastName: '',
+      relationship: '',
+      age: '',
+      email: '',
+    })
   }
 
   const handleLogout = () => {
@@ -298,6 +371,138 @@ export default function ProfileScreen({ navigation, route }: ProfileProps) {
           </View>
         </View>
       </View>
+
+      {/* Family Members Section */}
+      {contextUser.membershipType === 'FAMILY' && (
+        <View style={styles.section}>
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Family Members</Text>
+            {isEditing && (
+              <TouchableOpacity
+                style={styles.addButton}
+                onPress={() => setIsAddingFamily(true)}
+              >
+                <Ionicons name="add" size={20} color="#007AFF" />
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+            )}
+          </View>
+
+          {familyMembers.map((member, index) => (
+            <View key={member.id || index} style={styles.familyMemberCard}>
+              <View style={styles.familyMemberInfo}>
+                <Text style={styles.familyMemberName}>
+                  {member.firstName} {member.lastName}
+                </Text>
+                <Text style={styles.familyMemberRelation}>{member.relationship}</Text>
+                {member.age && (
+                  <Text style={styles.familyMemberAge}>Age: {member.age}</Text>
+                )}
+                {member.email && (
+                  <Text style={styles.familyMemberEmail}>{member.email}</Text>
+                )}
+              </View>
+              {isEditing && (
+                <TouchableOpacity
+                  style={styles.removeButton}
+                  onPress={() => removeFamilyMember(index)}
+                >
+                  <Ionicons name="trash-outline" size={20} color="#FF3B30" />
+                </TouchableOpacity>
+              )}
+            </View>
+          ))}
+
+          {familyMembers.length === 0 && (
+            <Text style={styles.noDataText}>No family members added</Text>
+          )}
+
+          {/* Add Family Member Form */}
+          {isAddingFamily && (
+            <View style={styles.addFamilyForm}>
+              <Text style={styles.formTitle}>Add Family Member</Text>
+              
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>First Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newFamilyMember.firstName}
+                  onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, firstName: text }))}
+                  placeholder="Enter first name"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Last Name *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newFamilyMember.lastName}
+                  onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, lastName: text }))}
+                  placeholder="Enter last name"
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>Relationship *</Text>
+                <TextInput
+                  style={styles.input}
+                  value={newFamilyMember.relationship}
+                  onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, relationship: text }))}
+                  placeholder="e.g., Spouse, Child, Parent"
+                />
+              </View>
+
+              <View style={styles.row}>
+                <View style={[styles.inputGroup, styles.flex1]}>
+                  <Text style={styles.label}>Age</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={newFamilyMember.age}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, age: text }))}
+                    placeholder="Age"
+                    keyboardType="numeric"
+                  />
+                </View>
+
+                <View style={[styles.inputGroup, styles.flex1, styles.marginLeft]}>
+                  <Text style={styles.label}>Email</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={newFamilyMember.email}
+                    onChangeText={(text) => setNewFamilyMember(prev => ({ ...prev, email: text }))}
+                    placeholder="Email (optional)"
+                    keyboardType="email-address"
+                  />
+                </View>
+              </View>
+
+              <View style={styles.formActions}>
+                <TouchableOpacity
+                  style={styles.cancelButton}
+                  onPress={() => {
+                    setIsAddingFamily(false)
+                    setNewFamilyMember({
+                      firstName: '',
+                      lastName: '',
+                      relationship: '',
+                      age: '',
+                      email: '',
+                    })
+                  }}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.saveButton}
+                  onPress={addFamilyMember}
+                >
+                  <Text style={styles.saveButtonText}>Add Member</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* Membership Information */}
       <View style={styles.section}>
@@ -540,5 +745,87 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '500',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 6,
+    backgroundColor: '#f0f0f0',
+  },
+  addButtonText: {
+    color: '#007AFF',
+    marginLeft: 5,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  familyMemberCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginBottom: 10,
+  },
+  familyMemberInfo: {
+    flex: 1,
+  },
+  familyMemberName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+  },
+  familyMemberRelation: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 2,
+  },
+  familyMemberAge: {
+    fontSize: 12,
+    color: '#999',
+    marginTop: 2,
+  },
+  familyMemberEmail: {
+    fontSize: 12,
+    color: '#007AFF',
+    marginTop: 2,
+  },
+  removeButton: {
+    padding: 8,
+    borderRadius: 6,
+    backgroundColor: '#fff2f2',
+  },
+  noDataText: {
+    fontSize: 14,
+    color: '#999',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    paddingVertical: 20,
+  },
+  addFamilyForm: {
+    padding: 15,
+    backgroundColor: '#f8f9fa',
+    borderRadius: 8,
+    marginTop: 10,
+  },
+  formTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 15,
+  },
+  formActions: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    gap: 10,
+    marginTop: 15,
   },
 });
