@@ -44,7 +44,7 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
   // Get event if specified
   let event = null
   if (searchParams.eventId) {
-    event = await prisma.event.findUnique({
+    const eventData = await prisma.event.findUnique({
       where: { id: searchParams.eventId },
       select: {
         id: true,
@@ -53,6 +53,15 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
         location: true,
       },
     })
+
+    if (eventData) {
+      event = {
+        id: eventData.id,
+        title: eventData.title,
+        date: eventData.date.toISOString(),
+        location: eventData.location,
+      }
+    }
   }
 
   return (

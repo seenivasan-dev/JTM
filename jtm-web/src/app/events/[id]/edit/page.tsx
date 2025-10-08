@@ -54,7 +54,7 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
     rsvpRequired: event.rsvpRequired,
     rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
     maxParticipants: event.maxParticipants,
-    rsvpForm: event.rsvpForm,
+    rsvpForm: event.rsvpForm as { fields: { id: string; type: "number" | "select" | "text" | "checkbox" | "radio"; label: string; required: boolean; options?: string[] }[] } | null,
     currentAttendees: event._count.rsvpResponses,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),

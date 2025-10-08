@@ -85,11 +85,11 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     rsvpRequired: event.rsvpRequired,
     rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
     maxParticipants: event.maxParticipants,
-    rsvpForm: event.rsvpForm,
+    rsvpForm: event.rsvpForm as { fields: { id: string; type: "number" | "select" | "text" | "checkbox" | "radio"; label: string; required: boolean; options?: string[] }[] } | null,
     currentAttendees: event._count.rsvpResponses,
     rsvpResponses: event.rsvpResponses.map(response => ({
       id: response.id,
-      responses: response.responses,
+      responses: response.responses as Record<string, string | number | boolean> || {},
       paymentConfirmed: response.paymentConfirmed,
       qrCode: response.qrCode,
       checkedIn: response.checkedIn,
@@ -102,7 +102,7 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   const serializedUserRsvp = userRsvp ? {
     id: userRsvp.id,
-    responses: userRsvp.responses,
+    responses: userRsvp.responses as Record<string, string | number | boolean> || {},
     paymentConfirmed: userRsvp.paymentConfirmed,
     qrCode: userRsvp.qrCode,
     checkedIn: userRsvp.checkedIn,

@@ -152,8 +152,10 @@ export default async function EventsPage() {
         rsvpForm: event.rsvpForm as Record<string, unknown> | undefined,
         rsvpResponses: event.rsvpResponses.map(rsvp => ({
           ...rsvp,
+          responses: rsvp.responses as Record<string, unknown> || {},
           createdAt: rsvp.createdAt.toISOString(),
           updatedAt: rsvp.updatedAt.toISOString(),
+          checkedInAt: rsvp.checkedInAt?.toISOString() || null,
         })),
         stats: {
           totalRSVPs,
