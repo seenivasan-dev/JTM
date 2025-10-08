@@ -5,8 +5,9 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import EventLayout from '@/components/layout/EventLayout'
+import AdminLayout from '@/components/admin/AdminLayout'
 import CreateEventForm from '@/components/events/CreateEventForm'
+import BackButton from '@/components/ui/BackButton'
 
 export default async function CreateEventPage() {
   const session = await getServerSession(authOptions)
@@ -21,6 +22,8 @@ export default async function CreateEventPage() {
     select: {
       id: true,
       email: true,
+      firstName: true,
+      lastName: true,
     },
   })
 
@@ -37,19 +40,45 @@ export default async function CreateEventPage() {
     redirect('/events') // Redirect non-admin users to events page
   }
 
+  const adminInfo = {
+    firstName: userData?.firstName || 'Admin',
+    lastName: userData?.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role), // Convert enum to string explicitly
+  }
+
   return (
-    <EventLayout
-      userRole="admin"
-      title="Create New Event"
-      showBackButton={true}
-    >
-      <div className="px-4 sm:px-6 lg:px-8">
-        <div className="max-w-4xl mx-auto">
-          <Suspense fallback={<div>Loading...</div>}>
+    <AdminLayout adminInfo={adminInfo}>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="border-b border-gray-200 pb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+                Create New Event
+              </h1>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                Create and configure a new community event with optional RSVP forms
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <BackButton />
+            </div>
+          </div>
+        </div>
+
+        {/* Event Creation Form */}
+        <div className="max-w-4xl">
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+              <span className="ml-2 text-gray-600">Loading form...</span>
+            </div>
+          }>
             <CreateEventForm />
           </Suspense>
         </div>
       </div>
-    </EventLayout>
+    </AdminLayout>
   )
 }

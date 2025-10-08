@@ -73,12 +73,9 @@ export default async function AdminPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
-        <Suspense fallback={<div>Loading...</div>}>
-          <AdminDashboard initialStats={stats} />
-        </Suspense>
-      </div>
+      <Suspense fallback={<div>Loading...</div>}>
+        <AdminDashboard initialStats={stats} />
+      </Suspense>
     </AdminLayout>
   )
 }

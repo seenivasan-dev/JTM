@@ -187,12 +187,7 @@ export default function RenewalManagement({
   return (
     <div className="space-y-6">
       {/* Header with Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Renewal Management</h1>
-          <p className="text-gray-600">Manage membership renewal requests</p>
-        </div>
-        
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">        
         <div className="flex flex-wrap items-center gap-2">
           <Button
             variant="outline"

@@ -158,7 +158,7 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
   ]
 
   return (
-    <div className="space-y-8 p-6">
+    <div className="space-y-8">
       {/* Header with Refresh */}
       <div className="flex items-center justify-between">
         <div>
@@ -178,6 +178,84 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
         </Button>
       </div>
 
+  const statCards = [
+    {
+      title: 'Total Members',
+      value: stats.totalMembers,
+      icon: Users,
+      description: 'All registered members',
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Active Members',
+      value: stats.activeMembers,
+      icon: UserCheck,
+      description: 'Currently active members',
+      color: 'text-green-600',
+    },
+    {
+      title: 'Inactive Members',
+      value: stats.inactiveMembers,
+      icon: UserX,
+      description: 'Pending activation',
+      color: 'text-red-600',
+    },
+    {
+      title: 'Pending Renewals',
+      value: stats.pendingRenewals,
+      icon: Clock,
+      description: 'Awaiting approval',
+      color: 'text-yellow-600',
+    },
+    {
+      title: 'New This Month',
+      value: stats.recentRegistrations,
+      icon: TrendingUp,
+      description: 'Recent registrations',
+      color: 'text-purple-600',
+    },
+  ]
+
+  const eventStatCards = [
+    {
+      title: 'Total Events',
+      value: stats.totalEvents,
+      icon: Calendar,
+      description: 'All events created',
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Upcoming Events',
+      value: stats.upcomingEvents,
+      icon: Calendar,
+      description: 'Future events',
+      color: 'text-green-600',
+    },
+    {
+      title: 'Total RSVPs',
+      value: stats.totalRSVPs,
+      icon: Users,
+      description: 'All RSVP responses',
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Pending Payment',
+      value: stats.pendingRSVPs,
+      icon: Clock,
+      description: 'Awaiting payment',
+      color: 'text-yellow-600',
+    },
+    {
+      title: 'Checked In',
+      value: stats.checkedInRSVPs,
+      icon: UserCheck,
+      description: 'Attended events',
+      color: 'text-green-600',
+    },
+  ]
+
+  return (
+    <div className="space-y-6">
       {/* Member Statistics Cards */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -420,6 +498,71 @@ function PendingActions({ stats }: { stats: DashboardStats }) {
           <UserCheck className="h-12 w-12 text-green-500 mx-auto mb-2" />
           <p className="text-sm font-medium text-green-800">All caught up!</p>
           <p className="text-xs text-green-600">No pending actions at this time</p>
+        </div>
+      )}
+    </>
+  )
+}
+    </div>
+  )
+}
+}
+
+function RecentActivity() {
+  const [recentUsers, setRecentUsers] = useState([])
+
+  useEffect(() => {
+    fetch('/api/users?limit=5&sort=createdAt')
+      .then(res => res.json())
+      .then(data => setRecentUsers(data.users || []))
+      .catch(console.error)
+  }, [])
+
+  return (
+    <>
+      {recentUsers.map((user: any) => (
+        <div key={user.id} className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium">{user.firstName} {user.lastName}</p>
+            <p className="text-xs text-gray-500">{user.email}</p>
+          </div>
+          <Badge variant={user.isActive ? "default" : "secondary"}>
+            {user.isActive ? "Active" : "Pending"}
+          </Badge>
+        </div>
+      ))}
+    </>
+  )
+}
+
+function PendingActions({ stats }: { stats: DashboardStats }) {
+  return (
+    <>
+      {stats.inactiveMembers > 0 && (
+        <div className="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium text-red-800">
+              {stats.inactiveMembers} members awaiting activation
+            </p>
+            <p className="text-xs text-red-600">Review and activate new members</p>
+          </div>
+          <Button size="sm" asChild>
+            <Link href="/admin/members?status=inactive">Review</Link>
+          </Button>
+        </div>
+      )}
+      
+      {stats.pendingRenewals > 0 && (
+        <div className="flex items-center justify-between p-3 bg-yellow-50 rounded-lg">
+          <div>
+            <p className="text-sm font-medium text-yellow-800">
+              {stats.pendingRenewals} renewal requests pending
+            </p>
+            <p className="text-xs text-yellow-600">Process membership renewals</p>
+          </div>
+          <Button size="sm" asChild>
+            <Link href="/admin/renewals">Process</Link>
+          </Button>
         </div>
       )}
     </>

@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import MemberLayout from '@/components/layout/MemberLayout'
 import MemberDashboard from '@/components/member/MemberDashboard'
 
 export default async function MemberPage() {
@@ -63,14 +64,10 @@ export default async function MemberPage() {
   }))
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Welcome, {user.firstName}!</h1>
-      </div>
-
+    <MemberLayout user={user}>
       <Suspense fallback={<div>Loading dashboard...</div>}>
         <MemberDashboard user={user} recentEvents={recentEvents} />
       </Suspense>
-    </div>
+    </MemberLayout>
   )
 }

@@ -113,16 +113,14 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Analytics & Reports</h1>
-        <Suspense fallback={<div>Loading analytics...</div>}>
-          <AnalyticsDashboard 
-            data={{
-              membershipTypeStats: membershipStats,
-              monthlyRegistrations: recentUsers.map(user => ({
-                createdAt: user.createdAt.toISOString()
-              })),
-              eventAttendanceStats: eventStats.map(event => ({
+      <Suspense fallback={<div>Loading analytics...</div>}>
+        <AnalyticsDashboard 
+          data={{
+            membershipTypeStats: membershipStats,
+            monthlyRegistrations: recentUsers.map(user => ({
+              createdAt: user.createdAt.toISOString()
+            })),
+            eventAttendanceStats: eventStats.map(event => ({
                 id: event.id,
                 title: event.title,
                 date: event.date.toISOString(),
@@ -139,7 +137,6 @@ export default async function AdminAnalyticsPage() {
             }}
           />
         </Suspense>
-      </div>
     </AdminLayout>
   )
 }

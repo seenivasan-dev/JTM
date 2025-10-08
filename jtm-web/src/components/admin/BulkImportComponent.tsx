@@ -144,11 +144,11 @@ export default function BulkImportComponent() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold">Bulk Member Import</h2>
+          <h1 className="text-3xl font-bold">Bulk Member Import</h1>
           <p className="text-gray-600">Upload an Excel/CSV file to import multiple members</p>
         </div>
         <Button onClick={downloadTemplate} variant="outline">

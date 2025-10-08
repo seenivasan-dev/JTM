@@ -57,12 +57,10 @@ export default async function AdminUsersPage() {
 
   return (
     <AdminLayout>
-      <div className="p-6">
-        <UserManagement 
-          initialUsers={transformedUsers}
-          totalCount={users.length}
-        />
-      </div>
+      <UserManagement 
+        initialUsers={transformedUsers}
+        totalCount={users.length}
+      />
     </AdminLayout>
   )
 }

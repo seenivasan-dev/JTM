@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import MemberLayout from '@/components/layout/MemberLayout'
 import MemberRenewalRequest from '@/components/renewal/MemberRenewalRequest'
 
 export const metadata: Metadata = {
@@ -48,44 +49,32 @@ export default async function RenewalPage() {
     redirect('/admin/renewals')
   }
 
-  // Serialize the user data
+  // Serialize user data
   const user = {
     id: userData.id,
     firstName: userData.firstName,
     lastName: userData.lastName,
     email: userData.email,
     membershipType: userData.membershipType,
+    isActive: userData.isActive,
     membershipExpiry: userData.membershipExpiry?.toISOString(),
     familyMembers: userData.familyMembers.map(member => ({
       id: member.id,
       firstName: member.firstName,
       lastName: member.lastName,
       age: member.age,
-      relationship: member.relationship,
+      relationship: member.relationship
     })),
+    pendingRenewal: userData.renewalRequests[0] ? {
+      id: userData.renewalRequests[0].id,
+      status: userData.renewalRequests[0].status,
+      submittedAt: userData.renewalRequests[0].createdAt.toISOString(),
+    } : null
   }
 
-  // Get pending renewal if exists
-  const pendingRenewal = userData.renewalRequests.length > 0 ? {
-    id: userData.renewalRequests[0].id,
-    newType: userData.renewalRequests[0].newType,
-    paymentReference: userData.renewalRequests[0].paymentReference,
-    status: userData.renewalRequests[0].status,
-    createdAt: userData.renewalRequests[0].createdAt.toISOString(),
-  } : undefined
-
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold">Membership Renewal</h1>
-          <p className="text-muted-foreground mt-2">
-            Renew your membership to continue enjoying all community benefits and events.
-          </p>
-        </div>
-
-        <MemberRenewalRequest user={user} pendingRenewal={pendingRenewal} />
-      </div>
-    </div>
+    <MemberLayout user={user}>
+      <MemberRenewalRequest user={user} />
+    </MemberLayout>
   )
 }

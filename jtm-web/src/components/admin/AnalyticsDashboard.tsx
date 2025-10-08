@@ -10,14 +10,16 @@ import {
   TrendingUp, 
   BarChart3, 
   Download,
-  Filter,
   RefreshCw,
   PieChart,
   Activity,
   DollarSign,
   UserCheck,
   Clock,
-  CheckCircle
+  CheckCircle,
+  Eye,
+  ArrowUpRight,
+  ArrowDownRight
 } from 'lucide-react'
 import {
   Select,
@@ -54,6 +56,14 @@ interface AnalyticsData {
     checkedIn: boolean
     _count: { id: number }
   }>
+  // Enhanced analytics data
+  totalMembers: number
+  activeMembers: number
+  totalEvents: number
+  totalRSVPs: number
+  avgEventAttendance: number
+  membershipGrowthRate: number
+  eventEngagementRate: number
 }
 
 interface AnalyticsDashboardProps {
@@ -63,16 +73,22 @@ interface AnalyticsDashboardProps {
 export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState('6months')
   const [selectedMetric, setSelectedMetric] = useState('registrations')
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   // Process monthly registration data
-  const monthlyData = data.monthlyRegistrations.reduce((acc, user) => {
+  const monthlyData = data.monthlyRegistrations.reduce((acc: Record<string, number>, user) => {
     const month = new Date(user.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' })
     acc[month] = (acc[month] || 0) + 1
     return acc
-  }, {} as Record<string, number>)
+  }, {})
 
-  // Process RSVP data
-  const rsvpSummary = data.rsvpStats.reduce((acc, stat) => {
+  // Process RSVP data with type safety
+  const rsvpSummary = data.rsvpStats.reduce((acc: {
+    paidAndCheckedIn: number
+    paidNotCheckedIn: number
+    notPaidButCheckedIn: number
+    notPaidNotCheckedIn: number
+  }, stat) => {
     if (stat.paymentConfirmed && stat.checkedIn) {
       acc.paidAndCheckedIn = stat._count.id
     } else if (stat.paymentConfirmed && !stat.checkedIn) {
@@ -90,171 +106,163 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
     notPaidNotCheckedIn: 0,
   })
 
-  // Calculate key metrics
-  const totalMembers = data.membershipTypeStats.reduce((sum, stat) => sum + stat._count.membershipType, 0)
-  const totalRSVPs = Object.values(rsvpSummary).reduce((sum, count) => sum + count, 0)
-  const totalEvents = data.eventAttendanceStats.length
-  const avgAttendanceRate = data.eventAttendanceStats.reduce((sum, event) => {
-    const rate = event.maxParticipants ? (event._count.rsvpResponses / event.maxParticipants) * 100 : 0
-    return sum + rate
-  }, 0) / Math.max(data.eventAttendanceStats.length, 1)
+  const totalRSVPs = Object.values(rsvpSummary).reduce((sum: number, count: number) => sum + count, 0)
 
-  const exportData = () => {
-    const csvData = [
+  const handleExport = () => {
+    const csvContent = [
       ['Metric', 'Value'],
-      ['Total Members', totalMembers.toString()],
-      ['Total Events', totalEvents.toString()],
+      ['Total Members', data.totalMembers.toString()],
+      ['Active Members', data.activeMembers.toString()],
+      ['Total Events', data.totalEvents.toString()],
       ['Total RSVPs', totalRSVPs.toString()],
-      ['Average Attendance Rate', `${avgAttendanceRate.toFixed(1)}%`],
-      ...data.membershipTypeStats.map(stat => 
-        [`${stat.membershipType} Members`, stat._count.membershipType.toString()]
-      )
-    ]
-    
-    const csvContent = csvData.map(row => row.join(',')).join('\n')
+      ['Average Event Attendance', data.avgEventAttendance.toString()],
+      ['Membership Growth Rate', `${data.membershipGrowthRate.toFixed(2)}%`],
+      ['Event Engagement Rate', `${data.eventEngagementRate.toFixed(2)}%`],
+      ...data.membershipTypeStats.map(stat => [stat.membershipType, stat._count.membershipType.toString()])
+    ].map(row => row.join(',')).join('\n')
+
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
-    a.download = `jtm_analytics_${new Date().toISOString().split('T')[0]}.csv`
+    a.download = `analytics-report-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     window.URL.revokeObjectURL(url)
   }
 
+  const refreshData = async () => {
+    setIsRefreshing(true)
+    // This would refresh the data from the server
+    setTimeout(() => setIsRefreshing(false), 2000)
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+    <div className="space-y-8 p-6">
+      {/* Enhanced Header */}
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Analytics & Reports</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Analytics Dashboard</h1>
           <p className="text-muted-foreground">
-            Comprehensive insights about your community members and events
+            Comprehensive insights and reporting for informed decision making
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={exportData}>
-            <Download className="h-4 w-4 mr-2" />
-            Export Data
-          </Button>
-          <Button variant="outline">
-            <RefreshCw className="h-4 w-4 mr-2" />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={refreshData} disabled={isRefreshing}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
+          </Button>
+          <Button onClick={handleExport} size="sm">
+            <Download className="h-4 w-4 mr-2" />
+            Export Report
           </Button>
         </div>
       </div>
 
-      {/* Key Metrics Overview */}
+      {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card>
+        <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Members</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
+            <Users className="h-4 w-4 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalMembers}</div>
-            <p className="text-xs text-muted-foreground">
-              +{data.monthlyRegistrations.length} this month
-            </p>
+            <div className="text-2xl font-bold">{data.totalMembers.toLocaleString()}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <ArrowUpRight className="h-3 w-3 text-green-500 mr-1" />
+              {data.membershipGrowthRate.toFixed(1)}% growth
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Event Engagement</CardTitle>
+            <Activity className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalEvents}</div>
-            <p className="text-xs text-muted-foreground">
-              Last 3 months
-            </p>
+            <div className="text-2xl font-bold">{data.eventEngagementRate.toFixed(1)}%</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Eye className="h-3 w-3 mr-1" />
+              Member participation rate
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total RSVPs</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Average Attendance</CardTitle>
+            <UserCheck className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{totalRSVPs}</div>
-            <p className="text-xs text-muted-foreground">
-              All time
-            </p>
+            <div className="text-2xl font-bold">{data.avgEventAttendance.toFixed(0)}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <CheckCircle className="h-3 w-3 mr-1" />
+              Per event
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Attendance</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Active Events</CardTitle>
+            <Calendar className="h-4 w-4 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{avgAttendanceRate.toFixed(1)}%</div>
-            <p className="text-xs text-muted-foreground">
-              Event capacity filled
-            </p>
+            <div className="text-2xl font-bold">{data.totalEvents}</div>
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Clock className="h-3 w-3 mr-1" />
+              Total created
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <div className="flex gap-4 items-center">
-        <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Time Period" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="1month">Last Month</SelectItem>
-            <SelectItem value="3months">Last 3 Months</SelectItem>
-            <SelectItem value="6months">Last 6 Months</SelectItem>
-            <SelectItem value="1year">Last Year</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={selectedMetric} onValueChange={setSelectedMetric}>
-          <SelectTrigger className="w-40">
-            <SelectValue placeholder="Metric" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="registrations">Registrations</SelectItem>
-            <SelectItem value="events">Events</SelectItem>
-            <SelectItem value="rsvps">RSVPs</SelectItem>
-            <SelectItem value="payments">Payments</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      {/* Membership Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+      {/* Charts and Filters */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Membership Distribution */}
+        <Card className="lg:col-span-2">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5" />
-              Membership Distribution
-            </CardTitle>
-            <CardDescription>
-              Breakdown of membership types in your community
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <PieChart className="h-5 w-5" />
+                  Membership Distribution
+                </CardTitle>
+                <CardDescription>Breakdown by membership type</CardDescription>
+              </div>
+              <Select value={selectedPeriod} onValueChange={setSelectedPeriod}>
+                <SelectTrigger className="w-32">
+                  <SelectValue placeholder="Time Period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1month">1 Month</SelectItem>
+                  <SelectItem value="3months">3 Months</SelectItem>
+                  <SelectItem value="6months">6 Months</SelectItem>
+                  <SelectItem value="1year">1 Year</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {data.membershipTypeStats.map((stat) => {
-                const percentage = ((stat._count.membershipType / totalMembers) * 100).toFixed(1)
+                const percentage = data.totalMembers > 0 ? (stat._count.membershipType / data.totalMembers) * 100 : 0
                 return (
-                  <div key={stat.membershipType} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="capitalize font-medium">{stat.membershipType.toLowerCase()}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">{percentage}%</span>
-                        <Badge variant="secondary">{stat._count.membershipType}</Badge>
-                      </div>
+                  <div key={stat.membershipType} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                      <span className="font-medium capitalize">{stat.membershipType}</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${percentage}%` }}
-                      ></div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-20 bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full transition-all duration-300"
+                          style={{ width: `${percentage}%` }}
+                        />
+                      </div>
+                      <Badge variant="outline" className="min-w-[60px] justify-center">
+                        {stat._count.membershipType}
+                      </Badge>
                     </div>
                   </div>
                 )
@@ -263,24 +271,25 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
           </CardContent>
         </Card>
 
+        {/* Growth Trends */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5" />
-              Monthly Registrations
+              Growth Trends
             </CardTitle>
-            <CardDescription>
-              Member registration trends over time
-            </CardDescription>
+            <CardDescription>Monthly registrations</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {Object.entries(monthlyData)
                 .slice(-6)
                 .map(([month, count]) => (
-                  <div key={month} className="flex items-center justify-between p-2 hover:bg-gray-50 rounded-md">
-                    <span className="font-medium">{month}</span>
-                    <Badge variant="outline">{count} new members</Badge>
+                  <div key={month} className="flex items-center justify-between">
+                    <span className="text-sm font-medium">{month}</span>
+                    <Badge variant="outline" className="text-xs">
+                      +{count} new members
+                    </Badge>
                   </div>
                 ))}
             </div>
@@ -293,45 +302,34 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Recent Event Performance
+              <BarChart3 className="h-5 w-5" />
+              Event Performance
             </CardTitle>
-            <CardDescription>
-              Attendance rates for recent events
-            </CardDescription>
+            <CardDescription>Attendance rates by event</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {data.eventAttendanceStats.slice(0, 8).map((event) => {
+              {data.eventAttendanceStats.slice(0, 5).map((event) => {
                 const attendanceRate = event.maxParticipants 
-                  ? Math.round((event._count.rsvpResponses / event.maxParticipants) * 100)
+                  ? (event._count.rsvpResponses / event.maxParticipants) * 100 
                   : 0
-                
                 return (
-                  <div key={event.id} className="space-y-2 p-3 border rounded-lg hover:bg-gray-50">
+                  <div key={event.id} className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="font-medium">{event.title}</span>
-                      <Badge variant={attendanceRate > 80 ? "default" : attendanceRate > 50 ? "secondary" : "destructive"}>
-                        {event._count.rsvpResponses} RSVPs
+                      <span className="text-sm font-medium truncate">{event.title}</span>
+                      <Badge variant={attendanceRate > 80 ? "default" : attendanceRate > 50 ? "secondary" : "outline"}>
+                        {attendanceRate.toFixed(0)}%
                       </Badge>
                     </div>
-                    <div className="flex items-center justify-between text-sm text-muted-foreground">
-                      <span>{format(new Date(event.date), 'MMM dd, yyyy')}</span>
-                      <span>
-                        {event.maxParticipants ? `${attendanceRate}% filled` : 'No limit set'}
-                      </span>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full transition-all duration-300 ${
+                          attendanceRate > 80 ? 'bg-green-500' : 
+                          attendanceRate > 50 ? 'bg-yellow-500' : 'bg-red-500'
+                        }`}
+                        style={{ width: `${Math.min(attendanceRate, 100)}%` }}
+                      />
                     </div>
-                    {event.maxParticipants && (
-                      <div className="w-full bg-gray-200 rounded-full h-1.5">
-                        <div 
-                          className={`h-1.5 rounded-full transition-all duration-300 ${
-                            attendanceRate > 80 ? 'bg-green-500' : 
-                            attendanceRate > 50 ? 'bg-yellow-500' : 'bg-red-500'
-                          }`}
-                          style={{ width: `${Math.min(attendanceRate, 100)}%` }}
-                        ></div>
-                      </div>
-                    )}
                   </div>
                 )
               })}
@@ -342,31 +340,24 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="h-5 w-5" />
-              Top Performing Events
+              <Calendar className="h-5 w-5" />
+              Top Events
             </CardTitle>
-            <CardDescription>
-              Most popular events based on RSVP count
-            </CardDescription>
+            <CardDescription>Most popular events by RSVPs</CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
-              {data.topEvents.map((event, index) => (
-                <div key={event.id} className="flex items-center gap-3 p-2 hover:bg-gray-50 rounded-md">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold text-white ${
-                    index === 0 ? 'bg-yellow-500' :
-                    index === 1 ? 'bg-gray-400' :
-                    index === 2 ? 'bg-amber-600' : 'bg-blue-500'
-                  }`}>
-                    {index + 1}
-                  </div>
-                  <div className="flex-1">
-                    <div className="font-medium">{event.title}</div>
-                    <div className="text-sm text-muted-foreground">
+            <div className="space-y-4">
+              {data.topEvents.slice(0, 5).map((event) => (
+                <div key={event.id} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div>
+                    <p className="font-medium text-sm">{event.title}</p>
+                    <p className="text-xs text-muted-foreground">
                       {format(new Date(event.date), 'MMM dd, yyyy')}
-                    </div>
+                    </p>
                   </div>
-                  <Badge>{event._count.rsvpResponses} RSVPs</Badge>
+                  <Badge variant="outline">
+                    {event._count.rsvpResponses} RSVPs
+                  </Badge>
                 </div>
               ))}
             </div>
@@ -374,56 +365,49 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
         </Card>
       </div>
 
-      {/* RSVP & Payment Analytics */}
+      {/* RSVP Analysis */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <DollarSign className="h-5 w-5" />
-            RSVP & Payment Analytics
+            <UserCheck className="h-5 w-5" />
+            RSVP Payment & Attendance Analysis
           </CardTitle>
-          <CardDescription>
-            Payment and check-in status breakdown for all RSVPs
-          </CardDescription>
+          <CardDescription>Payment confirmation and check-in rates</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="text-center p-6 bg-green-50 rounded-lg border border-green-200">
-              <CheckCircle className="h-8 w-8 text-green-600 mx-auto mb-2" />
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="text-center p-4 bg-green-50 rounded-lg">
               <div className="text-2xl font-bold text-green-600">{rsvpSummary.paidAndCheckedIn}</div>
-              <div className="text-sm text-green-800">Paid & Checked In</div>
+              <div className="text-sm text-green-700">Paid & Attended</div>
             </div>
-            <div className="text-center p-6 bg-yellow-50 rounded-lg border border-yellow-200">
-              <Clock className="h-8 w-8 text-yellow-600 mx-auto mb-2" />
+            <div className="text-center p-4 bg-yellow-50 rounded-lg">
               <div className="text-2xl font-bold text-yellow-600">{rsvpSummary.paidNotCheckedIn}</div>
-              <div className="text-sm text-yellow-800">Paid, Not Checked In</div>
+              <div className="text-sm text-yellow-700">Paid & No-Show</div>
             </div>
-            <div className="text-center p-6 bg-blue-50 rounded-lg border border-blue-200">
-              <UserCheck className="h-8 w-8 text-blue-600 mx-auto mb-2" />
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
               <div className="text-2xl font-bold text-blue-600">{rsvpSummary.notPaidButCheckedIn}</div>
-              <div className="text-sm text-blue-800">Not Paid, Checked In</div>
+              <div className="text-sm text-blue-700">Unpaid & Attended</div>
             </div>
-            <div className="text-center p-6 bg-red-50 rounded-lg border border-red-200">
-              <Clock className="h-8 w-8 text-red-600 mx-auto mb-2" />
+            <div className="text-center p-4 bg-red-50 rounded-lg">
               <div className="text-2xl font-bold text-red-600">{rsvpSummary.notPaidNotCheckedIn}</div>
-              <div className="text-sm text-red-800">Not Paid, Not Checked In</div>
+              <div className="text-sm text-red-700">Unpaid & No-Show</div>
             </div>
           </div>
           
-          {/* Payment completion rate */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="font-medium">Payment Completion Rate</span>
-              <span className="text-sm text-muted-foreground">
+          <div className="mt-6 space-y-2">
+            <div className="flex items-center justify-between text-sm">
+              <span>Payment Collection Rate</span>
+              <span className="font-medium">
                 {totalRSVPs > 0 ? Math.round(((rsvpSummary.paidAndCheckedIn + rsvpSummary.paidNotCheckedIn) / totalRSVPs) * 100) : 0}%
               </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2">
               <div 
-                className="bg-green-600 h-2 rounded-full transition-all duration-300"
-                style={{ 
-                  width: `${totalRSVPs > 0 ? ((rsvpSummary.paidAndCheckedIn + rsvpSummary.paidNotCheckedIn) / totalRSVPs) * 100 : 0}%` 
+                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${totalRSVPs > 0 ? ((rsvpSummary.paidAndCheckedIn + rsvpSummary.paidNotCheckedIn) / totalRSVPs) * 100 : 0}%`
                 }}
-              ></div>
+              />
             </div>
           </div>
         </CardContent>

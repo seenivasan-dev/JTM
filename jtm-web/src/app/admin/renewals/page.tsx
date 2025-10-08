@@ -33,6 +33,22 @@ export default async function AdminRenewalsPage({
     redirect('/dashboard')
   }
 
+  // Get user data for admin info
+  const userData = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      firstName: true,
+      lastName: true,
+    },
+  })
+
+  const adminInfo = {
+    firstName: userData?.firstName || 'Admin',
+    lastName: userData?.lastName || 'User',
+    email: session.user.email,
+    role: admin.role,
+  }
+
   // Await searchParams
   const params = await searchParams
   const status = params.status || 'all'
@@ -40,9 +56,11 @@ export default async function AdminRenewalsPage({
   const limit = parseInt(params.limit || '10')
 
   // Build where clause for filtering
-  const where: any = {}
+  const where: {
+    status?: 'PENDING' | 'APPROVED' | 'REJECTED'
+  } = {}
   if (status !== 'all') {
-    where.status = status.toUpperCase()
+    where.status = status.toUpperCase() as 'PENDING' | 'APPROVED' | 'REJECTED'
   }
 
   // Get renewals with pagination
@@ -97,13 +115,28 @@ export default async function AdminRenewalsPage({
   }
 
   return (
-    <AdminLayout>
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold">Renewal Management</h1>
+    <AdminLayout adminInfo={adminInfo}>
+      <div className="space-y-6">
+        {/* Page Header */}
+        <div className="border-b border-gray-200 pb-5">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
+                Renewal Management
+              </h1>
+              <p className="mt-1 max-w-2xl text-sm text-gray-500">
+                Review and process membership renewal requests
+              </p>
+            </div>
+          </div>
         </div>
 
-        <Suspense fallback={<div>Loading renewals...</div>}>
+        <Suspense fallback={
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+            <span className="ml-2 text-gray-600">Loading renewals...</span>
+          </div>
+        }>
           <RenewalManagement 
             initialRenewals={renewals}
             pagination={pagination}

@@ -159,7 +159,7 @@ export default function UserManagement({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-6">
       {/* Header with Stats */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
