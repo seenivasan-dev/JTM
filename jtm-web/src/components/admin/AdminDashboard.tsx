@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Users, UserCheck, UserX, Clock, TrendingUp, Download } from 'lucide-react'
+import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar } from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardStats {
@@ -13,6 +13,11 @@ interface DashboardStats {
   inactiveMembers: number
   pendingRenewals: number
   recentRegistrations: number
+  totalEvents: number
+  upcomingEvents: number
+  totalRSVPs: number
+  pendingRSVPs: number
+  checkedInRSVPs: number
 }
 
 interface AdminDashboardProps {
@@ -60,22 +65,82 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
     },
   ]
 
+  const eventStatCards = [
+    {
+      title: 'Total Events',
+      value: stats.totalEvents,
+      icon: Calendar,
+      description: 'All events created',
+      color: 'text-blue-600',
+    },
+    {
+      title: 'Upcoming Events',
+      value: stats.upcomingEvents,
+      icon: Calendar,
+      description: 'Future events',
+      color: 'text-green-600',
+    },
+    {
+      title: 'Total RSVPs',
+      value: stats.totalRSVPs,
+      icon: Users,
+      description: 'All RSVP responses',
+      color: 'text-purple-600',
+    },
+    {
+      title: 'Pending Payment',
+      value: stats.pendingRSVPs,
+      icon: Clock,
+      description: 'Awaiting payment',
+      color: 'text-yellow-600',
+    },
+    {
+      title: 'Checked In',
+      value: stats.checkedInRSVPs,
+      icon: UserCheck,
+      description: 'Attended events',
+      color: 'text-green-600',
+    },
+  ]
+
   return (
     <div className="space-y-6">
-      {/* Statistics Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {statCards.map((stat, index) => (
-          <Card key={index} className="relative overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-              <stat.icon className={`h-4 w-4 ${stat.color}`} />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
-              <p className="text-xs text-muted-foreground">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
+      {/* Member Statistics Cards */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Member Statistics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {statCards.map((stat, index) => (
+            <Card key={index} className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Event & RSVP Statistics Cards */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Event & RSVP Analytics</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+          {eventStatCards.map((stat, index) => (
+            <Card key={index} className="relative overflow-hidden">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+                <stat.icon className={`h-4 w-4 ${stat.color}`} />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold">{stat.value}</div>
+                <p className="text-xs text-muted-foreground">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
 
       {/* Quick Actions */}
@@ -89,6 +154,18 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
             <Link href="/admin/members">
               <Users className="mr-2 h-4 w-4" />
               Manage Members
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/admin/events">
+              <Calendar className="mr-2 h-4 w-4" />
+              Manage Events
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link href="/events/create">
+              <TrendingUp className="mr-2 h-4 w-4" />
+              Create Event
             </Link>
           </Button>
           <Button asChild variant="outline">

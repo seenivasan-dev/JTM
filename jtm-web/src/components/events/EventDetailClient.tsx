@@ -420,8 +420,8 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
         </div>
       </div>
 
-      {/* RSVP Section */}
-      {event.rsvpRequired && (
+      {/* RSVP Section - Only show to non-admin users */}
+      {event.rsvpRequired && !user.isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle>RSVP</CardTitle>

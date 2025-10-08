@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import BulkImportComponent from '@/components/admin/BulkImportComponent'
 
 export const metadata: Metadata = {
@@ -28,8 +29,11 @@ export default async function BulkImportPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <BulkImportComponent />
-    </div>
+    <AdminLayout>
+      <div className="p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Bulk Import</h1>
+        <BulkImportComponent />
+      </div>
+    </AdminLayout>
   )
 }

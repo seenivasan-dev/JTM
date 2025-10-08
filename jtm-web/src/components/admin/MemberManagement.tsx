@@ -14,7 +14,7 @@ import {
   Filter, 
   UserCheck, 
   UserX, 
-  Edit, 
+  Eye, 
   Trash2, 
   Mail, 
   Phone, 
@@ -25,6 +25,7 @@ import {
   MoreHorizontal
 } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Checkbox } from '@/components/ui/checkbox'
 
 interface Member {
   id: string
@@ -78,6 +79,24 @@ export default function MemberManagement({
   const [isLoading, setIsLoading] = useState(false)
   const [showBulkDialog, setShowBulkDialog] = useState(false)
   const [bulkAction, setBulkAction] = useState<'activate' | 'deactivate' | 'delete'>('activate')
+  const [searchValue, setSearchValue] = useState(filters.search)
+  const [statusFilter, setStatusFilter] = useState(filters.status)
+  const [membershipTypeFilter, setMembershipTypeFilter] = useState(filters.membershipType)
+
+  // Debounced search functionality
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
+
+  const debouncedSearch = useCallback((value: string) => {
+    if (searchTimeout) {
+      clearTimeout(searchTimeout)
+    }
+    
+    const timeout = setTimeout(() => {
+      updateFilters({ search: value })
+    }, 500) // 500ms delay
+    
+    setSearchTimeout(timeout)
+  }, [searchTimeout])
 
   // Update URL with new filters
   const updateFilters = useCallback((newFilters: Partial<Filters>) => {
@@ -119,24 +138,48 @@ export default function MemberManagement({
   }
 
   // Handle individual member actions
-  const handleMemberAction = async (memberId: string, action: 'activate' | 'deactivate') => {
+  const handleMemberAction = async (memberId: string, action: 'activate' | 'deactivate' | 'delete' | 'view') => {
+    if (action === 'view') {
+      // Navigate to member detail view
+      router.push(`/admin/members/${memberId}`)
+      return
+    }
+
+    if (action === 'delete') {
+      if (!confirm('Are you sure you want to delete this member? This action cannot be undone.')) {
+        return
+      }
+    }
+
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/users/${memberId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isActive: action === 'activate' }),
-      })
+      if (action === 'delete') {
+        const response = await fetch(`/api/users/${memberId}`, {
+          method: 'DELETE',
+        })
 
-      if (response.ok) {
-        // Update member in local state
-        setMembers(prev => 
-          prev.map(member => 
-            member.id === memberId 
-              ? { ...member, isActive: action === 'activate' }
-              : member
+        if (response.ok) {
+          // Remove member from local state
+          setMembers(prev => prev.filter(member => member.id !== memberId))
+          setSelectedMembers(prev => prev.filter(id => id !== memberId))
+        }
+      } else {
+        const response = await fetch(`/api/users/${memberId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isActive: action === 'activate' }),
+        })
+
+        if (response.ok) {
+          // Update member in local state
+          setMembers(prev => 
+            prev.map(member => 
+              member.id === memberId 
+                ? { ...member, isActive: action === 'activate' }
+                : member
+            )
           )
-        )
+        }
       }
     } catch (error) {
       console.error('Error updating member:', error)
@@ -212,15 +255,21 @@ export default function MemberManagement({
                 <Input
                   placeholder="Search by name or email..."
                   className="pl-10"
-                  defaultValue={filters.search}
-                  onChange={(e) => updateFilters({ search: e.target.value })}
+                  value={searchValue}
+                  onChange={(e) => {
+                    setSearchValue(e.target.value)
+                    debouncedSearch(e.target.value)
+                  }}
                 />
               </div>
             </div>
             
             <Select 
-              defaultValue={filters.status} 
-              onValueChange={(value) => updateFilters({ status: value })}
+              value={statusFilter} 
+              onValueChange={(value) => {
+                setStatusFilter(value)
+                updateFilters({ status: value })
+              }}
             >
               <SelectTrigger className="w-[150px]">
                 <SelectValue placeholder="Status" />
@@ -233,8 +282,11 @@ export default function MemberManagement({
             </Select>
 
             <Select 
-              defaultValue={filters.membershipType} 
-              onValueChange={(value) => updateFilters({ membershipType: value })}
+              value={membershipTypeFilter} 
+              onValueChange={(value) => {
+                setMembershipTypeFilter(value)
+                updateFilters({ membershipType: value })
+              }}
             >
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Membership Type" />
@@ -386,7 +438,7 @@ interface MemberCardProps {
   member: Member
   isSelected: boolean
   onSelect: () => void
-  onAction: (memberId: string, action: 'activate' | 'deactivate') => void
+  onAction: (memberId: string, action: 'activate' | 'deactivate' | 'delete' | 'view') => void
   isLoading: boolean
 }
 
@@ -469,15 +521,18 @@ function MemberCard({ member, isSelected, onSelect, onAction, isLoading }: Membe
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>
-                <Edit className="h-4 w-4 mr-2" />
-                Edit Details
+              <DropdownMenuItem onClick={() => onAction(member.id, 'view')}>
+                <Eye className="h-4 w-4 mr-2" />
+                View Details
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Mail className="h-4 w-4 mr-2" />
                 Send Email
               </DropdownMenuItem>
-              <DropdownMenuItem className="text-red-600">
+              <DropdownMenuItem 
+                className="text-red-600"
+                onClick={() => onAction(member.id, 'delete')}
+              >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete Member
               </DropdownMenuItem>

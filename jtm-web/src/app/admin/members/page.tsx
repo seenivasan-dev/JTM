@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import MemberManagement from '@/components/admin/MemberManagement'
 
 interface SearchParams {
@@ -112,18 +113,20 @@ export default async function AdminMembersPage({
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Member Management</h1>
-      </div>
+    <AdminLayout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Member Management</h1>
+        </div>
 
-      <Suspense fallback={<div>Loading members...</div>}>
-        <MemberManagement 
-          initialMembers={members}
-          pagination={pagination}
-          filters={{ search, status, membershipType }}
-        />
-      </Suspense>
-    </div>
+        <Suspense fallback={<div>Loading members...</div>}>
+          <MemberManagement 
+            initialMembers={members}
+            pagination={pagination}
+            filters={{ search, status, membershipType }}
+          />
+        </Suspense>
+      </div>
+    </AdminLayout>
   )
 }

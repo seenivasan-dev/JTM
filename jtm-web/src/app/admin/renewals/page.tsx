@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import RenewalManagement from '@/components/admin/RenewalManagement'
 
 interface SearchParams {
@@ -96,18 +97,20 @@ export default async function AdminRenewalsPage({
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Renewal Management</h1>
-      </div>
+    <AdminLayout>
+      <div className="p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h1 className="text-3xl font-bold">Renewal Management</h1>
+        </div>
 
-      <Suspense fallback={<div>Loading renewals...</div>}>
-        <RenewalManagement 
-          initialRenewals={renewals}
-          pagination={pagination}
-          currentStatus={status}
-        />
-      </Suspense>
-    </div>
+        <Suspense fallback={<div>Loading renewals...</div>}>
+          <RenewalManagement 
+            initialRenewals={renewals}
+            pagination={pagination}
+            currentStatus={status}
+          />
+        </Suspense>
+      </div>
+    </AdminLayout>
   )
 }

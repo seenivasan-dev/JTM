@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 
 export default async function AdminPage() {
@@ -22,8 +23,18 @@ export default async function AdminPage() {
     redirect('/dashboard') // Redirect to member dashboard
   }
 
-  // Get dashboard stats
-  const [totalMembers, activeMembers, pendingRenewals, recentRegistrations] = await Promise.all([
+  // Get comprehensive dashboard stats including events and RSVPs
+  const [
+    totalMembers, 
+    activeMembers, 
+    pendingRenewals, 
+    recentRegistrations,
+    totalEvents,
+    upcomingEvents,
+    totalRSVPs,
+    pendingRSVPs,
+    checkedInRSVPs
+  ] = await Promise.all([
     prisma.user.count(),
     prisma.user.count({ where: { isActive: true } }),
     prisma.membershipRenewal.count({ where: { status: 'PENDING' } }),
@@ -34,6 +45,17 @@ export default async function AdminPage() {
         },
       },
     }),
+    prisma.event.count(),
+    prisma.event.count({
+      where: {
+        date: {
+          gte: new Date(), // Future events
+        },
+      },
+    }),
+    prisma.rSVPResponse.count(),
+    prisma.rSVPResponse.count({ where: { paymentConfirmed: false } }),
+    prisma.rSVPResponse.count({ where: { checkedIn: true } }),
   ])
 
   const stats = {
@@ -42,18 +64,21 @@ export default async function AdminPage() {
     inactiveMembers: totalMembers - activeMembers,
     pendingRenewals,
     recentRegistrations,
+    totalEvents,
+    upcomingEvents,
+    totalRSVPs,
+    pendingRSVPs,
+    checkedInRSVPs,
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Admin Dashboard</h1>
-        <p className="text-gray-600">Welcome back, {admin.firstName}!</p>
+    <AdminLayout>
+      <div className="p-6">
+        <h1 className="text-3xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AdminDashboard initialStats={stats} />
+        </Suspense>
       </div>
-
-      <Suspense fallback={<div>Loading dashboard...</div>}>
-        <AdminDashboard initialStats={stats} />
-      </Suspense>
-    </div>
+    </AdminLayout>
   )
 }
