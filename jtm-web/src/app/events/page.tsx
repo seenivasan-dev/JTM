@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import EventLayout from '@/components/layout/EventLayout'
 import EventsClient from '@/components/events/EventsClient'
 
 export default async function EventsPage() {
@@ -64,27 +65,25 @@ export default async function EventsPage() {
     rsvpRequired: event.rsvpRequired,
     rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
     maxParticipants: event.maxParticipants,
-    rsvpForm: event.rsvpForm,
+    rsvpForm: event.rsvpForm as { fields: { id: string; type: string; label: string; required: boolean; options?: string[] }[] } | null,
     currentAttendees: event._count.rsvpResponses,
     createdAt: event.createdAt.toISOString(),
     updatedAt: event.updatedAt.toISOString(),
   }))
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h1 className="text-3xl font-bold">Events</h1>
-          <p className="text-muted-foreground">Discover and join upcoming community events</p>
-        </div>
+    <EventLayout 
+      userRole={admin ? 'admin' : 'member'}
+      title="Community Events"
+    >
+      <div className="px-4 sm:px-6 lg:px-8">
+        <Suspense fallback={<div>Loading events...</div>}>
+          <EventsClient 
+            initialEvents={serializedEvents} 
+            user={{ ...userData, isAdmin: !!admin }}
+          />
+        </Suspense>
       </div>
-
-      <Suspense fallback={<div>Loading events...</div>}>
-        <EventsClient 
-          initialEvents={serializedEvents} 
-          user={{ ...userData, isAdmin: !!admin }}
-        />
-      </Suspense>
-    </div>
+    </EventLayout>
   )
 }

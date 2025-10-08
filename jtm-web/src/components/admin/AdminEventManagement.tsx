@@ -28,6 +28,8 @@ interface RSVPResponse {
   paymentConfirmed: boolean
   checkedIn: boolean
   checkedInAt: string | null
+  createdAt?: string
+  updatedAt?: string
   user: {
     id: string
     firstName: string
@@ -123,12 +125,12 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
 
   const exportEventData = (event: Event) => {
     const csvData = [
-      ['Name', 'Email', 'Membership Type', 'RSVP Date', 'Checked In', 'Food Preference', 'Family Members', 'Payment Status'],
+      ['Name', 'Email', 'Membership Type', 'Check-in Date', 'Checked In', 'Food Preference', 'Family Members', 'Payment Status'],
       ...event.rsvpResponses.map(rsvp => [
         `${rsvp.user.firstName} ${rsvp.user.lastName}`,
         rsvp.user.email,
         rsvp.user.membershipType,
-        format(new Date(rsvp.checkedInAt || ''), 'MMM dd, yyyy'),
+        rsvp.checkedInAt ? format(new Date(rsvp.checkedInAt), 'MMM dd, yyyy') : 'Not checked in',
         rsvp.checkedIn ? 'Yes' : 'No',
         getStringValue((rsvp.responses as Record<string, unknown>)?.foodPreference),
         rsvp.user.familyMembers.length.toString(),
@@ -413,12 +415,12 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
                             </div>
                           )}
                           
-                          {(rsvp.responses as Record<string, unknown>)?.specialRequests && typeof (rsvp.responses as Record<string, unknown>).specialRequests === 'string' && (
+                          {(rsvp.responses as Record<string, unknown>)?.specialRequests && typeof (rsvp.responses as Record<string, unknown>).specialRequests === 'string' ? (
                             <div className="flex gap-4">
                               <span className="text-muted-foreground">Notes:</span>
-                              <span>{getStringValue((rsvp.responses as Record<string, unknown>).specialRequests)}</span>
+                              <span>{String(getStringValue((rsvp.responses as Record<string, unknown>).specialRequests))}</span>
                             </div>
-                          )}
+                          ) : null}
                         </div>
                       </div>
                     ))}
