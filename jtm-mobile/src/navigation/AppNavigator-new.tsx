@@ -4,30 +4,31 @@ import { NavigationContainer } from '@react-navigation/native'
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs'
 import { Text, View } from 'react-native'
+import { Ionicons } from '@expo/vector-icons'
+
+// Import UserContext
+import { useUser } from '../context/UserContext'
 
 // Import screens
-import LoginScreen from '../screens/auth/LoginScreen'
-import RegisterScreen from '../screens/auth/RegisterScreen'
-import MemberDashboardScreen from '../screens/member/MemberDashboardScreen'
-import ProfileScreen from '../screens/member/ProfileScreen'
-import EventsScreen from '../screens/member/EventsScreen'
-import EventDetailScreen from '../screens/member/EventDetailScreen'
+import ModernLoginScreen from '../screens/auth/ModernLoginScreen'
+import ModernRegistrationScreen from '../screens/auth/ModernRegistrationScreen'
+import ModernMemberDashboard from '../screens/member/ModernMemberDashboard'
+import ModernProfileScreen from '../screens/member/ModernProfileScreen'
+import ModernEventsScreen from '../screens/member/ModernEventsScreen'
+import ModernEventDetailsScreen from '../screens/member/ModernEventDetailsScreen'
+import NotificationsScreen from '../screens/member/NotificationsScreen'
 import ChangePasswordScreen from '../screens/member/ChangePasswordScreen'
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen'
-import MemberManagementScreen from '../screens/admin/MemberManagementScreen'
 import CreateEventScreen from '../screens/admin/CreateEventScreen'
-import QRScannerScreen from '../screens/admin/QRScannerScreen'
-import AnalyticsScreen from '../screens/admin/AnalyticsScreen'
 
 // Type definitions for navigation
 export type RootStackParamList = {
   Auth: undefined
   MainTabs: undefined
-  ChangePassword: { userId: string }
-  EventDetail: { event: any }
-  CreateEvent: undefined
-  QRScanner: { eventId?: string }
   AdminTabs: undefined
+  ChangePassword: { userId: string }
+  EventDetail: { eventId: string }
+  CreateEvent: undefined
 }
 
 export type AuthStackParamList = {
@@ -38,6 +39,7 @@ export type AuthStackParamList = {
 export type MemberTabParamList = {
   Dashboard: undefined
   Events: undefined
+  Notifications: undefined
   Profile: undefined
 }
 
@@ -53,25 +55,36 @@ const AuthStack = createNativeStackNavigator<AuthStackParamList>()
 const MemberTab = createBottomTabNavigator<MemberTabParamList>()
 const AdminTab = createBottomTabNavigator<AdminTabParamList>()
 
-// Simple icon component (replace with proper icons later)
-const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => (
-  <View style={{
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: focused ? '#3b82f6' : '#9ca3af',
-    justifyContent: 'center',
-    alignItems: 'center'
-  }}>
-    <Text style={{
-      color: 'white',
-      fontSize: 10,
-      fontWeight: 'bold'
+// Modern Tab Icon Component
+const TabIcon = ({ name, focused }: { name: string; focused: boolean }) => {
+  const getIconName = (tabName: string) => {
+    switch (tabName) {
+      case 'Dashboard': return 'home'
+      case 'Events': return 'calendar'
+      case 'Notifications': return 'notifications'
+      case 'Profile': return 'person'
+      case 'Admin': return 'settings'
+      case 'Members': return 'people'
+      case 'Analytics': return 'stats-chart'
+      default: return 'ellipse'
+    }
+  }
+
+  return (
+    <View style={{
+      alignItems: 'center',
+      justifyContent: 'center',
+      width: 28,
+      height: 28,
     }}>
-      {name.substring(0, 2).toUpperCase()}
-    </Text>
-  </View>
-)
+      <Ionicons 
+        name={getIconName(name) as any} 
+        size={24} 
+        color={focused ? '#6366f1' : '#9ca3af'} 
+      />
+    </View>
+  )
+}
 
 // Auth Stack Navigator
 function AuthNavigator() {
@@ -81,8 +94,8 @@ function AuthNavigator() {
         headerShown: false,
       }}
     >
-      <AuthStack.Screen name="Login" component={LoginScreen} />
-      <AuthStack.Screen name="Register" component={RegisterScreen} />
+      <AuthStack.Screen name="Login" component={ModernLoginScreen} />
+      <AuthStack.Screen name="Register" component={ModernRegistrationScreen} />
     </AuthStack.Navigator>
   )
 }
@@ -92,35 +105,53 @@ function MemberTabNavigator() {
   return (
     <MemberTab.Navigator
       screenOptions={{
-        headerStyle: {
-          backgroundColor: '#3b82f6',
+        headerShown: false,
+        tabBarStyle: {
+          backgroundColor: 'white',
+          borderTopWidth: 0,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 8,
+          height: 60,
+          paddingBottom: 8,
+          paddingTop: 8,
         },
-        headerTintColor: '#fff',
-        headerTitleStyle: {
-          fontWeight: 'bold',
-        },
-        tabBarActiveTintColor: '#3b82f6',
+        tabBarActiveTintColor: '#6366f1',
         tabBarInactiveTintColor: '#9ca3af',
+        tabBarLabelStyle: {
+          fontSize: 12,
+          fontWeight: '600',
+          marginTop: 4,
+        },
       }}
     >
       <MemberTab.Screen 
         name="Dashboard" 
-        component={MemberDashboardScreen}
+        component={ModernMemberDashboard}
         options={{
-          title: 'JTM Community',
           tabBarIcon: ({ focused }) => <TabIcon name="Dashboard" focused={focused} />,
+          tabBarLabel: 'Home',
         }}
       />
       <MemberTab.Screen 
         name="Events" 
-        component={EventsScreen}
+        component={ModernEventsScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name="Events" focused={focused} />,
         }}
       />
       <MemberTab.Screen 
+        name="Notifications" 
+        component={NotificationsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon name="Notifications" focused={focused} />,
+        }}
+      />
+      <MemberTab.Screen 
         name="Profile" 
-        component={ProfileScreen}
+        component={ModernProfileScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name="Profile" focused={focused} />,
         }}
@@ -156,7 +187,7 @@ function AdminTabNavigator() {
       />
       <AdminTab.Screen 
         name="Members" 
-        component={MemberManagementScreen}
+        component={ModernMemberDashboard}
         options={{
           title: 'Member Management',
           tabBarIcon: ({ focused }) => <TabIcon name="Members" focused={focused} />,
@@ -164,14 +195,14 @@ function AdminTabNavigator() {
       />
       <AdminTab.Screen 
         name="Events" 
-        component={EventsScreen}
+        component={ModernEventsScreen}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name="Events" focused={focused} />,
         }}
       />
       <AdminTab.Screen 
         name="Analytics" 
-        component={AnalyticsScreen}
+        component={ModernMemberDashboard}
         options={{
           tabBarIcon: ({ focused }) => <TabIcon name="Analytics" focused={focused} />,
         }}
@@ -180,52 +211,55 @@ function AdminTabNavigator() {
   )
 }
 
-// Main App Navigator
+// Main App Navigator with User Context Logic
 export default function AppNavigator() {
+  const { user } = useUser()
+
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName="Auth"
         screenOptions={{
           headerShown: false,
         }}
       >
-        <Stack.Screen name="Auth" component={AuthNavigator} />
-        <Stack.Screen 
-          name="ChangePassword" 
-          component={ChangePasswordScreen}
-          options={{
-            headerShown: true,
-            title: 'Change Password',
-            headerStyle: {
-              backgroundColor: '#3b82f6',
-            },
-            headerTintColor: '#fff',
-          }}
-        />
-        <Stack.Screen 
-          name="EventDetail" 
-          component={EventDetailScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen 
-          name="CreateEvent" 
-          component={CreateEventScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen 
-          name="QRScanner" 
-          component={QRScannerScreen}
-          options={{
-            headerShown: false,
-          }}
-        />
-        <Stack.Screen name="MainTabs" component={MemberTabNavigator} />
-        <Stack.Screen name="AdminTabs" component={AdminTabNavigator} />
+        {user ? (
+          // User is logged in - show main app screens
+          <>
+            <Stack.Screen 
+              name={user.isAdmin ? "AdminTabs" : "MainTabs"} 
+              component={user.isAdmin ? AdminTabNavigator : MemberTabNavigator} 
+            />
+            <Stack.Screen 
+              name="ChangePassword" 
+              component={ChangePasswordScreen}
+              options={{
+                headerShown: true,
+                title: 'Change Password',
+                headerStyle: {
+                  backgroundColor: '#6366f1',
+                },
+                headerTintColor: '#fff',
+              }}
+            />
+            <Stack.Screen 
+              name="EventDetail" 
+              component={ModernEventDetailsScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+            <Stack.Screen 
+              name="CreateEvent" 
+              component={CreateEventScreen}
+              options={{
+                headerShown: false,
+              }}
+            />
+          </>
+        ) : (
+          // User is not logged in - show auth screens
+          <Stack.Screen name="Auth" component={AuthNavigator} />
+        )}
       </Stack.Navigator>
     </NavigationContainer>
   )

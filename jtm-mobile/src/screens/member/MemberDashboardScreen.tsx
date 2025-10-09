@@ -8,10 +8,52 @@ import {
   TouchableOpacity,
   Alert,
   RefreshControl,
+  ActivityIndicator,
+  Dimensions,
+  StatusBar,
+  Platform,
 } from 'react-native'
+import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { apiConfig, handleApiResponse, getHeaders } from '../../api/config'
 import { useUser } from '../../context/UserContext'
+
+const { width, height } = Dimensions.get('window')
+
+// Modern Event Card Component
+const ModernEventCard = ({ event, onPress }: { event: any; onPress: () => void }) => {
+  const eventDate = new Date(event.date)
+  const isUpcoming = eventDate > new Date()
+  
+  return (
+    <TouchableOpacity style={styles.modernEventCard} onPress={onPress}>
+      <LinearGradient
+        colors={isUpcoming ? ['#ffffff', '#f8fafc'] : ['#f1f5f9', '#e2e8f0']}
+        style={styles.eventCardGradient}
+      >
+        <View style={styles.eventCardHeader}>
+          <View style={[
+            styles.eventDateBadge, 
+            { backgroundColor: isUpcoming ? '#6366f1' : '#64748b' }
+          ]}>
+            <Text style={styles.eventDateDay}>{eventDate.getDate()}</Text>
+            <Text style={styles.eventDateMonth}>
+              {eventDate.toLocaleDateString('en', { month: 'short' }).toUpperCase()}
+            </Text>
+          </View>
+          <View style={styles.eventInfo}>
+            <Text style={styles.eventTitle} numberOfLines={2}>{event.title}</Text>
+            <View style={styles.eventMeta}>
+              <Ionicons name="location-outline" size={14} color="#64748b" />
+              <Text style={styles.eventLocation} numberOfLines={1}>{event.location}</Text>
+            </View>
+          </View>
+          <Ionicons name="chevron-forward" size={20} color="#94a3b8" />
+        </View>
+      </LinearGradient>
+    </TouchableOpacity>
+  )
+}
 
 interface MemberDashboardProps {
   navigation: any
@@ -215,7 +257,7 @@ export default function MemberDashboardScreen({ navigation }: MemberDashboardPro
               <EventCard 
                 key={event.id} 
                 event={event} 
-                onPress={() => navigation.navigate('EventDetails', { eventId: event.id })}
+                onPress={() => navigation.navigate('EventDetail', { event })}
               />
             ))}
           </View>
