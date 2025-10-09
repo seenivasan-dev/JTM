@@ -48,15 +48,60 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
     // Simulate scanning for now
     setTimeout(() => {
       setScanning(false)
-      setScanResult({
-        success: true,
-        message: 'QR code scanned successfully!',
-        attendee: {
-          name: 'John Doe',
-          email: 'john@example.com'
-        }
-      })
+      // Simulate successful scan - in real implementation, this would come from QR scanner
+      const mockQRData = "JTM-EVENT:12345:67890:1234567890"
+      handleQRScan(mockQRData)
     }, 3000)
+  }
+
+  const handleQRScan = async (qrData: string) => {
+    try {
+      // Parse QR code data (format: JTM-EVENT:eventId:userId:timestamp)
+      const parts = qrData.split(':')
+      if (parts.length !== 4 || parts[0] !== 'JTM-EVENT') {
+        setScanResult({
+          success: false,
+          message: 'Invalid QR code format'
+        })
+        return
+      }
+
+      const [, eventId, userId] = parts
+
+      const response = await fetch('/api/events/checkin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId,
+          qrCode: qrData,
+        }),
+      })
+
+      const result = await response.json()
+      
+      if (result.success) {
+        setScanResult({
+          success: true,
+          message: 'Check-in successful!',
+          attendee: {
+            name: result.attendee?.name || 'Unknown',
+            email: result.attendee?.email || 'unknown@email.com'
+          }
+        })
+      } else {
+        setScanResult({
+          success: false,
+          message: result.error || 'Check-in failed'
+        })
+      }
+    } catch (error) {
+      setScanResult({
+        success: false,
+        message: 'Error processing QR code'
+      })
+    }
   }
 
   const handleManualCheckIn = async (e: React.FormEvent) => {
@@ -100,119 +145,81 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
             Back to Events
           </Link>
         </Button>
+        
+        {event && (
+          <div className="text-right">
+            <h1 className="text-xl font-semibold">{event.title}</h1>
+            <p className="text-sm text-muted-foreground">
+              {new Date(event.date).toLocaleDateString()} • {event.location}
+            </p>
+          </div>
+        )}
       </div>
 
-      {/* Event Info */}
-      {event && (
-        <Card>
-          <CardHeader>
-            <CardTitle>Event Check-In</CardTitle>
-            <CardDescription>
-              Scanning for: {event.title}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-2 text-sm">
-              <div><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</div>
-              <div><strong>Location:</strong> {event.location}</div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Scanner Interface */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        {/* QR Scanner */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <QrCode className="h-5 w-5" />
-              QR Code Scanner
-            </CardTitle>
-            <CardDescription>
-              Scan attendee QR codes for automatic check-in
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Scanner Area */}
-            <div className="relative">
-              <div className="aspect-square bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center">
-                {scanning ? (
-                  <div className="text-center">
-                    <div className="animate-pulse">
-                      <Scan className="h-16 w-16 mx-auto text-blue-500 mb-4" />
-                    </div>
-                    <p className="text-sm text-gray-600">Scanning for QR code...</p>
-                    <p className="text-xs text-gray-400 mt-2">Position QR code in view</p>
-                  </div>
-                ) : (
-                  <div className="text-center">
-                    <QrCode className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                    <p className="text-sm text-gray-600">Click to start scanning</p>
-                  </div>
-                )}
+      {/* QR Scanner */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <QrCode className="h-5 w-5" />
+            QR Code Scanner
+          </CardTitle>
+          <CardDescription>
+            Scan QR codes to check in attendees for the event
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+            {scanning ? (
+              <div className="text-center">
+                <Scan className="h-12 w-12 mx-auto mb-4 animate-pulse text-blue-500" />
+                <p className="text-lg font-medium">Scanning...</p>
+                <p className="text-sm text-muted-foreground">Point camera at QR code</p>
               </div>
-              
-              {/* Scanner Corners */}
-              <div className="absolute top-2 left-2 w-6 h-6 border-l-2 border-t-2 border-blue-500"></div>
-              <div className="absolute top-2 right-2 w-6 h-6 border-r-2 border-t-2 border-blue-500"></div>
-              <div className="absolute bottom-2 left-2 w-6 h-6 border-l-2 border-b-2 border-blue-500"></div>
-              <div className="absolute bottom-2 right-2 w-6 h-6 border-r-2 border-b-2 border-blue-500"></div>
-            </div>
-
-            <Button 
-              onClick={handleStartScan} 
-              disabled={scanning}
-              className="w-full"
-            >
-              {scanning ? (
-                <>
-                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent mr-2" />
-                  Scanning...
-                </>
-              ) : (
-                <>
+            ) : (
+              <div className="text-center">
+                <QrCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                <p className="text-lg font-medium mb-2">Ready to Scan</p>
+                <Button onClick={handleStartScan} size="lg">
                   <Scan className="h-4 w-4 mr-2" />
-                  Start QR Scan
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
-
-        {/* Manual Check-In */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <UserCheck className="h-5 w-5" />
-              Manual Check-In
-            </CardTitle>
-            <CardDescription>
-              Manually check in attendees using their email address
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleManualCheckIn} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Attendee Email</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={manualEmail}
-                  onChange={(e) => setManualEmail(e.target.value)}
-                  placeholder="Enter attendee email address"
-                  required
-                />
+                  Start Scanning
+                </Button>
               </div>
-              
-              <Button type="submit" className="w-full">
-                <UserCheck className="h-4 w-4 mr-2" />
-                Check In Attendee
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Manual Check-In */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UserCheck className="h-5 w-5" />
+            Manual Check-In
+          </CardTitle>
+          <CardDescription>
+            Manually check in attendees by email address
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleManualCheckIn} className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email Address</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="Enter attendee email"
+                value={manualEmail}
+                onChange={(e) => setManualEmail(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full">
+              <Users className="h-4 w-4 mr-2" />
+              Check In Attendee
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
 
       {/* Scan Result */}
       {scanResult && (
@@ -222,12 +229,12 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
           ) : (
             <AlertCircle className="h-4 w-4 text-red-600" />
           )}
-          <AlertDescription className={scanResult.success ? 'text-green-800' : 'text-red-800'}>
+          <AlertDescription>
             <div className="font-medium">{scanResult.message}</div>
             {scanResult.attendee && (
               <div className="mt-2 text-sm">
-                <div><strong>Name:</strong> {scanResult.attendee.name}</div>
-                <div><strong>Email:</strong> {scanResult.attendee.email}</div>
+                <p><strong>Name:</strong> {scanResult.attendee.name}</p>
+                <p><strong>Email:</strong> {scanResult.attendee.email}</p>
               </div>
             )}
           </AlertDescription>
@@ -238,9 +245,12 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
       <Card>
         <CardHeader>
           <CardTitle>Implementation Notes</CardTitle>
+          <CardDescription>
+            Development roadmap for QR scanner functionality
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm">
             <div className="flex items-start gap-2">
               <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
               <div>

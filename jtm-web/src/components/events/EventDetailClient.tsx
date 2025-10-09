@@ -95,6 +95,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
   const [rsvpData, setRsvpData] = useState<Record<string, string | number | boolean>>(
     userRsvp?.responses || {}
   )
+  const [paymentReference, setPaymentReference] = useState('')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -142,6 +143,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           eventId: event.id,
           userEmail: user.email,
           responses: rsvpData,
+          paymentReference: paymentReference.trim() || null,
         }),
       })
 
@@ -179,6 +181,36 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
     } catch (error) {
       console.error('Error deleting event:', error)
       alert('Failed to delete event. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handlePaymentAction = async (rsvpId: string, action: string) => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/rsvp', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          rsvpId,
+          action,
+        }),
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        alert(result.message)
+        router.refresh()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to process payment action')
+      }
+    } catch (error) {
+      console.error('Error processing payment action:', error)
+      alert('Failed to process payment action')
     } finally {
       setLoading(false)
     }
@@ -398,7 +430,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           </Card>
 
           {/* QR Code */}
-          {userRsvp && userRsvp.paymentConfirmed && (
+          {userRsvp && userRsvp.paymentConfirmed && (userRsvp as any).qrCode && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
@@ -407,13 +439,38 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="bg-gray-100 p-8 rounded-lg border-2 border-dashed border-gray-300">
-                  <QrCode className="h-16 w-16 mx-auto text-gray-400 mb-2" />
-                  <p className="text-sm text-gray-500">QR Code will appear here</p>
+                <div className="bg-white p-4 rounded-lg border">
+                  <div className="bg-gray-900 text-white p-3 rounded font-mono text-xs break-all">
+                    {(userRsvp as any).qrCode}
+                  </div>
+                  <p className="text-sm text-gray-500 mt-2">Show this QR code at the event for check-in</p>
                   <p className="text-xs text-gray-400 mt-1">
-                    Show this at the event for check-in
+                    Screenshot or save this code to your phone
                   </p>
                 </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* QR Code Pending */}
+          {userRsvp && !userRsvp.paymentConfirmed && (userRsvp as any).paymentReference && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-orange-500" />
+                  Payment Under Review
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Your payment is being verified. You will receive your QR code via email once approved.
+                    <div className="mt-2 text-sm font-medium">
+                      Payment Reference: {(userRsvp as any).paymentReference}
+                    </div>
+                  </AlertDescription>
+                </Alert>
               </CardContent>
             </Card>
           )}
@@ -464,6 +521,25 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                   </div>
                 ))}
 
+                {/* Payment Reference Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="paymentReference">
+                    Payment Reference Number
+                    <span className="text-red-500 ml-1">*</span>
+                  </Label>
+                  <Input
+                    id="paymentReference"
+                    value={paymentReference}
+                    onChange={(e) => setPaymentReference(e.target.value)}
+                    placeholder="Enter your payment confirmation number"
+                    required
+                    className="w-full"
+                  />
+                  <p className="text-sm text-muted-foreground">
+                    Please provide the payment confirmation number for your registration fee.
+                  </p>
+                </div>
+
                 <Button type="submit" disabled={loading} className="w-full">
                   {loading ? (
                     <div className="flex items-center gap-2">
@@ -501,8 +577,10 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                       {response.checkedIn && (
                         <Badge variant="default">Checked In</Badge>
                       )}
-                      {response.paymentConfirmed && (
+                      {response.paymentConfirmed ? (
                         <Badge variant="secondary">Payment Confirmed</Badge>
+                      ) : (
+                        <Badge variant="outline">Payment Pending</Badge>
                       )}
                     </div>
                   </div>
@@ -512,6 +590,34 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                   <div className="text-xs text-muted-foreground">
                     RSVP'd on {formatDate(response.createdAt)}
                   </div>
+                  
+                  {/* Payment Reference */}
+                  {(response as any).paymentReference && (
+                    <div className="mt-2 text-sm">
+                      <strong>Payment Reference:</strong> {(response as any).paymentReference}
+                    </div>
+                  )}
+
+                  {/* Admin Actions */}
+                  {!response.paymentConfirmed && (response as any).paymentReference && (
+                    <div className="mt-3 flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handlePaymentAction(response.id, 'approve_payment')}
+                        className="bg-green-600 hover:bg-green-700"
+                      >
+                        Approve Payment & Send QR
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handlePaymentAction(response.id, 'reject_payment')}
+                      >
+                        Reject Payment
+                      </Button>
+                    </div>
+                  )}
+
                   {response.responses && Object.keys(response.responses).length > 0 && (
                     <div className="mt-2 text-sm">
                       <strong>Responses:</strong>

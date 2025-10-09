@@ -200,7 +200,7 @@ export default async function EventsPage() {
         },
       },
       orderBy: {
-        date: 'asc',
+        date: 'desc', // Show latest events first
       },
       include: {
         _count: {

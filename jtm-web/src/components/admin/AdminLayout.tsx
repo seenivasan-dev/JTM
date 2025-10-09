@@ -108,13 +108,6 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
       current: pathname.startsWith('/admin/renewals'),
       description: 'Process renewals'
     },
-    {
-      name: 'Renewals',
-      href: '/admin/renewals',
-      icon: RefreshCcw,
-      current: pathname.startsWith('/admin/renewals'),
-      description: 'Process renewals'
-    },
   ]
 
   const handleSignOut = async () => {
