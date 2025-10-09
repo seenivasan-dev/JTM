@@ -353,6 +353,12 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
               {/* Quick Actions */}
               <div className="flex gap-2 pt-2">
                 <Button size="sm" variant="outline" asChild>
+                  <Link href={`/admin/events/${event.id}/rsvp`}>
+                    <Users className="h-4 w-4 mr-2" />
+                    Manage RSVPs
+                  </Link>
+                </Button>
+                <Button size="sm" variant="outline" asChild>
                   <Link href={`/events/scanner?eventId=${event.id}`}>
                     <QrCode className="h-4 w-4 mr-2" />
                     QR Scanner
