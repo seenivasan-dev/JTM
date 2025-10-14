@@ -42,6 +42,8 @@ export async function GET(request: NextRequest) {
       rsvpDeadline: event.rsvpDeadline,
       maxParticipants: event.maxParticipants,
       currentAttendees: event._count.rsvpResponses,
+      flyer: event.flyer,
+      rsvpForm: event.rsvpForm,
       createdAt: event.createdAt
     }))
 

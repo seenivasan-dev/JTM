@@ -73,50 +73,76 @@ const RSVPStatusBadge = ({ status }: { status: string }) => {
 interface EventDetailsScreenProps {
   route: {
     params: {
-      eventId: string
+      eventId?: string
+      event?: any
     }
   }
   navigation: any
 }
 
 export default function ModernEventDetailsScreen({ route, navigation }: EventDetailsScreenProps) {
-  const { eventId } = route.params
+  const { eventId, event: passedEvent } = route.params
   const { user } = useUser()
-  const [event, setEvent] = useState<any>(null)
+  const [event, setEvent] = useState<any>(passedEvent || null)
   const [rsvpStatus, setRsvpStatus] = useState<string>('')
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(!passedEvent) // Don't load if event already passed
   const [rsvpLoading, setRsvpLoading] = useState(false)
 
   useEffect(() => {
-    if (eventId) {
-      fetchEventDetails()
+    console.log('🎬 [ModernEventDetailsScreen] Mounted with params:', { eventId, hasEvent: !!passedEvent })
+    
+    // If event is passed directly, no need to fetch
+    if (passedEvent) {
+      console.log('✅ [ModernEventDetailsScreen] Using passed event:', passedEvent.title)
+      setEvent(passedEvent)
+      setLoading(false)
+      return
     }
-  }, [eventId])
+    
+    // Otherwise, fetch by eventId
+    if (eventId) {
+      console.log('🔄 [ModernEventDetailsScreen] Fetching event by ID:', eventId)
+      fetchEventDetails()
+    } else {
+      console.error('❌ [ModernEventDetailsScreen] No event or eventId provided')
+      setLoading(false)
+    }
+  }, [eventId, passedEvent])
 
   const fetchEventDetails = async () => {
     if (!eventId) {
-      console.error('Event ID is undefined')
+      console.error('❌ [ModernEventDetailsScreen] Event ID is undefined')
       setLoading(false)
       return
     }
     
     try {
       setLoading(true)
+      console.log('📡 [ModernEventDetailsScreen] Fetching from:', `${apiConfig.baseUrl}/api/mobile/events/${eventId}`)
+      
       const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events/${eventId}`, {
-        headers: await getHeaders(),
+        headers: getHeaders(),
       })
+
+      console.log('📡 [ModernEventDetailsScreen] Response status:', response.status)
 
       if (response.ok) {
         const data = await response.json()
+        console.log('✅ [ModernEventDetailsScreen] Event loaded:', data.event?.title)
         setEvent(data.event)
         setRsvpStatus(data.rsvpStatus || '')
       } else {
+        const errorText = await response.text()
+        console.error('❌ [ModernEventDetailsScreen] Failed to fetch:', response.status, errorText)
         Alert.alert('Error', 'Failed to fetch event details')
+        navigation.goBack()
       }
     } catch (error) {
-      console.error('Error fetching event details:', error)
+      console.error('💥 [ModernEventDetailsScreen] Error fetching event details:', error)
       Alert.alert('Error', 'Failed to fetch event details')
+      navigation.goBack()
     } finally {
+      console.log('🏁 [ModernEventDetailsScreen] Loading complete')
       setLoading(false)
     }
   }

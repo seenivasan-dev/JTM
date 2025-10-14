@@ -115,28 +115,60 @@ export default function ModernEventsScreen({ navigation }: EventsScreenProps) {
 
   const loadEvents = async () => {
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events`, {
+      console.log('🔄 [ModernEventsScreen] Loading events from:', `${apiConfig.baseUrl}/api/mobile/events`)
+      
+      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events?includeExpired=true&limit=20`, {
         method: 'GET',
         headers: getHeaders(),
       })
 
+      console.log('📡 [ModernEventsScreen] Response status:', response.status)
+
       if (response.ok) {
-        const data = await handleApiResponse(response)
-        setEvents(data.events || [])
+        const data = await response.json()
+        console.log('📦 [ModernEventsScreen] Raw API response:', JSON.stringify(data, null, 2))
+        
+        const eventsData = data.events || []
+        console.log(`✅ [ModernEventsScreen] Setting ${eventsData.length} events`)
+        
+        setEvents(eventsData)
+        
+        if (eventsData.length === 0) {
+          console.log('⚠️ [ModernEventsScreen] No events returned from API')
+        }
       } else {
-        Alert.alert('Error', 'Failed to load events')
+        const errorText = await response.text()
+        console.error('❌ [ModernEventsScreen] Failed to load events:', response.status, errorText)
+        Alert.alert('Error', `Failed to load events (${response.status})`)
+        setEvents([])
       }
     } catch (error) {
-      console.error('Error loading events:', error)
-      Alert.alert('Error', 'Failed to load events. Please try again.')
+      console.error('💥 [ModernEventsScreen] Error loading events:', error)
+      Alert.alert('Error', 'Failed to load events. Please check your network connection.')
+      setEvents([])
     } finally {
+      console.log('🏁 [ModernEventsScreen] Setting loading to false')
       setLoading(false)
     }
   }
 
   useEffect(() => {
+    console.log('🚀 [ModernEventsScreen] Component mounted, starting to load events')
     loadEvents()
   }, [])
+
+  // Debug: Log events state changes
+  useEffect(() => {
+    console.log('📊 [ModernEventsScreen] Events state updated:', events.length, 'events')
+    if (events.length > 0) {
+      console.log('🎯 [ModernEventsScreen] First event:', JSON.stringify(events[0], null, 2))
+    }
+  }, [events])
+
+  // Debug: Log loading state changes
+  useEffect(() => {
+    console.log('⏳ [ModernEventsScreen] Loading state:', loading)
+  }, [loading])
 
   const onRefresh = async () => {
     setRefreshing(true)
@@ -145,7 +177,8 @@ export default function ModernEventsScreen({ navigation }: EventsScreenProps) {
   }
 
   const handleEventPress = (event: any) => {
-    navigation?.navigate('EventDetail', { eventId: event.id })
+    console.log('🎯 [ModernEventsScreen] Navigating to event detail:', event.id)
+    navigation?.navigate('EventDetail', { event })
   }
 
   const filterEvents = (events: any[], filter: string) => {

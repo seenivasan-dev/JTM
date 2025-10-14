@@ -27,7 +27,7 @@ export type RootStackParamList = {
   MainTabs: undefined
   AdminTabs: undefined
   ChangePassword: { userId: string }
-  EventDetail: { eventId: string }
+  EventDetail: { eventId?: string; event?: any }
   CreateEvent: undefined
 }
 
