@@ -119,7 +119,12 @@ export default async function AdminMembersPage({
           <h1 className="text-3xl font-bold">Member Management</h1>
         </div>
 
-        <Suspense fallback={<div>Loading members...</div>}>
+        <Suspense fallback={
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+            <span className="ml-3 text-lg text-muted-foreground">Loading members...</span>
+          </div>
+        }>
           <MemberManagement 
             initialMembers={members}
             pagination={pagination}

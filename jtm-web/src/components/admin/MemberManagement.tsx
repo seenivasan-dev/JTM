@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -75,6 +75,7 @@ export default function MemberManagement({
   const searchParams = useSearchParams()
   
   const [members, setMembers] = useState(initialMembers)
+  const [currentPagination, setCurrentPagination] = useState(pagination)
   const [selectedMembers, setSelectedMembers] = useState<string[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [showBulkDialog, setShowBulkDialog] = useState(false)
@@ -82,6 +83,17 @@ export default function MemberManagement({
   const [searchValue, setSearchValue] = useState(filters.search)
   const [statusFilter, setStatusFilter] = useState(filters.status)
   const [membershipTypeFilter, setMembershipTypeFilter] = useState(filters.membershipType)
+
+  // Update state when props change (pagination, filters, or new data)
+  useEffect(() => {
+    setMembers(initialMembers)
+    setCurrentPagination(pagination)
+    setSearchValue(filters.search)
+    setStatusFilter(filters.status)
+    setMembershipTypeFilter(filters.membershipType)
+    // Clear selection when data changes
+    setSelectedMembers([])
+  }, [initialMembers, pagination, filters])
 
   // Debounced search functionality
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null)
@@ -98,8 +110,9 @@ export default function MemberManagement({
     setSearchTimeout(timeout)
   }, [searchTimeout])
 
-  // Update URL with new filters
+  // Update URL with new filters - with immediate refresh
   const updateFilters = useCallback((newFilters: Partial<Filters>) => {
+    setIsLoading(true)
     const params = new URLSearchParams(searchParams.toString())
     
     Object.entries(newFilters).forEach(([key, value]) => {
@@ -113,12 +126,19 @@ export default function MemberManagement({
     params.delete('page') // Reset to first page when filtering
     
     router.push(`/admin/members?${params.toString()}`)
+    // Force a refresh to get fresh data immediately
+    router.refresh()
   }, [router, searchParams])
 
   // Get selected members info for smart bulk actions
   const selectedMembersInfo = members.filter(member => selectedMembers.includes(member.id))
   const selectedActiveCount = selectedMembersInfo.filter(member => member.isActive).length
   const selectedInactiveCount = selectedMembersInfo.filter(member => !member.isActive).length
+
+  // Clear loading state when data updates
+  useEffect(() => {
+    setIsLoading(false)
+  }, [members, currentPagination])
 
   // Handle member selection
   const toggleMemberSelection = (memberId: string) => {
@@ -230,12 +250,15 @@ export default function MemberManagement({
     }
   }
 
-  // Pagination handlers
-  const goToPage = (page: number) => {
+  // Pagination handlers - with immediate refresh
+  const goToPage = useCallback((page: number) => {
+    setIsLoading(true)
     const params = new URLSearchParams(searchParams.toString())
     params.set('page', page.toString())
     router.push(`/admin/members?${params.toString()}`)
-  }
+    // Force a refresh to get fresh data immediately
+    router.refresh()
+  }, [router, searchParams])
 
   return (
     <div className="space-y-6">
@@ -361,7 +384,20 @@ export default function MemberManagement({
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {members.map((member) => (
+            {isLoading && (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-muted-foreground">Loading members...</span>
+              </div>
+            )}
+            
+            {!isLoading && members.length === 0 && (
+              <div className="text-center py-8 text-muted-foreground">
+                No members found matching your criteria.
+              </div>
+            )}
+            
+            {!isLoading && members.map((member) => (
               <MemberCard
                 key={member.id}
                 member={member}
@@ -376,31 +412,31 @@ export default function MemberManagement({
           {/* Pagination */}
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-muted-foreground">
-              Showing {((pagination.page - 1) * pagination.limit) + 1} to{' '}
-              {Math.min(pagination.page * pagination.limit, pagination.totalCount)} of{' '}
-              {pagination.totalCount} members
+              Showing {((currentPagination.page - 1) * currentPagination.limit) + 1} to{' '}
+              {Math.min(currentPagination.page * currentPagination.limit, currentPagination.totalCount)} of{' '}
+              {currentPagination.totalCount} members
             </div>
             
             <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => goToPage(pagination.page - 1)}
-                disabled={pagination.page <= 1}
+                onClick={() => goToPage(currentPagination.page - 1)}
+                disabled={currentPagination.page <= 1 || isLoading}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
               </Button>
               
               <span className="text-sm">
-                Page {pagination.page} of {pagination.totalPages}
+                Page {currentPagination.page} of {currentPagination.totalPages}
               </span>
               
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => goToPage(pagination.page + 1)}
-                disabled={pagination.page >= pagination.totalPages}
+                onClick={() => goToPage(currentPagination.page + 1)}
+                disabled={currentPagination.page >= currentPagination.totalPages || isLoading}
               >
                 Next
                 <ChevronRight className="h-4 w-4" />
