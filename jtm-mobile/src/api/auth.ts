@@ -32,7 +32,7 @@ export interface PasswordChangeRequest {
 
 export const authApi = {
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    const response = await fetch(`${apiConfig.baseUrl}/auth/login`, {
+    const response = await fetch(`${apiConfig.baseUrl}/api/auth/login`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(credentials),
@@ -42,7 +42,7 @@ export const authApi = {
   },
   
   async changePassword(data: PasswordChangeRequest): Promise<{ success: boolean; message?: string }> {
-    const response = await fetch(`${apiConfig.baseUrl}/auth/change-password`, {
+    const response = await fetch(`${apiConfig.baseUrl}/api/auth/change-password`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(data),
@@ -52,7 +52,7 @@ export const authApi = {
   },
   
   async register(userData: any): Promise<{ success: boolean; message?: string }> {
-    const response = await fetch(`${apiConfig.baseUrl}/auth/register`, {
+    const response = await fetch(`${apiConfig.baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: getHeaders(),
       body: JSON.stringify(userData),

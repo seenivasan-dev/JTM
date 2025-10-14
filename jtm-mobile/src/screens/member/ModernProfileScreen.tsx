@@ -42,33 +42,6 @@ const InfoCard = ({ icon, title, value, color = '#6366f1' }: {
   </View>
 )
 
-// QR Code Card Component
-const QRCodeCard = ({ qrCode }: { qrCode?: string }) => (
-  <View style={styles.qrCard}>
-    <LinearGradient
-      colors={['#6366f1', '#8b5cf6']}
-      style={styles.qrCardGradient}
-    >
-      <View style={styles.qrHeader}>
-        <Ionicons name="qr-code" size={24} color="white" />
-        <Text style={styles.qrTitle}>My QR Code</Text>
-      </View>
-      <View style={styles.qrCodeContainer}>
-        {qrCode ? (
-          <View style={styles.qrCodePlaceholder}>
-            <Ionicons name="qr-code-outline" size={80} color="white" />
-          </View>
-        ) : (
-          <View style={styles.qrCodeEmpty}>
-            <Ionicons name="qr-code-outline" size={40} color="rgba(255,255,255,0.7)" />
-            <Text style={styles.qrEmptyText}>No QR code available</Text>
-          </View>
-        )}
-      </View>
-    </LinearGradient>
-  </View>
-)
-
 interface ProfileScreenProps {
   navigation: any
 }
@@ -245,12 +218,6 @@ export default function ModernProfileScreen({ navigation }: ProfileScreenProps) 
             </View>
           </View>
         )}
-
-        {/* QR Code Section */}
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>My QR Code</Text>
-          <QRCodeCard qrCode={(user as any).qrCode} />
-        </View>
 
         {/* Quick Actions */}
         <View style={styles.section}>
@@ -453,52 +420,6 @@ const styles = StyleSheet.create({
   familyAge: {
     fontSize: 12,
     color: '#64748b',
-  },
-
-  // QR Code Card
-  qrCard: {
-    borderRadius: 16,
-    overflow: 'hidden',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-  },
-  qrCardGradient: {
-    padding: 20,
-    alignItems: 'center',
-  },
-  qrHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-    gap: 8,
-  },
-  qrTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  qrCodeContainer: {
-    alignItems: 'center',
-  },
-  qrCodePlaceholder: {
-    width: 120,
-    height: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 16,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  qrCodeEmpty: {
-    alignItems: 'center',
-    paddingVertical: 20,
-  },
-  qrEmptyText: {
-    color: 'rgba(255, 255, 255, 0.7)',
-    fontSize: 14,
-    marginTop: 8,
   },
 
   // Action Buttons

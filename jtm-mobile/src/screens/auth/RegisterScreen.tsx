@@ -169,7 +169,7 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
 
     setLoading(true)
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/auth/register`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/auth/register`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify(registrationData),

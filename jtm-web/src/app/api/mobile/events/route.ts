@@ -5,17 +5,21 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)
-    const limit = parseInt(searchParams.get('limit') || '3')
+    const limit = parseInt(searchParams.get('limit') || '10')
+    const includeExpired = searchParams.get('includeExpired') === 'true'
+
+    // Build where clause based on includeExpired parameter
+    const whereClause = includeExpired ? {} : {
+      date: {
+        gte: new Date(), // Only future events
+      },
+    }
 
     // Fetch real events from database
     const events = await prisma.event.findMany({
-      where: {
-        date: {
-          gte: new Date(), // Only future events
-        },
-      },
+      where: whereClause,
       orderBy: {
-        date: 'asc',
+        date: 'desc', // Show most recent first (including expired)
       },
       take: limit,
       include: {

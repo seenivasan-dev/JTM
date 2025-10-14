@@ -115,7 +115,7 @@ export default function ModernEventsScreen({ navigation }: EventsScreenProps) {
 
   const loadEvents = async () => {
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/mobile/events`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events`, {
         method: 'GET',
         headers: getHeaders(),
       })

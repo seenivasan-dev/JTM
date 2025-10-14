@@ -88,10 +88,18 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
   const [rsvpLoading, setRsvpLoading] = useState(false)
 
   useEffect(() => {
-    fetchEventDetails()
+    if (eventId) {
+      fetchEventDetails()
+    }
   }, [eventId])
 
   const fetchEventDetails = async () => {
+    if (!eventId) {
+      console.error('Event ID is undefined')
+      setLoading(false)
+      return
+    }
+    
     try {
       setLoading(true)
       const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events/${eventId}`, {

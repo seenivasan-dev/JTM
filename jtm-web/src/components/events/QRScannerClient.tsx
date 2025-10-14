@@ -1,6 +1,8 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useRef, useCallback, useEffect } from 'react'
+import Webcam from 'react-webcam'
+import jsQR from 'jsqr'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -13,7 +15,9 @@ import {
   Users,
   ArrowLeft,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Camera,
+  CameraOff
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -31,6 +35,9 @@ interface QRScannerClientProps {
 export default function QRScannerClient({ event }: QRScannerClientProps) {
   const [scanning, setScanning] = useState(false)
   const [manualEmail, setManualEmail] = useState('')
+  const [cameraError, setCameraError] = useState<string | null>(null)
+  const [hasPermission, setHasPermission] = useState<boolean | null>(null)
+  const webcamRef = useRef<Webcam>(null)
   const [scanResult, setScanResult] = useState<{
     success: boolean
     message: string
@@ -38,20 +45,68 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
       name: string
       email: string
     }
+    alreadyCheckedIn?: boolean
   } | null>(null)
+
+  // Check camera permissions
+  useEffect(() => {
+    const checkCameraPermission = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: true })
+        stream.getTracks().forEach(track => track.stop())
+        setHasPermission(true)
+      } catch (error) {
+        setHasPermission(false)
+        setCameraError('Camera permission denied or camera not available')
+      }
+    }
+
+    if (scanning) {
+      checkCameraPermission()
+    }
+  }, [scanning])
+
+  // QR Code scanning logic
+  const scanQRCode = useCallback(() => {
+    if (!webcamRef.current) return
+
+    const video = webcamRef.current.video
+    if (!video) return
+
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    if (!context) return
+
+    canvas.width = video.videoWidth
+    canvas.height = video.videoHeight
+    context.drawImage(video, 0, 0, canvas.width, canvas.height)
+
+    const imageData = context.getImageData(0, 0, canvas.width, canvas.height)
+    const code = jsQR(imageData.data, imageData.width, imageData.height)
+
+    if (code) {
+      handleQRScan(code.data)
+      setScanning(false)
+    }
+  }, [])
+
+  // Continuously scan for QR codes when camera is active
+  useEffect(() => {
+    if (!scanning || !hasPermission) return
+
+    const interval = setInterval(scanQRCode, 500)
+    return () => clearInterval(interval)
+  }, [scanning, hasPermission, scanQRCode])
 
   const handleStartScan = () => {
     setScanning(true)
-    // TODO: Implement actual QR code scanning
-    // This would use a camera library like react-webcam or similar
-    
-    // Simulate scanning for now
-    setTimeout(() => {
-      setScanning(false)
-      // Simulate successful scan - in real implementation, this would come from QR scanner
-      const mockQRData = "JTM-EVENT:12345:67890:1234567890"
-      handleQRScan(mockQRData)
-    }, 3000)
+    setScanResult(null)
+    setCameraError(null)
+  }
+
+  const handleStopScan = () => {
+    setScanning(false)
+    setCameraError(null)
   }
 
   const handleQRScan = async (qrData: string) => {
@@ -61,12 +116,21 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
       if (parts.length !== 4 || parts[0] !== 'JTM-EVENT') {
         setScanResult({
           success: false,
-          message: 'Invalid QR code format'
+          message: 'Invalid QR code format. Please ensure this is a valid JTM event QR code.'
         })
         return
       }
 
-      const [, eventId, userId] = parts
+      const [, scannedEventId, userId] = parts
+
+      // If we have a specific event, verify the QR code is for this event
+      if (event && event.id !== scannedEventId) {
+        setScanResult({
+          success: false,
+          message: `This QR code is for a different event. Expected: ${event.title}`
+        })
+        return
+      }
 
       const response = await fetch('/api/events/checkin', {
         method: 'POST',
@@ -74,7 +138,7 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          eventId,
+          eventId: event?.id || scannedEventId,
           qrCode: qrData,
         }),
       })
@@ -84,11 +148,12 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
       if (result.success) {
         setScanResult({
           success: true,
-          message: 'Check-in successful!',
+          message: result.alreadyCheckedIn ? 'Already checked in!' : 'Check-in successful!',
           attendee: {
-            name: result.attendee?.name || 'Unknown',
-            email: result.attendee?.email || 'unknown@email.com'
-          }
+            name: `${result.rsvp?.user?.firstName} ${result.rsvp?.user?.lastName}`.trim() || 'Unknown',
+            email: result.rsvp?.user?.email || 'unknown@email.com'
+          },
+          alreadyCheckedIn: result.alreadyCheckedIn
         })
       } else {
         setScanResult({
@@ -97,9 +162,10 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
         })
       }
     } catch (error) {
+      console.error('QR scan error:', error)
       setScanResult({
         success: false,
-        message: 'Error processing QR code'
+        message: 'Error processing QR code. Please try again.'
       })
     }
   }
@@ -115,22 +181,41 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
       return
     }
 
-    // TODO: Implement manual check-in API call
     try {
-      // Mock API call
-      setScanResult({
-        success: true,
-        message: 'Manual check-in successful!',
-        attendee: {
-          name: 'Jane Doe',
-          email: manualEmail
-        }
+      const response = await fetch('/api/events/checkin/manual', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          eventId: event?.id,
+          email: manualEmail,
+        }),
       })
-      setManualEmail('')
+
+      const result = await response.json()
+      
+      if (result.success) {
+        setScanResult({
+          success: true,
+          message: result.alreadyCheckedIn ? 'Already checked in!' : 'Manual check-in successful!',
+          attendee: {
+            name: `${result.rsvp?.user?.firstName} ${result.rsvp?.user?.lastName}`.trim() || 'Unknown',
+            email: result.rsvp?.user?.email || manualEmail
+          },
+          alreadyCheckedIn: result.alreadyCheckedIn
+        })
+        setManualEmail('')
+      } else {
+        setScanResult({
+          success: false,
+          message: result.error || 'Manual check-in failed'
+        })
+      }
     } catch (error) {
       setScanResult({
         success: false,
-        message: 'Failed to check in attendee'
+        message: 'Error during manual check-in. Please try again.'
       })
     }
   }
@@ -168,24 +253,73 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
-            {scanning ? (
-              <div className="text-center">
-                <Scan className="h-12 w-12 mx-auto mb-4 animate-pulse text-blue-500" />
-                <p className="text-lg font-medium">Scanning...</p>
-                <p className="text-sm text-muted-foreground">Point camera at QR code</p>
+          {!hasPermission && scanning ? (
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-red-200 rounded-lg bg-red-50">
+              <CameraOff className="h-12 w-12 mx-auto mb-4 text-red-500" />
+              <p className="text-lg font-medium text-red-700 mb-2">Camera Access Required</p>
+              <p className="text-sm text-red-600 text-center mb-4">
+                Please allow camera access to scan QR codes. Check your browser settings and reload the page.
+              </p>
+              <Button onClick={handleStopScan} variant="outline">
+                Close Camera
+              </Button>
+            </div>
+          ) : scanning ? (
+            <div className="space-y-4">
+              <div className="relative">
+                <Webcam
+                  ref={webcamRef}
+                  audio={false}
+                  screenshotFormat="image/jpeg"
+                  videoConstraints={{
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment"
+                  }}
+                  className="w-full rounded-lg"
+                  onUserMediaError={(error) => {
+                    console.error('Camera error:', error)
+                    setCameraError('Failed to access camera')
+                    setScanning(false)
+                  }}
+                />
+                <div className="absolute inset-0 border-2 border-blue-500 rounded-lg pointer-events-none">
+                  <div className="absolute top-4 left-4 w-8 h-8 border-l-4 border-t-4 border-blue-500"></div>
+                  <div className="absolute top-4 right-4 w-8 h-8 border-r-4 border-t-4 border-blue-500"></div>
+                  <div className="absolute bottom-4 left-4 w-8 h-8 border-l-4 border-b-4 border-blue-500"></div>
+                  <div className="absolute bottom-4 right-4 w-8 h-8 border-r-4 border-b-4 border-blue-500"></div>
+                </div>
               </div>
-            ) : (
               <div className="text-center">
-                <QrCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                <p className="text-lg font-medium mb-2">Ready to Scan</p>
-                <Button onClick={handleStartScan} size="lg">
-                  <Scan className="h-4 w-4 mr-2" />
-                  Start Scanning
+                <p className="text-sm text-muted-foreground mb-2">Position QR code within the frame</p>
+                <Button onClick={handleStopScan} variant="outline">
+                  <CameraOff className="h-4 w-4 mr-2" />
+                  Stop Scanning
                 </Button>
               </div>
-            )}
-          </div>
+            </div>
+          ) : (
+            <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+              <QrCode className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+              <p className="text-lg font-medium mb-2">Ready to Scan</p>
+              <p className="text-sm text-muted-foreground mb-4 text-center">
+                Click to start scanning QR codes for event check-in
+              </p>
+              <Button onClick={handleStartScan} size="lg">
+                <Camera className="h-4 w-4 mr-2" />
+                Start Camera
+              </Button>
+            </div>
+          )}
+
+          {cameraError && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-700">
+                {cameraError}
+              </AlertDescription>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -230,60 +364,52 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
             <AlertCircle className="h-4 w-4 text-red-600" />
           )}
           <AlertDescription>
-            <div className="font-medium">{scanResult.message}</div>
+            <div className={`font-medium ${scanResult.success ? 'text-green-700' : 'text-red-700'}`}>
+              {scanResult.message}
+            </div>
             {scanResult.attendee && (
               <div className="mt-2 text-sm">
                 <p><strong>Name:</strong> {scanResult.attendee.name}</p>
                 <p><strong>Email:</strong> {scanResult.attendee.email}</p>
+                {scanResult.alreadyCheckedIn && (
+                  <p className="text-yellow-600 font-medium mt-1">
+                    ⚠️ This attendee was already checked in
+                  </p>
+                )}
               </div>
             )}
           </AlertDescription>
         </Alert>
       )}
 
-      {/* Implementation Notes */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Implementation Notes</CardTitle>
-          <CardDescription>
-            Development roadmap for QR scanner functionality
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 text-sm">
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
+      {/* Quick Stats */}
+      {event && (
+        <Card>
+          <CardHeader>
+            <CardTitle>Event Information</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <strong>Camera Integration:</strong> Implement with react-webcam or similar library for QR code scanning
+                <p className="font-medium text-muted-foreground">Event</p>
+                <p>{event.title}</p>
+              </div>
+              <div>
+                <p className="font-medium text-muted-foreground">Date</p>
+                <p>{new Date(event.date).toLocaleDateString()}</p>
+              </div>
+              <div>
+                <p className="font-medium text-muted-foreground">Location</p>
+                <p>{event.location}</p>
+              </div>
+              <div>
+                <p className="font-medium text-muted-foreground">Status</p>
+                <p className="text-green-600">Ready for Check-in</p>
               </div>
             </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <div>
-                <strong>QR Code Validation:</strong> Verify QR codes contain valid event and user data with security hash
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <div>
-                <strong>Offline Support:</strong> Cache scans locally and sync when connection is restored
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <div>
-                <strong>Duplicate Prevention:</strong> Check if attendee is already checked in before processing
-              </div>
-            </div>
-            <div className="flex items-start gap-2">
-              <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
-              <div>
-                <strong>Real-time Updates:</strong> Update attendance counts and display live statistics
-              </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

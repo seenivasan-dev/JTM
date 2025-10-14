@@ -163,7 +163,7 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
   const loadNotifications = async () => {
     try {
       const response = await fetch(
-        `${apiConfig.baseUrl}/mobile/notifications?userEmail=${encodeURIComponent(user?.email || '')}`,
+        `${apiConfig.baseUrl}/api/mobile/notifications?userEmail=${encodeURIComponent(user?.email || '')}`,
         {
           method: 'GET',
           headers: getHeaders(),
@@ -219,7 +219,7 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
 
   const markAsRead = async (notificationId: string) => {
     try {
-      await fetch(`${apiConfig.baseUrl}/mobile/notifications`, {
+      await fetch(`${apiConfig.baseUrl}/api/mobile/notifications`, {
         method: 'POST',
         headers: getHeaders(),
         body: JSON.stringify({

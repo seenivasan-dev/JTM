@@ -1,4 +1,4 @@
-// JTM Web - Event Check-in API
+// JTM Web - Manual Event Check-in API
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -28,19 +28,37 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { qrCode, eventId } = body
+    const { email, eventId } = body
 
-    if (!qrCode) {
+    if (!email) {
       return NextResponse.json(
-        { success: false, error: 'QR code is required' },
+        { success: false, error: 'Email is required' },
         { status: 400 }
       )
     }
 
-    // Find the RSVP response by QR code
+    // Find the user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+      }
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found with this email address' },
+        { status: 404 }
+      )
+    }
+
+    // Find the RSVP response for this user and event
     const rsvp = await prisma.rSVPResponse.findFirst({
       where: {
-        qrCode: qrCode,
+        userId: user.id,
         ...(eventId && { eventId: eventId })
       },
       include: {
@@ -64,7 +82,7 @@ export async function POST(request: NextRequest) {
 
     if (!rsvp) {
       return NextResponse.json(
-        { success: false, error: 'Invalid QR code or RSVP not found' },
+        { success: false, error: 'No RSVP found for this user and event' },
         { status: 404 }
       )
     }
@@ -78,8 +96,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if payment is confirmed
-    if (!rsvp.paymentConfirmed) {
+    // Check if payment is confirmed (if payment was required)
+    if (rsvp.paymentReference && !rsvp.paymentConfirmed) {
       return NextResponse.json(
         { success: false, error: 'Payment not confirmed for this RSVP' },
         { status: 400 }
@@ -147,96 +165,7 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Check-in error:', error)
-    return NextResponse.json(
-      { success: false, error: 'Internal server error' },
-      { status: 500 }
-    )
-  }
-}
-
-// GET endpoint to verify QR code without checking in
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    
-    if (!session?.user?.email) {
-      return NextResponse.json(
-        { success: false, error: 'Unauthorized' },
-        { status: 401 }
-      )
-    }
-
-    // Check if user is admin
-    const admin = await prisma.admin.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (!admin) {
-      return NextResponse.json(
-        { success: false, error: 'Admin access required' },
-        { status: 403 }
-      )
-    }
-
-    const { searchParams } = new URL(request.url)
-    const qrCode = searchParams.get('qrCode')
-    const eventId = searchParams.get('eventId')
-
-    if (!qrCode) {
-      return NextResponse.json(
-        { success: false, error: 'QR code is required' },
-        { status: 400 }
-      )
-    }
-
-    // Find the RSVP response by QR code
-    const rsvp = await prisma.rSVPResponse.findFirst({
-      where: {
-        qrCode: qrCode,
-        ...(eventId && { eventId: eventId })
-      },
-      include: {
-        user: {
-          select: {
-            id: true,
-            email: true,
-            firstName: true,
-            lastName: true,
-          }
-        },
-        event: {
-          select: {
-            id: true,
-            title: true,
-            date: true,
-          }
-        }
-      },
-    })
-
-    if (!rsvp) {
-      return NextResponse.json(
-        { success: false, error: 'Invalid QR code or RSVP not found' },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      valid: true,
-      rsvp: {
-        id: rsvp.id,
-        user: rsvp.user,
-        event: rsvp.event,
-        checkedIn: rsvp.checkedIn,
-        checkedInAt: rsvp.checkedInAt,
-        paymentConfirmed: rsvp.paymentConfirmed,
-      }
-    })
-
-  } catch (error) {
-    console.error('QR verification error:', error)
+    console.error('Manual check-in error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

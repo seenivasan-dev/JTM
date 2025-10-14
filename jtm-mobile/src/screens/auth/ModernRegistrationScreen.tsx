@@ -171,7 +171,7 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
 
     try {
       setLoading(true)
-      const response = await fetch(`${apiConfig.baseUrl}/auth/register`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

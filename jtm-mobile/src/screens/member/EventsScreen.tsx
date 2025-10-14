@@ -37,6 +37,7 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
   const [events, setEvents] = useState<Event[]>([])
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadEvents()
@@ -44,22 +45,35 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
 
   const loadEvents = async () => {
     try {
-      const response = await fetch(`${apiConfig.baseUrl}/events`, {
+      setError(null)
+      console.log('Fetching events from:', `${apiConfig.baseUrl}/api/mobile/events`)
+      
+      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events?includeExpired=true&limit=20`, {
         method: 'GET',
         headers: getHeaders(),
       })
 
+      console.log('Response status:', response.status)
+      
       if (response.ok) {
         const data = await response.json()
-        setEvents(data.events || [])
+        console.log('Events API response:', JSON.stringify(data, null, 2))
+        const events = data.events || []
+        console.log('Number of events received:', events.length)
+        setEvents(events)
+        
+        if (events.length === 0) {
+          console.log('No events found in database')
+        }
       } else {
-        console.error('Failed to load events')
-        // Fall back to empty array if API fails
+        const errorData = await response.text()
+        console.error('Failed to load events:', response.status, errorData)
+        setError(`Failed to load events (${response.status}): ${errorData}`)
         setEvents([])
       }
     } catch (error) {
       console.error('Error loading events:', error)
-      // Fall back to empty array if network fails
+      setError('Network error. Please check your connection.')
       setEvents([])
     } finally {
       setLoading(false)
@@ -68,6 +82,7 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
 
   const onRefresh = async () => {
     setRefreshing(true)
+    setError(null)
     await loadEvents()
     setRefreshing(false)
   }
@@ -92,10 +107,29 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
     })
   }
 
+  const isEventExpired = (dateString: string) => {
+    const eventDate = new Date(dateString)
+    const now = new Date()
+    return eventDate < now
+  }
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#dc2626" />
         <Text style={styles.loadingText}>Loading events...</Text>
+      </View>
+    )
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Ionicons name="warning" size={48} color="#ef4444" />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={styles.retryButton} onPress={loadEvents}>
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
       </View>
     )
   }
@@ -121,28 +155,53 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
         )}
       </View>
 
-      {events.length === 0 ? (
+      {events.length === 0 && !loading ? (
         <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No events scheduled at this time</Text>
-          <Text style={styles.emptySubtext}>Check back later for upcoming events</Text>
+          <Text style={styles.emptyText}>No events available</Text>
+          <Text style={styles.emptySubtext}>
+            {error ? 'There was an issue loading events' : 'No events have been created yet'}
+          </Text>
+          {error && (
+            <TouchableOpacity style={styles.retryButton} onPress={loadEvents}>
+              <Text style={styles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <View style={styles.eventsList}>
-          {events.map((event) => (
+          {events.map((event) => {
+            const expired = isEventExpired(event.date)
+            return (
             <TouchableOpacity
               key={event.id}
-              style={styles.eventCard}
+              style={[styles.eventCard, expired && styles.expiredEventCard]}
               onPress={() => handleEventPress(event)}
             >
               {event.flyer && (
-                <Image source={{ uri: event.flyer }} style={styles.eventImage} />
+                <Image 
+                  source={{ uri: event.flyer }} 
+                  style={[styles.eventImage, expired && styles.expiredEventImage]} 
+                />
               )}
               
               <View style={styles.eventContent}>
-                <Text style={styles.eventTitle}>{event.title}</Text>
-                <Text style={styles.eventDate}>{formatDate(event.date)}</Text>
-                <Text style={styles.eventLocation}>📍 {event.location}</Text>
-                <Text style={styles.eventDescription} numberOfLines={3}>
+                <View style={styles.eventTitleContainer}>
+                  <Text style={[styles.eventTitle, expired && styles.expiredEventTitle]}>
+                    {event.title}
+                  </Text>
+                  {expired && (
+                    <View style={styles.expiredBadge}>
+                      <Text style={styles.expiredBadgeText}>EXPIRED</Text>
+                    </View>
+                  )}
+                </View>
+                <Text style={[styles.eventDate, expired && styles.expiredEventDate]}>
+                  {formatDate(event.date)}
+                </Text>
+                <Text style={[styles.eventLocation, expired && styles.expiredEventLocation]}>
+                  📍 {event.location}
+                </Text>
+                <Text style={[styles.eventDescription, expired && styles.expiredEventDescription]} numberOfLines={3}>
                   {event.description}
                 </Text>
                 
@@ -164,7 +223,8 @@ export default function EventsScreen({ navigation }: EventsScreenProps) {
                 </View>
               </View>
             </TouchableOpacity>
-          ))}
+            )
+          })}
         </View>
       )}
     </ScrollView>
@@ -184,6 +244,15 @@ const styles = StyleSheet.create({
   loadingText: {
     fontSize: 16,
     color: '#6b7280',
+    marginTop: 16,
+  },
+  errorText: {
+    fontSize: 16,
+    color: '#ef4444',
+    textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 20,
+    paddingHorizontal: 20,
   },
   header: {
     backgroundColor: '#dc2626',
@@ -301,5 +370,56 @@ const styles = StyleSheet.create({
   participantsText: {
     fontSize: 12,
     color: '#6b7280',
+  },
+
+  // Expired Event Styles
+  expiredEventCard: {
+    opacity: 0.7,
+    backgroundColor: '#f3f4f6',
+    borderColor: '#d1d5db',
+    borderWidth: 1,
+  },
+  expiredEventImage: {
+    opacity: 0.5,
+  },
+  eventTitleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
+  expiredEventTitle: {
+    color: '#6b7280',
+  },
+  expiredBadge: {
+    backgroundColor: '#ef4444',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 12,
+  },
+  expiredBadgeText: {
+    color: 'white',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
+  expiredEventDate: {
+    color: '#9ca3af',
+  },
+  expiredEventLocation: {
+    color: '#9ca3af',
+  },
+  expiredEventDescription: {
+    color: '#9ca3af',
+  },
+  retryButton: {
+    backgroundColor: '#6366f1',
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    marginTop: 16,
+  },
+  retryButtonText: {
+    color: 'white',
+    fontWeight: '600',
   },
 })

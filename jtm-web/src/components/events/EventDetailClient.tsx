@@ -439,13 +439,22 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="bg-white p-4 rounded-lg border">
-                  <div className="bg-gray-900 text-white p-3 rounded font-mono text-xs break-all">
-                    {(userRsvp as any).qrCode}
+                <div className="bg-white p-6 rounded-lg border-2 border-dashed border-green-300">
+                  <div className="w-64 h-64 mx-auto bg-gray-100 flex items-center justify-center border rounded-lg mb-4">
+                    <div className="text-center">
+                      <QrCode className="h-16 w-16 mx-auto mb-2 text-gray-400" />
+                      <p className="text-xs text-gray-500 mb-2">QR Code for Event Check-in</p>
+                      <div className="text-xs font-mono break-all bg-gray-50 p-2 rounded border max-w-full overflow-hidden">
+                        {(userRsvp as any).qrCode}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-sm text-gray-500 mt-2">Show this QR code at the event for check-in</p>
-                  <p className="text-xs text-gray-400 mt-1">
-                    Screenshot or save this code to your phone
+                  <p className="text-sm font-semibold text-green-700 mb-2">
+                    ✅ Ready for Check-in
+                  </p>
+                  <p className="text-sm text-gray-600 mb-1">Show this QR code at the event for check-in</p>
+                  <p className="text-xs text-gray-500">
+                    Screenshot this page or show your phone screen to the event staff
                   </p>
                 </div>
               </CardContent>

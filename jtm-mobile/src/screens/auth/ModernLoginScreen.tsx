@@ -39,7 +39,7 @@ export default function ModernLoginScreen({ navigation }: ModernLoginScreenProps
 
     try {
       setLoading(true)
-      const response = await fetch(`${apiConfig.baseUrl}/auth/login`, {
+      const response = await fetch(`${apiConfig.baseUrl}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -78,8 +78,8 @@ export default function MemberDashboardScreen({ navigation }: MemberDashboardPro
 
       // Fetch updated user data and recent events
       const [userResponse, eventsResponse] = await Promise.all([
-        fetch(`${apiConfig.baseUrl}/mobile/user?email=${encodeURIComponent(contextUser.email)}`, { headers }),
-        fetch(`${apiConfig.baseUrl}/mobile/events?limit=3`, { headers })
+        fetch(`${apiConfig.baseUrl}/api/mobile/user?email=${encodeURIComponent(contextUser.email)}`, { headers }),
+        fetch(`${apiConfig.baseUrl}/api/mobile/events?limit=3`, { headers })
       ])
 
       if (userResponse.ok) {

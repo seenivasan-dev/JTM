@@ -37,7 +37,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
       
       if (response.success && response.data) {
         // Fetch full user data after successful login
-        const userDataResponse = await fetch(`${apiConfig.baseUrl}/mobile/user?email=${encodeURIComponent(email)}`, {
+        const userDataResponse = await fetch(`${apiConfig.baseUrl}/api/mobile/user?email=${encodeURIComponent(email)}`, {
           method: 'GET',
           headers: getHeaders(),
         })

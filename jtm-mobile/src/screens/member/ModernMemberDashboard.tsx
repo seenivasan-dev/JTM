@@ -71,7 +71,7 @@ export default function ModernMemberDashboard({ navigation }: MemberDashboardPro
       setError(null)
       
       // Load recent events
-      const eventsResponse = await fetch(`${apiConfig.baseUrl}/mobile/events`, {
+      const eventsResponse = await fetch(`${apiConfig.baseUrl}/api/mobile/events`, {
         method: 'GET',
         headers: getHeaders(),
       })
