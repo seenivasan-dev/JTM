@@ -568,4 +568,47 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
   },
+  // Modern Event Card styles
+  modernEventCard: {
+    marginBottom: 12,
+    borderRadius: 12,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  eventCardGradient: {
+    padding: 16,
+  },
+  eventCardHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  eventDateBadge: {
+    width: 60,
+    height: 60,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  eventDateDay: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#ffffff',
+  },
+  eventDateMonth: {
+    fontSize: 10,
+    fontWeight: '600',
+    color: '#ffffff',
+    letterSpacing: 1,
+  },
+  eventMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 4,
+  },
 })
