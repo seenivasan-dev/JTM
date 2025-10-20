@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, generateRenewalReminderEmail } from '@/lib/email'
 
 // POST /api/admin/renewal-reminders - Send renewal reminders to members
 export async function POST(request: NextRequest) {
@@ -50,41 +51,67 @@ export async function POST(request: NextRequest) {
 
     // Send renewal reminders
     const reminderResults = []
+    const renewalUrl = `${process.env.WEB_APP_URL || process.env.NEXTAUTH_URL}/renewal`
     
     for (const member of membersNeedingRenewal) {
       // Calculate days until expiry
       const daysUntilExpiry = Math.ceil((expiryDate.getTime() - currentDate.getTime()) / (1000 * 60 * 60 * 24))
       
-      // TODO: Send renewal reminder email
-      // await sendRenewalReminderEmail(member.email, {
-      //   memberName: `${member.firstName} ${member.lastName}`,
-      //   membershipType: member.membershipType,
-      //   expiryDate: member.membershipExpiry?.toISOString() || expiryDate.toISOString(),
-      //   daysUntilExpiry,
-      //   renewalUrl: `${process.env.NEXTAUTH_URL}/renewal`,
-      //   familyMemberCount: member.familyMembers.length
-      // })
+      try {
+        // Send renewal reminder email
+        const emailTemplate = generateRenewalReminderEmail({
+          firstName: member.firstName,
+          membershipType: member.membershipType,
+          expiryDate: (member.membershipExpiry || expiryDate).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          daysUntilExpiry,
+          renewalUrl,
+          familyMemberCount: member.familyMembers.length,
+        })
 
-      console.log(`📧 [EMAIL PLACEHOLDER] Renewal reminder sent to ${member.email}`)
-      console.log(`   Member: ${member.firstName} ${member.lastName}`)
-      console.log(`   Membership Type: ${member.membershipType}`)
-      console.log(`   Days Until Expiry: ${daysUntilExpiry}`)
-      console.log(`   Family Members: ${member.familyMembers.length}`)
+        await sendEmail({
+          to: member.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['renewal', 'reminder', member.membershipType],
+        })
 
-      reminderResults.push({
-        memberId: member.id,
-        memberName: `${member.firstName} ${member.lastName}`,
-        email: member.email,
-        daysUntilExpiry,
-        status: 'sent'
-      })
+        console.log(`✅ Renewal reminder sent to ${member.email} (${daysUntilExpiry} days left)`)
+
+        reminderResults.push({
+          memberId: member.id,
+          memberName: `${member.firstName} ${member.lastName}`,
+          email: member.email,
+          daysUntilExpiry,
+          status: 'sent'
+        })
+      } catch (emailError) {
+        console.error(`❌ Failed to send renewal reminder to ${member.email}:`, emailError)
+        
+        reminderResults.push({
+          memberId: member.id,
+          memberName: `${member.firstName} ${member.lastName}`,
+          email: member.email,
+          daysUntilExpiry,
+          status: 'failed'
+        })
+      }
     }
 
+    const successCount = reminderResults.filter(r => r.status === 'sent').length
+    const failedCount = reminderResults.filter(r => r.status === 'failed').length
+
     return NextResponse.json({
-      message: `Renewal reminders sent to ${reminderResults.length} members`,
+      message: `Renewal reminders sent to ${successCount} members${failedCount > 0 ? `, ${failedCount} failed` : ''}`,
       results: reminderResults,
       summary: {
-        totalReminders: reminderResults.length,
+        totalMembers: membersNeedingRenewal.length,
+        successful: successCount,
+        failed: failedCount,
         currentDate: currentDate.toISOString(),
         expiryDate: expiryDate.toISOString(),
       }

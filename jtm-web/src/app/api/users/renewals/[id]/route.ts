@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sendEmail, generateRenewalApprovedEmail, generateRenewalRejectedEmail } from '@/lib/email';
 
 const renewalActionSchema = z.object({
   action: z.enum(['approve', 'reject']),
@@ -74,40 +75,64 @@ export async function PUT(
 
     // If approved, update user's membership type and expiry
     if (action === 'approve') {
+      const newExpiryDate = new Date(new Date().getFullYear() + 1, 11, 31, 23, 59, 59) // Dec 31st next year
+      
       await prisma.user.update({
         where: { id: renewal.userId },
         data: {
           membershipType: renewal.newType,
-          membershipExpiry: new Date(new Date().getFullYear() + 1, 11, 31, 23, 59, 59), // Dec 31st next year
+          membershipExpiry: newExpiryDate,
           isActive: true,
         },
       });
 
-      // TODO: Send approval email notification to member
-      // await sendRenewalApprovalEmail(updatedRenewal.user.email, {
-      //   memberName: `${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`,
-      //   membershipType: renewal.newType,
-      //   expiryDate: new Date(new Date().getFullYear() + 1, 11, 31, 23, 59, 59).toISOString(),
-      //   adminNotes
-      // })
-      
-      console.log(`📧 [EMAIL PLACEHOLDER] Renewal approval sent to ${updatedRenewal.user.email}`)
-      console.log(`   Member: ${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`)
-      console.log(`   Approved Membership: ${renewal.newType}`)
-      console.log(`   New Expiry: Dec 31, ${new Date().getFullYear() + 1}`)
+      // Send approval email notification to member
+      try {
+        const emailTemplate = generateRenewalApprovedEmail({
+          firstName: updatedRenewal.user.firstName,
+          membershipType: renewal.newType,
+          expiryDate: newExpiryDate.toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+          }),
+          adminNotes,
+        })
+
+        await sendEmail({
+          to: updatedRenewal.user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['renewal', 'approved', renewal.newType],
+        })
+
+        console.log(`✅ Renewal approval email sent to ${updatedRenewal.user.email}`)
+      } catch (emailError) {
+        console.error(`❌ Failed to send renewal approval email to ${updatedRenewal.user.email}:`, emailError)
+      }
     } else {
-      // TODO: Send rejection email notification to member
-      // await sendRenewalRejectionEmail(updatedRenewal.user.email, {
-      //   memberName: `${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`,
-      //   membershipType: renewal.newType,
-      //   rejectionReason: adminNotes || 'No specific reason provided',
-      //   contactInfo: 'admin@jtm.org'
-      // })
-      
-      console.log(`📧 [EMAIL PLACEHOLDER] Renewal rejection sent to ${updatedRenewal.user.email}`)
-      console.log(`   Member: ${updatedRenewal.user.firstName} ${updatedRenewal.user.lastName}`)
-      console.log(`   Rejected Membership: ${renewal.newType}`)
-      console.log(`   Reason: ${adminNotes || 'No specific reason provided'}`)
+      // Send rejection email notification to member
+      try {
+        const emailTemplate = generateRenewalRejectedEmail({
+          firstName: updatedRenewal.user.firstName,
+          membershipType: renewal.newType,
+          rejectionReason: adminNotes,
+          contactEmail: process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org',
+        })
+
+        await sendEmail({
+          to: updatedRenewal.user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['renewal', 'rejected'],
+        })
+
+        console.log(`✅ Renewal rejection email sent to ${updatedRenewal.user.email}`)
+      } catch (emailError) {
+        console.error(`❌ Failed to send renewal rejection email to ${updatedRenewal.user.email}:`, emailError)
+      }
     }
 
     return NextResponse.json({

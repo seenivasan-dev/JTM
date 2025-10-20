@@ -1,6 +1,7 @@
 // JTM Web - RSVP API Route
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { sendEmail, generateRSVPConfirmationEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -98,6 +99,37 @@ export async function POST(request: NextRequest) {
           checkedIn: false,
         },
       })
+
+      // Send RSVP confirmation email
+      try {
+        const emailTemplate = generateRSVPConfirmationEmail({
+          firstName: user.firstName,
+          eventTitle: event.title,
+          eventDate: event.date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          eventLocation: event.location,
+          paymentReference: paymentReference || 'N/A',
+        })
+
+        await sendEmail({
+          to: user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['rsvp', 'confirmation', event.id],
+        })
+
+        console.log(`✅ RSVP confirmation email sent to ${user.email} for event: ${event.title}`)
+      } catch (emailError) {
+        // Don't fail the RSVP if email fails
+        console.error(`❌ Failed to send RSVP confirmation email to ${user.email}:`, emailError)
+      }
 
       return NextResponse.json({
         success: true,

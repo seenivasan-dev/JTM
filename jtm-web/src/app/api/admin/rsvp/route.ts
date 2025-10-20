@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
+import { sendEmail, generateRSVPApprovedEmail } from '@/lib/email'
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,8 +80,37 @@ export async function POST(request: NextRequest) {
         },
       })
 
-      // Here you would typically send an email to the user with the QR code
-      // For now, we'll just return the QR code data
+      // Send RSVP approval email with QR code
+      try {
+        const emailTemplate = generateRSVPApprovedEmail({
+          firstName: rsvp.user.firstName,
+          eventTitle: rsvp.event.title,
+          eventDate: rsvp.event.date.toLocaleDateString('en-US', { 
+            weekday: 'long', 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          eventLocation: rsvp.event.location,
+          qrCodeData,
+          // qrCodeUrl would be a generated image URL - can be added later
+        })
+
+        await sendEmail({
+          to: rsvp.user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['rsvp', 'approved', 'qr-code', rsvp.eventId],
+        })
+
+        console.log(`✅ RSVP approval email with QR code sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
+      } catch (emailError) {
+        // Don't fail the approval if email fails
+        console.error(`❌ Failed to send RSVP approval email to ${rsvp.user.email}:`, emailError)
+      }
       
       return NextResponse.json({
         success: true,

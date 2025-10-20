@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import { sendEmail, generateRenewalRequestEmail, generateAdminRenewalNotificationEmail } from '@/lib/email';
 
 const renewalRequestSchema = z.object({
   newMembershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'CUSTOM']),
@@ -169,29 +170,57 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // TODO: Send email notification to member confirming renewal request submission
-    // await sendRenewalRequestConfirmationEmail(user.email, {
-    //   memberName: `${user.firstName} ${user.lastName}`,
-    //   membershipType: validatedData.newMembershipType,
-    //   paymentReference: validatedData.paymentReference,
-    //   submissionDate: new Date().toISOString()
-    // })
-    
-    console.log(`📧 [EMAIL PLACEHOLDER] Renewal request confirmation sent to ${user.email}`)
-    console.log(`   Member: ${user.firstName} ${user.lastName}`)
-    console.log(`   Membership Type: ${validatedData.newMembershipType}`)
-    console.log(`   Payment Reference: ${validatedData.paymentReference}`)
+    // Send email notification to member confirming renewal request submission
+    try {
+      const emailTemplate = generateRenewalRequestEmail({
+        firstName: user.firstName,
+        membershipType: validatedData.newMembershipType,
+        paymentReference: validatedData.paymentReference,
+        submissionDate: new Date().toLocaleDateString('en-US', { 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric' 
+        }),
+      })
 
-    // TODO: Send email notification to admin about new renewal request
-    // await sendAdminRenewalNotificationEmail({
-    //   memberName: `${user.firstName} ${user.lastName}`,
-    //   memberEmail: user.email,
-    //   membershipType: validatedData.newMembershipType,
-    //   paymentReference: validatedData.paymentReference,
-    //   renewalId: renewal.id
-    // })
-    
-    console.log(`📧 [EMAIL PLACEHOLDER] Admin notification sent for renewal request ${renewal.id}`)
+      await sendEmail({
+        to: user.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
+        tags: ['renewal', 'confirmation', validatedData.newMembershipType],
+      })
+
+      console.log(`✅ Renewal request confirmation sent to ${user.email}`)
+    } catch (emailError) {
+      console.error(`❌ Failed to send renewal confirmation email to ${user.email}:`, emailError)
+    }
+
+    // Send email notification to admin about new renewal request
+    try {
+      const adminUrl = `${process.env.WEB_APP_URL || process.env.NEXTAUTH_URL}/admin/renewals?id=${renewal.id}`
+      
+      const emailTemplate = generateAdminRenewalNotificationEmail({
+        memberName: `${user.firstName} ${user.lastName}`,
+        memberEmail: user.email,
+        membershipType: validatedData.newMembershipType,
+        paymentReference: validatedData.paymentReference,
+        renewalId: renewal.id,
+        adminUrl,
+      })
+
+      await sendEmail({
+        to: process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org',
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+        text: emailTemplate.text,
+        tags: ['renewal', 'admin-notification'],
+      })
+
+      console.log(`✅ Admin notification sent for renewal request ${renewal.id}`)
+    } catch (emailError) {
+      console.error(`❌ Failed to send admin notification email:`, emailError)
+    }
 
     return NextResponse.json({
       message: 'Renewal request submitted successfully',
