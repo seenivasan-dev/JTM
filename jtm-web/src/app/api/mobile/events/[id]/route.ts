@@ -8,6 +8,8 @@ export async function GET(
 ) {
   try {
     const { id } = params
+    const { searchParams } = new URL(request.url)
+    const userId = searchParams.get('userId')
 
     // Fetch the event from database
     const event = await prisma.event.findUnique({
@@ -28,27 +30,49 @@ export async function GET(
       )
     }
 
+    // Check user's RSVP status if userId provided
+    let userRsvpStatus = null
+    let paymentConfirmed = false
+    if (userId) {
+      const rsvp = await prisma.rSVPResponse.findUnique({
+        where: {
+          eventId_userId: {
+            eventId: id,
+            userId,
+          },
+        },
+      })
+
+      if (rsvp) {
+        userRsvpStatus = (rsvp.responses as any)?.status || null
+        paymentConfirmed = rsvp.paymentConfirmed
+      }
+    }
+
     // Format event for mobile consumption
     const formattedEvent = {
       id: event.id,
       title: event.title,
       description: event.description,
       date: event.date,
+      time: event.date.toISOString().split('T')[1].substring(0, 5), // Extract time from date
       location: event.location,
+      type: 'Community', // Default type since not in schema
       rsvpRequired: event.rsvpRequired,
       rsvpDeadline: event.rsvpDeadline,
       maxParticipants: event.maxParticipants,
+      maxCapacity: event.maxParticipants,
       currentAttendees: event._count.rsvpResponses,
+      rsvpCount: event._count.rsvpResponses,
       flyer: event.flyer,
       rsvpForm: event.rsvpForm,
       createdAt: event.createdAt,
     }
 
-    // TODO: Check user's RSVP status if authenticated
-    // For now, return null rsvpStatus
     return NextResponse.json({
       event: formattedEvent,
-      rsvpStatus: null,
+      rsvpStatus: userRsvpStatus,
+      paymentConfirmed,
     })
   } catch (error) {
     console.error('Error fetching event details:', error)

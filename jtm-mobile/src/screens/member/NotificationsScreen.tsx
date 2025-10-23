@@ -199,20 +199,29 @@ export default function NotificationsScreen({ navigation }: NotificationsScreenP
       case 'rsvp_approved':
       case 'event_reminder':
       case 'rsvp_deadline':
+      case 'event_checkin':
         if (notification.data.eventId) {
-          // You'd need to fetch the event details and navigate
+          console.log('📬 [Notifications] Navigating to event:', notification.data.eventId)
+          // Pass eventId to fetch event details
           navigation.navigate('EventDetail', { 
-            event: { id: notification.data.eventId } 
+            eventId: notification.data.eventId 
           })
+        } else {
+          console.warn('⚠️ [Notifications] No eventId in notification data')
+          Alert.alert('Error', 'Event information not available')
         }
         break
       case 'membership_renewal':
         navigation.navigate('Profile')
         break
       case 'welcome':
-        navigation.navigate('Events')
+        // Navigate to Events tab (already in the tab navigator, so no error)
+        Alert.alert('Welcome!', 'Check out our upcoming events', [
+          { text: 'OK', onPress: () => console.log('Welcome acknowledged') }
+        ])
         break
       default:
+        console.log('📬 [Notifications] Unhandled notification type:', notification.type)
         break
     }
   }

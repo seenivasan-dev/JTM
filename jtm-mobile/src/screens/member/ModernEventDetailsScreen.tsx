@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import { Ionicons } from '@expo/vector-icons'
 import { useUser } from '../../context/UserContext'
 import { apiConfig, getHeaders } from '../../api/config'
+import { QRCodeTemplate } from '../../components'
 
 const { width, height } = Dimensions.get('window')
 
@@ -85,6 +86,8 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
   const { user } = useUser()
   const [event, setEvent] = useState<any>(passedEvent || null)
   const [rsvpStatus, setRsvpStatus] = useState<string>('')
+  const [paymentConfirmed, setPaymentConfirmed] = useState(false)
+  const [rsvpData, setRsvpData] = useState<any>(null)
   const [loading, setLoading] = useState(!passedEvent) // Don't load if event already passed
   const [rsvpLoading, setRsvpLoading] = useState(false)
 
@@ -92,10 +95,15 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
     console.log('🎬 [ModernEventDetailsScreen] Mounted with params:', { eventId, hasEvent: !!passedEvent })
     
     // If event is passed directly, no need to fetch
-    if (passedEvent) {
+    if (passedEvent && passedEvent.title) {
       console.log('✅ [ModernEventDetailsScreen] Using passed event:', passedEvent.title)
       setEvent(passedEvent)
       setLoading(false)
+      
+      // Fetch RSVP details if user is logged in
+      if (user && (passedEvent.id || eventId)) {
+        fetchRsvpDetails()
+      }
       return
     }
     
@@ -106,6 +114,8 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
     } else {
       console.error('❌ [ModernEventDetailsScreen] No event or eventId provided')
       setLoading(false)
+      // Navigate back if no valid event data
+      setTimeout(() => navigation.goBack(), 1000)
     }
   }, [eventId, passedEvent])
 
@@ -118,9 +128,13 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
     
     try {
       setLoading(true)
-      console.log('📡 [ModernEventDetailsScreen] Fetching from:', `${apiConfig.baseUrl}/api/mobile/events/${eventId}`)
+      const url = user 
+        ? `${apiConfig.baseUrl}/api/mobile/events/${eventId}?userId=${user.id}`
+        : `${apiConfig.baseUrl}/api/mobile/events/${eventId}`
       
-      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events/${eventId}`, {
+      console.log('📡 [ModernEventDetailsScreen] Fetching from:', url)
+      
+      const response = await fetch(url, {
         headers: getHeaders(),
       })
 
@@ -131,6 +145,12 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
         console.log('✅ [ModernEventDetailsScreen] Event loaded:', data.event?.title)
         setEvent(data.event)
         setRsvpStatus(data.rsvpStatus || '')
+        setPaymentConfirmed(data.paymentConfirmed || false)
+        
+        // Fetch RSVP details if user has RSVPed
+        if (data.rsvpStatus && user) {
+          fetchRsvpDetails()
+        }
       } else {
         const errorText = await response.text()
         console.error('❌ [ModernEventDetailsScreen] Failed to fetch:', response.status, errorText)
@@ -147,30 +167,81 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
     }
   }
 
+  const fetchRsvpDetails = async () => {
+    const currentEventId = eventId || event?.id
+    if (!currentEventId || !user) {
+      console.log('⚠️ [RSVP Details] Skipping - no eventId or user')
+      return
+    }
+
+    try {
+      console.log('📋 [RSVP Details] Fetching for event:', currentEventId)
+      const response = await fetch(
+        `${apiConfig.baseUrl}/api/mobile/events/${currentEventId}/rsvp?userId=${user.id}`,
+        { headers: getHeaders() }
+      )
+
+      if (response.ok) {
+        const data = await response.json()
+        console.log('📋 [RSVP Details]:', data)
+        setRsvpData(data)
+        if (data.hasRsvp) {
+          setRsvpStatus(data.response)
+          setPaymentConfirmed(data.paymentConfirmed)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching RSVP details:', error)
+    }
+  }
+
   const handleRSVP = async (status: string) => {
-    if (!user) return
+    if (!user) {
+      Alert.alert('Error', 'Please log in to RSVP')
+      return
+    }
+
+    const currentEventId = eventId || event?.id
+    if (!currentEventId) {
+      Alert.alert('Error', 'Invalid event')
+      return
+    }
 
     try {
       setRsvpLoading(true)
-      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events/${eventId}/rsvp`, {
+      console.log('📤 [RSVP] Submitting:', { eventId: currentEventId, userId: user.id, response: status })
+      
+      const response = await fetch(`${apiConfig.baseUrl}/api/mobile/events/${currentEventId}/rsvp`, {
         method: 'POST',
-        headers: await getHeaders(),
+        headers: getHeaders(),
         body: JSON.stringify({
           userId: user.id,
           response: status,
         }),
       })
 
-      if (response.ok) {
+      const data = await response.json()
+      console.log('📥 [RSVP] Response:', data)
+
+      if (response.ok && data.success) {
         setRsvpStatus(status)
-        Alert.alert('Success', `RSVP updated to "${status}"`)
+        setPaymentConfirmed(data.rsvp.paymentConfirmed)
+        Alert.alert(
+          'Success', 
+          data.message || `RSVP updated to "${status}"`,
+          [
+            {
+              text: 'OK',
+              onPress: () => fetchRsvpDetails() // Refresh RSVP details
+            }
+          ]
+        )
       } else {
-        const errorData = await response.json()
-        Alert.alert('Error', errorData.error || 'Failed to update RSVP')
+        Alert.alert('Error', data.error || 'Failed to update RSVP')
       }
     } catch (error) {
-      console.error('Error updating RSVP:', error)
-      Alert.alert('Error', 'Failed to update RSVP')
+      console.error('💥 [RSVP] Error:', error)
+      Alert.alert('Error', 'Failed to update RSVP. Please try again.')
     } finally {
       setRsvpLoading(false)
     }
@@ -374,6 +445,55 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
           </View>
         </View>
 
+        {/* QR Code Section - Show only if payment is confirmed */}
+        {rsvpStatus === 'Yes' && paymentConfirmed && rsvpData?.qrCode && (
+          <View style={styles.section}>
+            <View style={styles.qrSection}>
+              <Text style={styles.sectionTitle}>✅ Your Event Pass</Text>
+              <Text style={styles.qrSubtitle}>
+                Payment confirmed! Show this QR code at the event entrance.
+              </Text>
+              <View style={styles.qrCodeContainer}>
+                <QRCodeTemplate
+                  eventId={rsvpData.qrCode.eventId}
+                  userId={rsvpData.qrCode.userId}
+                  userEmail={rsvpData.qrCode.userEmail}
+                  userName={rsvpData.qrCode.userName}
+                  eventTitle={rsvpData.qrCode.eventTitle}
+                  rsvpId={rsvpData.rsvpId}
+                  size={220}
+                  showText={true}
+                />
+              </View>
+              {rsvpData.checkedIn && (
+                <View style={styles.checkedInBadge}>
+                  <Ionicons name="checkmark-done-circle" size={20} color="#10b981" />
+                  <Text style={styles.checkedInText}>Already Checked In</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        )}
+
+        {/* Payment Status - Show if RSVPed but not confirmed */}
+        {rsvpStatus === 'Yes' && !paymentConfirmed && (
+          <View style={styles.section}>
+            <View style={styles.paymentPendingCard}>
+              <Ionicons name="time-outline" size={32} color="#f59e0b" />
+              <Text style={styles.paymentPendingTitle}>Payment Pending</Text>
+              <Text style={styles.paymentPendingText}>
+                Your RSVP has been submitted. Once your payment is confirmed by the admin, 
+                you'll receive your QR code for event check-in.
+              </Text>
+              {rsvpData?.paymentReference && (
+                <Text style={styles.paymentReference}>
+                  Reference: {rsvpData.paymentReference}
+                </Text>
+              )}
+            </View>
+          </View>
+        )}
+
         {/* Event Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Event Details</Text>
@@ -454,14 +574,14 @@ export default function ModernEventDetailsScreen({ route, navigation }: EventDet
         <View style={styles.footerActions}>
           <TouchableOpacity 
             style={styles.primaryAction} 
-            onPress={() => navigation.navigate('Events')}
+            onPress={() => navigation.goBack()}
           >
             <LinearGradient
               colors={['#6366f1', '#8b5cf6']}
               style={styles.primaryActionGradient}
             >
-              <Ionicons name="calendar" size={20} color="white" />
-              <Text style={styles.primaryActionText}>View All Events</Text>
+              <Ionicons name="arrow-back" size={20} color="white" />
+              <Text style={styles.primaryActionText}>Back to Events</Text>
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -811,5 +931,73 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  
+  // QR Code Styles
+  qrSection: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  qrSubtitle: {
+    fontSize: 13,
+    color: '#6b7280',
+    textAlign: 'center',
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
+  qrCodeContainer: {
+    marginVertical: 16,
+  },
+  checkedInBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#d1fae5',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginTop: 16,
+  },
+  checkedInText: {
+    marginLeft: 8,
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#10b981',
+  },
+  
+  // Payment Pending Styles
+  paymentPendingCard: {
+    backgroundColor: '#fffbeb',
+    borderRadius: 16,
+    padding: 24,
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fef3c7',
+  },
+  paymentPendingTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#f59e0b',
+    marginTop: 12,
+    marginBottom: 8,
+  },
+  paymentPendingText: {
+    fontSize: 14,
+    color: '#92400e',
+    textAlign: 'center',
+    lineHeight: 20,
+  },
+  paymentReference: {
+    marginTop: 12,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#78350f',
+    fontFamily: Platform.OS === 'ios' ? 'Courier' : 'monospace',
   },
 })

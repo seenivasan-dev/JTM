@@ -33,36 +33,59 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 
     setIsLoading(true)
     try {
+      console.log('Starting login process...')
       const response = await authApi.login({ email, password })
+      
+      console.log('Login API response received:', response.success)
       
       if (response.success && response.data) {
         // Fetch full user data after successful login
-        const userDataResponse = await fetch(`${apiConfig.baseUrl}/api/mobile/user?email=${encodeURIComponent(email)}`, {
-          method: 'GET',
-          headers: getHeaders(),
-        })
+        console.log('Fetching user data...')
+        const userDataUrl = `${apiConfig.baseUrl}/api/mobile/user?email=${encodeURIComponent(email)}`
+        console.log('User data URL:', userDataUrl)
+        
+        try {
+          const userDataResponse = await fetch(userDataUrl, {
+            method: 'GET',
+            headers: getHeaders(),
+          })
 
-        if (userDataResponse.ok) {
-          const fullUserData = await userDataResponse.json()
-          setUser(fullUserData)
+          console.log('User data response status:', userDataResponse.status)
 
-          // Handle successful login
-          if (response.data.user.mustChangePassword) {
-            // Navigate to change password screen
-            navigation.navigate('ChangePassword', { userId: response.data.user.id })
+          if (userDataResponse.ok) {
+            const fullUserData = await userDataResponse.json()
+            console.log('User data received:', fullUserData.email)
+            setUser(fullUserData)
+
+            // Handle successful login
+            if (response.data.user.mustChangePassword) {
+              // Navigate to change password screen
+              console.log('Navigating to ChangePassword')
+              navigation.navigate('ChangePassword', { userId: response.data.user.id })
+            } else {
+              // Navigate to main app
+              console.log('Navigating to MainTabs')
+              navigation.navigate('MainTabs')
+            }
           } else {
-            // Navigate to main app
-            navigation.navigate('MainTabs')
+            const errorData = await userDataResponse.text()
+            console.error('Failed to load user data:', errorData)
+            Alert.alert('Error', 'Failed to load user data. Please try again.')
           }
-        } else {
-          Alert.alert('Error', 'Failed to load user data')
+        } catch (userDataError) {
+          console.error('User data fetch error:', userDataError)
+          Alert.alert('Error', 'Failed to load your profile. Please try logging in again.')
         }
       } else {
+        console.log('Login failed:', response.error)
         Alert.alert('Login Failed', response.error || 'Invalid credentials')
       }
     } catch (error) {
       console.error('Login error:', error)
-      Alert.alert('Error', 'Failed to connect to server. Please check your network connection.')
+      Alert.alert(
+        'Connection Error', 
+        'Cannot connect to server. Please check:\n\n1. Your internet connection\n2. Server is running at http://192.168.1.105:3000'
+      )
     } finally {
       setIsLoading(false)
     }
