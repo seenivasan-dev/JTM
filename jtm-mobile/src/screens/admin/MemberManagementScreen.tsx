@@ -46,65 +46,33 @@ export default function MemberManagementScreen({ navigation }: MemberManagementS
 
   const loadMembers = async () => {
     try {
-      // TODO: Replace with actual API call
-      // const response = await fetch('/api/admin/members')
-      // const data = await response.json()
-      // setMembers(data)
+      setLoading(true)
+      // Fetch real data from API
+      const response = await fetch('http://192.168.1.105:3000/api/users')
       
-      // Mock data for now
-      setTimeout(() => {
-        const mockMembers: Member[] = [
-          {
-            id: '1',
-            name: 'John Smith',
-            email: 'john.smith@email.com',
-            membershipType: 'Family',
-            status: 'active',
-            joinDate: '2024-01-15',
-            expiryDate: '2025-01-15',
-          },
-          {
-            id: '2',
-            name: 'Sarah Johnson',
-            email: 'sarah.j@email.com',
-            membershipType: 'Individual',
-            status: 'active',
-            joinDate: '2024-02-20',
-            expiryDate: '2025-02-20',
-          },
-          {
-            id: '3',
-            name: 'Mike Wilson',
-            email: 'mike.w@email.com',
-            membershipType: 'Student',
-            status: 'pending',
-            joinDate: '2024-12-01',
-            expiryDate: '2025-12-01',
-          },
-          {
-            id: '4',
-            name: 'Lisa Davis',
-            email: 'lisa.davis@email.com',
-            membershipType: 'Family',
-            status: 'inactive',
-            joinDate: '2023-06-10',
-            expiryDate: '2024-06-10',
-          },
-          {
-            id: '5',
-            name: 'David Brown',
-            email: 'david.brown@email.com',
-            membershipType: 'Individual',
-            status: 'active',
-            joinDate: '2024-03-15',
-            expiryDate: '2025-03-15',
-          },
-        ]
-        setMembers(mockMembers)
-        setLoading(false)
-      }, 1000)
+      if (!response.ok) {
+        throw new Error('Failed to fetch members')
+      }
+      
+      const data = await response.json()
+      console.log('✅ [MemberManagement] Loaded members:', data.users?.length || 0)
+      
+      // Transform API data to match component interface
+      const transformedMembers: Member[] = (data.users || []).map((user: any) => ({
+        id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        membershipType: user.membershipType,
+        status: user.isActive ? 'active' : 'inactive',
+        joinDate: new Date(user.createdAt).toLocaleDateString(),
+        expiryDate: user.membershipExpiry ? new Date(user.membershipExpiry).toLocaleDateString() : 'N/A',
+      }))
+      
+      setMembers(transformedMembers)
+      setLoading(false)
     } catch (error) {
-      console.error('Error loading members:', error)
+      console.error('❌ [MemberManagement] Error loading members:', error)
+      Alert.alert('Error', 'Failed to load members. Please try again.')
       setLoading(false)
     }
   }
