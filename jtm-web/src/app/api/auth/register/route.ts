@@ -40,6 +40,9 @@ export async function POST(request: NextRequest) {
           mustChangePassword: true,
           isActive: false, // Admin needs to activate
           importedFromExcel: false,
+          // Payment information
+          initialPaymentMethod: body.paymentMethod || null,
+          initialPaymentConfirmation: body.paymentConfirmation || null,
         },
       })
       

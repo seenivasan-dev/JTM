@@ -26,6 +26,9 @@ model User {
   importedFromExcel Boolean          @default(false)
   activatedBy       String?          // Admin ID who activated
   activatedAt       DateTime?
+  // Payment information
+  initialPaymentMethod       String?
+  initialPaymentConfirmation String?
   address           Address?
   familyMembers     FamilyMember[]
   rsvpResponses     RSVPResponse[]

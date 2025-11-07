@@ -32,6 +32,9 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
     state: '',
     zipCode: '',
     country: 'USA',
+    // Payment fields
+    paymentMethod: 'Zelle',
+    paymentConfirmation: '',
   })
   const [familyMembers, setFamilyMembers] = useState<Array<{
     firstName: string
@@ -104,6 +107,13 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       Alert.alert('Error', 'ZIP code must be in format 12345 or 12345-6789')
       return false
     }
+
+    // Validate payment confirmation
+    if (!formData.paymentConfirmation.trim()) {
+      Alert.alert('Error', 'Payment confirmation number is required')
+      return false
+    }
+
     return true
   }
 
@@ -149,6 +159,8 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
       email: formData.email.trim().toLowerCase(),
       mobileNumber: formData.mobileNumber.replace(/\D/g, ''), // Remove non-digits
       membershipType: formData.membershipType,
+      paymentMethod: formData.paymentMethod,
+      paymentConfirmation: formData.paymentConfirmation.trim(),
       address: {
         street: formData.street.trim(),
         city: formData.city.trim(),
@@ -305,9 +317,51 @@ export default function RegisterScreen({ navigation }: RegisterScreenProps) {
                   ]}>
                     {type.charAt(0) + type.slice(1).toLowerCase()}
                   </Text>
+                 </TouchableOpacity>
+              ))}
+            </View>
+            <Text style={styles.feeNote}>
+              Annual membership fee • Renews every January 1st
+            </Text>
+          </View>
+
+          {/* Payment Information Section */}
+          <View style={styles.paymentSection}>
+            <Text style={styles.sectionTitle}>Payment Information</Text>
+            
+            <View style={styles.paymentInfo}>
+              <Text style={styles.paymentInfoText}>
+                Please complete your payment before submitting registration
+              </Text>
+            </View>
+
+            <Text style={[styles.sectionTitle, { fontSize: 14 }]}>Payment Method</Text>
+            <View style={styles.paymentMethodOptions}>
+              {['Zelle', 'Venmo', 'Cash', 'Check'].map((method) => (
+                <TouchableOpacity
+                  key={method}
+                  style={[
+                    styles.paymentMethodButton,
+                    formData.paymentMethod === method && styles.paymentMethodSelected
+                  ]}
+                  onPress={() => handleInputChange('paymentMethod', method)}
+                >
+                  <Text style={[
+                    styles.paymentMethodText,
+                    formData.paymentMethod === method && styles.paymentMethodTextSelected
+                  ]}>
+                    {method}
+                  </Text>
                 </TouchableOpacity>
               ))}
             </View>
+
+            <TextInput
+              style={styles.input}
+              placeholder={`${formData.paymentMethod} Confirmation Number / Transaction ID`}
+              value={formData.paymentConfirmation}
+              onChangeText={(text) => handleInputChange('paymentConfirmation', text)}
+            />
           </View>
 
           {/* Family Members Section - Only show for FAMILY membership */}
@@ -494,6 +548,72 @@ const styles = StyleSheet.create({
   membershipOptionTextSelected: {
     color: '#dc2626',
     fontWeight: '600',
+  },
+  membershipFeeText: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#6b7280',
+    marginTop: 4,
+  },
+  membershipFeeTextSelected: {
+    color: '#dc2626',
+  },
+  feeNote: {
+    fontSize: 12,
+    color: '#9ca3af',
+    textAlign: 'center',
+    marginTop: 8,
+    fontStyle: 'italic',
+  },
+  paymentSection: {
+    marginBottom: 16,
+    backgroundColor: '#fffbeb',
+    padding: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#fcd34d',
+  },
+  paymentMethodOptions: {
+    flexDirection: 'row',
+    marginBottom: 12,
+  },
+  paymentMethodButton: {
+    flex: 1,
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#d1d5db',
+    borderRadius: 6,
+    marginHorizontal: 4,
+    alignItems: 'center',
+  },
+  paymentMethodSelected: {
+    borderColor: '#f59e0b',
+    backgroundColor: '#fef3c7',
+  },
+  paymentMethodText: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  paymentMethodTextSelected: {
+    color: '#f59e0b',
+    fontWeight: '600',
+  },
+  paymentInfo: {
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 6,
+    marginBottom: 12,
+  },
+  paymentInfoTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  paymentInfoText: {
+    fontSize: 13,
+    color: '#6b7280',
+    lineHeight: 18,
   },
   registerButton: {
     backgroundColor: '#dc2626',
