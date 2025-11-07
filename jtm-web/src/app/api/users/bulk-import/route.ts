@@ -3,6 +3,9 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
+import bcrypt from 'bcryptjs';
+import { sendEmail } from '@/lib/email';
+import { generateWelcomeEmail } from '@/lib/email/templates';
 
 const bulkUserSchema = z.object({
   users: z.array(z.object({
@@ -72,6 +75,41 @@ async function handleBulkActivation(body: any, admin: any) {
   const validatedData = bulkActivationSchema.parse(body);
   const { userIds, action } = validatedData;
 
+  // If activating, first check which users need temp passwords
+  const tempPasswordMap = new Map<string, string>();
+  
+  if (action === 'activate') {
+    const usersToActivate = await prisma.user.findMany({
+      where: {
+        id: { in: userIds },
+      },
+      select: {
+        id: true,
+        tempPassword: true,
+      },
+    });
+
+    // Generate temp passwords for users who don't have them
+    for (const user of usersToActivate) {
+      if (!user.tempPassword) {
+        const tempPassword = Math.random().toString(36).slice(-8);
+        const hashedTempPassword = await bcrypt.hash(tempPassword, 12);
+        
+        // Update user with temp password and mustChangePassword flag
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            tempPassword: hashedTempPassword,
+            mustChangePassword: true,
+          },
+        });
+        
+        // Store plain text password for email
+        tempPasswordMap.set(user.id, tempPassword);
+      }
+    }
+  }
+
   const updateData = {
     isActive: action === 'activate',
     activatedBy: action === 'activate' ? admin.id : null,
@@ -84,6 +122,71 @@ async function handleBulkActivation(body: any, admin: any) {
     },
     data: updateData,
   });
+
+  // Send welcome emails to activated users
+  if (action === 'activate') {
+    const activatedUsers = await prisma.user.findMany({
+      where: {
+        id: { in: userIds },
+      },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+      },
+    });
+
+    const emailResults = [];
+    
+    for (const user of activatedUsers) {
+      // Use the newly generated temp password from the map
+      const tempPassword = tempPasswordMap.get(user.id);
+      
+      if (tempPassword) {
+        try {
+          const emailTemplate = generateWelcomeEmail({
+            firstName: user.firstName,
+            email: user.email,
+            tempPassword: tempPassword, // Use plain text password for email
+            loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+          });
+
+          const result = await sendEmail({
+            to: user.email,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            text: emailTemplate.text,
+            tags: ['activation', 'welcome', 'bulk-import'],
+          });
+
+          emailResults.push({
+            email: user.email,
+            sent: result.success,
+          });
+
+          console.log(`✅ Welcome email sent to ${user.email} with temp password`);
+        } catch (error) {
+          console.error(`❌ Failed to send email to ${user.email}:`, error);
+          emailResults.push({
+            email: user.email,
+            sent: false,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      } else {
+        console.log(`⚠️  User ${user.email} already had a temp password, skipping email`);
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      message: `Successfully ${action}d ${userIds.length} users`,
+      count: userIds.length,
+      emailsSent: emailResults.filter(r => r.sent).length,
+      emailsFailed: emailResults.filter(r => !r.sent).length,
+      emailResults,
+    });
+  }
 
   return NextResponse.json({
     success: true,

@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { signIn } from 'next-auth/react'
+import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -16,6 +16,7 @@ export function LoginForm() {
   const [error, setError] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
+  const { data: session, update } = useSession()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -32,8 +33,20 @@ export function LoginForm() {
       if (result?.error) {
         setError('Invalid credentials. Please try again.')
       } else {
-        // Redirect to dashboard
-        router.push('/dashboard')
+        // Force session refresh to get latest user data
+        await update()
+        
+        // Fetch session to check mustChangePassword flag
+        const response = await fetch('/api/auth/session')
+        const sessionData = await response.json()
+        
+        if (sessionData?.user?.mustChangePassword) {
+          // Redirect to password change page
+          router.push('/auth/change-password')
+        } else {
+          // Redirect to dashboard
+          router.push('/dashboard')
+        }
       }
     } catch (error) {
       setError('An error occurred. Please try again.')

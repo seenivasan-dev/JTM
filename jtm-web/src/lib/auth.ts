@@ -74,7 +74,7 @@ export const authOptions: NextAuthOptions = {
     secret: process.env.NEXTAUTH_SECRET,
   },
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, trigger }) {
       if (user) {
         token.id = (user as any).id
         token.firstName = (user as any).firstName
@@ -83,6 +83,23 @@ export const authOptions: NextAuthOptions = {
         token.isActive = (user as any).isActive
         token.mustChangePassword = (user as any).mustChangePassword
       }
+      
+      // Refresh user data from database on update trigger (e.g., after password change)
+      if (trigger === 'update' && token.id) {
+        const updatedUser = await prisma.user.findUnique({
+          where: { id: token.id as string },
+          select: {
+            mustChangePassword: true,
+            isActive: true,
+          },
+        })
+        
+        if (updatedUser) {
+          token.mustChangePassword = updatedUser.mustChangePassword
+          token.isActive = updatedUser.isActive
+        }
+      }
+      
       return token
     },
     async session({ session, token }) {

@@ -45,12 +45,15 @@ export default function RegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [tempPassword, setTempPassword] = useState('');
   const router = useRouter();
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
     defaultValues: {
+      firstName: '',
+      lastName: '',
+      email: '',
+      mobileNumber: '',
       membershipType: 'INDIVIDUAL',
       address: {
         street: '',
@@ -101,13 +104,13 @@ export default function RegistrationForm() {
         throw new Error(result.error || 'Registration failed');
       }
 
-      setSuccess('Registration successful! Your account is pending admin approval.');
-      setTempPassword(result.tempPassword);
+      // Use the message from the API response
+      setSuccess(result.message || 'Registration successful! Your account is pending admin approval. You will receive an email once activated.');
       
-      // Redirect to login after 3 seconds
+      // Redirect to login after 5 seconds
       setTimeout(() => {
         router.push('/auth/login');
-      }, 3000);
+      }, 5000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -143,16 +146,14 @@ export default function RegistrationForm() {
           )}
 
           {success && (
-            <Alert className="mb-6">
-              <AlertDescription>
-                {success}
-                {tempPassword && (
-                  <div className="mt-2">
-                    <strong>Temporary Password:</strong> {tempPassword}
-                    <br />
-                    <small>Please save this password and change it when you first log in.</small>
-                  </div>
-                )}
+            <Alert className="mb-6 bg-green-50 border-green-200">
+              <AlertDescription className="text-green-800">
+                <div className="space-y-2">
+                  <p className="font-semibold">{success}</p>
+                  <p className="text-sm">
+                    You will receive an email with login instructions once an administrator activates your account.
+                  </p>
+                </div>
               </AlertDescription>
             </Alert>
           )}
@@ -393,7 +394,7 @@ export default function RegistrationForm() {
                             <FormItem>
                               <FormLabel>Contact Number (Optional)</FormLabel>
                               <FormControl>
-                                <Input placeholder="+1 (555) 123-4567" {...field} />
+                                <Input placeholder="+1 (555) 123-4567" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
@@ -406,7 +407,7 @@ export default function RegistrationForm() {
                             <FormItem>
                               <FormLabel>Email (Optional)</FormLabel>
                               <FormControl>
-                                <Input type="email" placeholder="jane.doe@example.com" {...field} />
+                                <Input type="email" placeholder="jane.doe@example.com" {...field} value={field.value || ''} />
                               </FormControl>
                               <FormMessage />
                             </FormItem>

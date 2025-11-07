@@ -133,11 +133,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User with this email already exists' }, { status: 400 });
     }
 
-    // Generate temporary password
-    const tempPassword = Math.random().toString(36).slice(-8);
-    const hashedTempPassword = await bcrypt.hash(tempPassword, 12);
-
-    // Create user with address and family members
+    // Create user WITHOUT temp password - will be generated when admin activates
+    // User starts as inactive and must be activated by admin
     const user = await prisma.user.create({
       data: {
         firstName: validatedData.firstName,
@@ -145,8 +142,8 @@ export async function POST(request: NextRequest) {
         email: validatedData.email,
         mobileNumber: validatedData.mobileNumber,
         membershipType: validatedData.membershipType,
-        tempPassword: hashedTempPassword,
-        mustChangePassword: true,
+        isActive: false, // User is inactive until admin activates
+        mustChangePassword: false, // Will be set to true when admin activates
         address: {
           create: validatedData.address,
         },
@@ -160,17 +157,14 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // TODO: Send welcome email with temporary password
-    // For now, return the temp password (in production, only send via email)
-    
+    // Return success message - user must wait for admin activation
     return NextResponse.json({
-      message: 'User created successfully',
+      message: 'Registration successful! Your account is pending admin approval. You will receive an email with login instructions once your account is activated.',
       user: {
         ...user,
         password: undefined,
         tempPassword: undefined,
       },
-      tempPassword, // Remove this in production
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

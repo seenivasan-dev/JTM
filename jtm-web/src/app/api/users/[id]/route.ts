@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { sendEmail } from '@/lib/email';
+import { generateWelcomeEmail } from '@/lib/email/templates';
 
 const updateUserSchema = z.object({
   firstName: z.string().min(2).optional(),
@@ -104,6 +106,15 @@ export async function PUT(
     const body = await request.json();
     const validatedData = updateUserSchema.parse(body);
 
+    // Get the user being updated (for checking activation status)
+    const existingUser = await prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!existingUser) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
+
     // Users can update their own profile, admins can update any profile
     const currentUser = await prisma.user.findUnique({
       where: { email: session.user.email },
@@ -117,8 +128,22 @@ export async function PUT(
       return NextResponse.json({ error: 'Access denied' }, { status: 403 });
     }
 
+    // Check if user is being activated
+    const isBeingActivated = isAdmin && 
+                            validatedData.isActive === true && 
+                            existingUser.isActive === false;
+
     // Prepare update data
     const updateData: Record<string, unknown> = {};
+
+    // Generate temp password if activating a user who doesn't have one
+    let tempPasswordPlainText: string | undefined;
+    if (isBeingActivated && !existingUser.tempPassword) {
+      tempPasswordPlainText = Math.random().toString(36).slice(-8);
+      // Store hashed version in database
+      updateData.tempPassword = await bcrypt.hash(tempPasswordPlainText, 12);
+      updateData.mustChangePassword = true;
+    }
     
     if (validatedData.firstName) updateData.firstName = validatedData.firstName;
     if (validatedData.lastName) updateData.lastName = validatedData.lastName;
@@ -169,6 +194,31 @@ export async function PUT(
         notifications: true,
       },
     });
+
+    // Send welcome email if user was just activated
+    if (isBeingActivated && tempPasswordPlainText) {
+      try {
+        const emailTemplate = generateWelcomeEmail({
+          firstName: updatedUser.firstName,
+          email: updatedUser.email,
+          tempPassword: tempPasswordPlainText, // Use the plain text version for email
+          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+        });
+
+        await sendEmail({
+          to: updatedUser.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['activation', 'welcome', 'user-activation'],
+        });
+
+        console.log(`✅ Welcome email sent to ${updatedUser.email} upon activation with temp password`);
+      } catch (emailError) {
+        console.error(`❌ Failed to send welcome email to ${updatedUser.email}:`, emailError);
+        // Don't fail the request if email fails
+      }
+    }
 
     return NextResponse.json({
       message: 'User updated successfully',
