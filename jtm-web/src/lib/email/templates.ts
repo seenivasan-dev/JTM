@@ -48,7 +48,7 @@ export function generateWelcomeEmail(params: {
   <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
     <p style="font-size: 16px; margin-bottom: 20px;">Hello <strong>${firstName}</strong>,</p>
     
-    <p>Welcome to the Jagadguru Temple of Minnesota Community platform! Your account has been successfully created.</p>
+    <p>Welcome to the JTM Community platform! Your account has been successfully created.</p>
     
     <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
       <h3 style="margin-top: 0; color: #1e40af; font-size: 18px;">📧 Your Login Credentials</h3>
@@ -80,15 +80,15 @@ export function generateWelcomeEmail(params: {
         <li>Stay updated with community notifications</li>
       </ul>
     </div>
-    
-    <p style="margin-top: 30px;">If you have any questions or need assistance, please contact our admin team at <a href="mailto:${process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org'}" style="color: #3b82f6;">${process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org'}</a>.</p>
-    
+
+    <p style="margin-top: 30px;">If you have any questions or need assistance, please contact our admin team at <a href="mailto:${process.env.ADMIN_EMAIL || 'jtm-notifications@jaxtamilmandram.org'}" style="color: #3b82f6;">${process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org'}</a>.</p>
+
     <p style="margin-top: 20px;">Best regards,<br><strong>JTM Community Team</strong></p>
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
     <p>This is an automated message. Please do not reply to this email.</p>
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -99,7 +99,7 @@ Welcome to JTM Community!
 
 Hello ${firstName},
 
-Welcome to the Jagadguru Temple of Minnesota Community platform! Your account has been successfully created.
+Welcome to the JTM Community platform! Your account has been successfully created.
 
 Your Login Credentials:
 Email: ${email}
@@ -117,7 +117,7 @@ What You Can Do:
 - Access your event QR codes
 - Stay updated with community notifications
 
-If you have any questions, please contact us at ${process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org'}.
+If you have any questions, please contact us at ${process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org'}.
 
 Best regards,
 JTM Community Team
@@ -172,7 +172,7 @@ export function generateRSVPConfirmationEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -260,7 +260,7 @@ export function generateRSVPApprovedEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -347,7 +347,7 @@ export function generateEventReminderEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -422,7 +422,7 @@ export function generateRenewalRequestEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -498,7 +498,7 @@ export function generateRenewalApprovedEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -574,7 +574,7 @@ export function generateRenewalRejectedEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -662,7 +662,7 @@ export function generateRenewalReminderEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota. All rights reserved.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
@@ -743,7 +743,7 @@ export function generateAdminRenewalNotificationEmail(params: {
   </div>
   
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
-    <p>© ${new Date().getFullYear()} Jagadguru Temple of Minnesota - Admin Notification</p>
+    <p>© ${new Date().getFullYear()} JTM Community - Admin Notification</p>
   </div>
 </body>
 </html>

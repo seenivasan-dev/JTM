@@ -49,7 +49,7 @@ export interface EmailResult {
  */
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   try {
-    const fromEmail = options.from?.email || process.env.SMTP_FROM_EMAIL || 'noreply@jagadgurutemple.org'
+    const fromEmail = options.from?.email || process.env.SMTP_FROM_EMAIL || 'noreply@jaxtamilmandram.org'
     const fromName = options.from?.name || process.env.SMTP_FROM_NAME || 'JTM Community'
 
     const mailOptions = {

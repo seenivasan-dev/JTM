@@ -210,7 +210,7 @@ export async function POST(request: NextRequest) {
       })
 
       await sendEmail({
-        to: process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org',
+        to: process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org',
         subject: emailTemplate.subject,
         html: emailTemplate.html,
         text: emailTemplate.text,

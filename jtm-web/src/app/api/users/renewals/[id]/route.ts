@@ -118,7 +118,7 @@ export async function PUT(
           firstName: updatedRenewal.user.firstName,
           membershipType: renewal.newType,
           rejectionReason: adminNotes,
-          contactEmail: process.env.ADMIN_EMAIL || 'admin@jagadgurutemple.org',
+          contactEmail: process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org',
         })
 
         await sendEmail({
