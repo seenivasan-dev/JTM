@@ -23,10 +23,8 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Generate temporary password
-    const tempPassword = Math.random().toString(36).slice(-8)
-    
-    // Create user with address and family members in a transaction
+    // Create user WITHOUT temp password - will be generated when admin activates
+    // User starts as inactive and must be activated by admin
     const result = await prisma.$transaction(async (tx) => {
       // Create user
       const user = await tx.user.create({
@@ -36,13 +34,12 @@ export async function POST(request: NextRequest) {
           lastName: validatedData.lastName,
           mobileNumber: validatedData.mobileNumber,
           membershipType: validatedData.membershipType,
-          tempPassword,
-          mustChangePassword: true,
           isActive: false, // Admin needs to activate
+          mustChangePassword: false, // Will be set to true when admin activates
           importedFromExcel: false,
-          // Payment information
-          initialPaymentMethod: body.paymentMethod || null,
-          initialPaymentConfirmation: body.paymentConfirmation || null,
+          // Payment information - accept both field names for compatibility
+          initialPaymentMethod: body.initialPaymentMethod || body.paymentMethod || null,
+          initialPaymentConfirmation: body.initialPaymentConfirmation || body.paymentConfirmation || null,
         },
       })
       
@@ -79,15 +76,12 @@ export async function POST(request: NextRequest) {
       return user
     })
     
-    // TODO: Send email with temporary password
-    // This would be implemented with your email service (Resend/SendGrid)
-    console.log(`Temporary password for ${result.email}: ${tempPassword}`)
-    
+    // Return success message - user must wait for admin activation
     return NextResponse.json({
       success: true,
       data: { 
         userId: result.id,
-        message: 'Registration successful. Please check your email for login credentials.',
+        message: 'Registration successful! Your account is pending admin approval. You will receive an email with login instructions once your account is activated.',
       },
     })
     

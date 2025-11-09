@@ -35,10 +35,17 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    // Verify password
-    const isValidPassword = user.password 
-      ? await bcrypt.compare(validatedData.password, user.password)
-      : user.tempPassword === validatedData.password
+    // Verify password - check both regular password and temp password (both are hashed)
+    let isValidPassword = false;
+    
+    if (user.password) {
+      isValidPassword = await bcrypt.compare(validatedData.password, user.password);
+    }
+    
+    // If regular password didn't match, try temp password
+    if (!isValidPassword && user.tempPassword) {
+      isValidPassword = await bcrypt.compare(validatedData.password, user.tempPassword);
+    }
     
     if (!isValidPassword) {
       return NextResponse.json(

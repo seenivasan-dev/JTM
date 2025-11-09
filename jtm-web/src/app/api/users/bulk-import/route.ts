@@ -159,12 +159,20 @@ async function handleBulkActivation(body: any, admin: any) {
             tags: ['activation', 'welcome', 'bulk-import'],
           });
 
-          emailResults.push({
-            email: user.email,
-            sent: result.success,
-          });
-
-          console.log(`✅ Welcome email sent to ${user.email} with temp password`);
+          if (result.success) {
+            console.log(`✅ Welcome email sent to ${user.email} with temp password`);
+            emailResults.push({
+              email: user.email,
+              sent: true,
+            });
+          } else {
+            console.error(`❌ Failed to send email to ${user.email}:`, result.error);
+            emailResults.push({
+              email: user.email,
+              sent: false,
+              error: result.error,
+            });
+          }
         } catch (error) {
           console.error(`❌ Failed to send email to ${user.email}:`, error);
           emailResults.push({

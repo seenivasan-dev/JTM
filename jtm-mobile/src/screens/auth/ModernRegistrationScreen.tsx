@@ -102,11 +102,7 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
     lastName: '',
     email: '',
     mobileNumber: '',
-    password: '',
-    confirmPassword: '',
   })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [errors, setErrors] = useState<any>({})
 
@@ -135,20 +131,6 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
       newErrors.mobileNumber = 'Mobile number is required'
     } else if (!/^\d{10}$/.test(formData.mobileNumber.replace(/\D/g, ''))) {
       newErrors.mobileNumber = 'Please enter a valid 10-digit mobile number'
-    }
-
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = 'Password is required'
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters long'
-    }
-
-    // Confirm Password validation
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your password'
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match'
     }
 
     setErrors(newErrors)
@@ -181,7 +163,14 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
           lastName: formData.lastName.trim(),
           email: formData.email.trim().toLowerCase(),
           mobileNumber: formData.mobileNumber.trim(),
-          password: formData.password,
+          membershipType: 'INDIVIDUAL', // Default membership type
+          address: {
+            street: '', // These would come from an extended form
+            city: '',
+            state: '',
+            zipCode: '',
+            country: 'USA',
+          },
         }),
       })
 
@@ -189,8 +178,8 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
 
       if (response.ok) {
         Alert.alert(
-          'Registration Successful!',
-          'Your account has been created successfully. Please log in to continue.',
+          '✅ Registration Successful!',
+          data.data?.message || 'Your account is pending admin approval. You will receive an email with login instructions once your account is activated.',
           [
             {
               text: 'OK',
@@ -218,11 +207,7 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
            formData.lastName.trim() &&
            formData.email.trim() &&
            formData.mobileNumber.trim() &&
-           formData.password &&
-           formData.confirmPassword &&
-           formData.password === formData.confirmPassword &&
-           /\S+@\S+\.\S+/.test(formData.email) &&
-           formData.password.length >= 6
+           /\S+@\S+\.\S+/.test(formData.email)
   }
 
   return (
@@ -315,33 +300,13 @@ export default function ModernRegistrationScreen({ navigation }: ModernRegistrat
                   error={errors.mobileNumber}
                 />
 
-                <ModernInput
-                  label="Password"
-                  icon="lock-closed"
-                  placeholder="Create a password"
-                  value={formData.password}
-                  onChangeText={(value) => handleInputChange('password', value)}
-                  secureTextEntry={!showPassword}
-                  autoCapitalize="none"
-                  error={errors.password}
-                  showPasswordToggle={true}
-                  showPassword={showPassword}
-                  onPasswordToggle={() => setShowPassword(!showPassword)}
-                />
-
-                <ModernInput
-                  label="Confirm Password"
-                  icon="lock-closed"
-                  placeholder="Confirm your password"
-                  value={formData.confirmPassword}
-                  onChangeText={(value) => handleInputChange('confirmPassword', value)}
-                  secureTextEntry={!showConfirmPassword}
-                  autoCapitalize="none"
-                  error={errors.confirmPassword}
-                  showPasswordToggle={true}
-                  showPassword={showConfirmPassword}
-                  onPasswordToggle={() => setShowConfirmPassword(!showConfirmPassword)}
-                />
+                {/* Information Notice */}
+                <View style={styles.infoNotice}>
+                  <Ionicons name="information-circle" size={20} color="#6366f1" />
+                  <Text style={styles.infoText}>
+                    Your account will be reviewed by an administrator. You'll receive login credentials via email once approved.
+                  </Text>
+                </View>
 
                 {/* Registration Button */}
                 <TouchableOpacity
@@ -563,6 +528,24 @@ const styles = StyleSheet.create({
   termsLink: {
     color: '#6366f1',
     fontWeight: '600',
+  },
+
+  // Information Notice
+  infoNotice: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+    padding: 16,
+    borderRadius: 12,
+    gap: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(99, 102, 241, 0.2)',
+  },
+  infoText: {
+    flex: 1,
+    fontSize: 14,
+    color: '#4b5563',
+    lineHeight: 20,
   },
 
   // Footer

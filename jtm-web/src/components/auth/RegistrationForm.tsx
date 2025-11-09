@@ -37,6 +37,8 @@ const registrationSchema = z.object({
     country: z.string(),
   }),
   familyMembers: z.array(familyMemberSchema),
+  initialPaymentMethod: z.string().optional(),
+  initialPaymentConfirmation: z.string().optional(),
 });
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
@@ -63,6 +65,8 @@ export default function RegistrationForm() {
         country: 'USA',
       },
       familyMembers: [],
+      initialPaymentMethod: '',
+      initialPaymentConfirmation: '',
     },
   });
 
@@ -302,6 +306,59 @@ export default function RegistrationForm() {
                     )}
                   />
                 </div>
+              </div>
+
+              {/* Payment Information */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium">Payment Information</h3>
+                <p className="text-sm text-gray-600">
+                  Please provide your payment details. This information will be reviewed during the approval process.
+                </p>
+                
+                <FormField
+                  control={form.control}
+                  name="initialPaymentMethod"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Method (Optional)</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select payment method" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="CASH">Cash</SelectItem>
+                          <SelectItem value="CHECK">Check</SelectItem>
+                          <SelectItem value="ZELLE">Zelle</SelectItem>
+                          <SelectItem value="VENMO">Venmo</SelectItem>
+                          <SelectItem value="PAYPAL">PayPal</SelectItem>
+                          <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
+                          <SelectItem value="OTHER">Other</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="initialPaymentConfirmation"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Payment Confirmation/Reference (Optional)</FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Check number, transaction ID, or confirmation code" 
+                          {...field} 
+                          value={field.value || ''}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               {/* Family Members (only for FAMILY membership) */}

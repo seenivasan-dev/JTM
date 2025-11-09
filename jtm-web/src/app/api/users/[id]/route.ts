@@ -205,7 +205,7 @@ export async function PUT(
           loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
         });
 
-        await sendEmail({
+        const emailResult = await sendEmail({
           to: updatedUser.email,
           subject: emailTemplate.subject,
           html: emailTemplate.html,
@@ -213,7 +213,11 @@ export async function PUT(
           tags: ['activation', 'welcome', 'user-activation'],
         });
 
-        console.log(`✅ Welcome email sent to ${updatedUser.email} upon activation with temp password`);
+        if (emailResult.success) {
+          console.log(`✅ Welcome email sent to ${updatedUser.email} upon activation with temp password`);
+        } else {
+          console.error(`❌ Failed to send welcome email to ${updatedUser.email}:`, emailResult.error);
+        }
       } catch (emailError) {
         console.error(`❌ Failed to send welcome email to ${updatedUser.email}:`, emailError);
         // Don't fail the request if email fails

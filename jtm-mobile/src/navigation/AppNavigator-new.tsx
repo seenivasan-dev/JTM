@@ -11,13 +11,13 @@ import { useUser } from '../context/UserContext'
 
 // Import screens
 import ModernLoginScreen from '../screens/auth/ModernLoginScreen'
-import ModernRegistrationScreen from '../screens/auth/ModernRegistrationScreen'
+import EnhancedRegistrationScreen from '../screens/auth/EnhancedRegistrationScreen'
 import ModernMemberDashboard from '../screens/member/ModernMemberDashboard'
 import ModernProfileScreen from '../screens/member/ModernProfileScreen'
 import ModernEventsScreen from '../screens/member/ModernEventsScreen'
 import ModernEventDetailsScreen from '../screens/member/ModernEventDetailsScreen'
 import NotificationsScreen from '../screens/member/NotificationsScreen'
-import ChangePasswordScreen from '../screens/member/ChangePasswordScreen'
+import ChangePasswordScreen from '../screens/auth/ChangePasswordScreen'
 import AdminDashboardScreen from '../screens/admin/AdminDashboardScreen'
 import CreateEventScreen from '../screens/admin/CreateEventScreen'
 
@@ -95,7 +95,7 @@ function AuthNavigator() {
       }}
     >
       <AuthStack.Screen name="Login" component={ModernLoginScreen} />
-      <AuthStack.Screen name="Register" component={ModernRegistrationScreen} />
+      <AuthStack.Screen name="Register" component={EnhancedRegistrationScreen} />
     </AuthStack.Navigator>
   )
 }
@@ -223,39 +223,57 @@ export default function AppNavigator() {
         }}
       >
         {user ? (
-          // User is logged in - show main app screens
-          <>
-            <Stack.Screen 
-              name={user.isAdmin ? "AdminTabs" : "MainTabs"} 
-              component={user.isAdmin ? AdminTabNavigator : MemberTabNavigator} 
-            />
+          // User is logged in
+          user.mustChangePassword ? (
+            // User must change password - only show ChangePassword screen
             <Stack.Screen 
               name="ChangePassword" 
               component={ChangePasswordScreen}
               options={{
                 headerShown: true,
-                title: 'Change Password',
+                title: 'Change Password Required',
                 headerStyle: {
                   backgroundColor: '#6366f1',
                 },
                 headerTintColor: '#fff',
+                headerLeft: () => null, // Disable back button
               }}
             />
-            <Stack.Screen 
-              name="EventDetail" 
-              component={ModernEventDetailsScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-            <Stack.Screen 
-              name="CreateEvent" 
-              component={CreateEventScreen}
-              options={{
-                headerShown: false,
-              }}
-            />
-          </>
+          ) : (
+            // User can access main app screens
+            <>
+              <Stack.Screen 
+                name={user.isAdmin ? "AdminTabs" : "MainTabs"} 
+                component={user.isAdmin ? AdminTabNavigator : MemberTabNavigator} 
+              />
+              <Stack.Screen 
+                name="ChangePassword" 
+                component={ChangePasswordScreen}
+                options={{
+                  headerShown: true,
+                  title: 'Change Password',
+                  headerStyle: {
+                    backgroundColor: '#6366f1',
+                  },
+                  headerTintColor: '#fff',
+                }}
+              />
+              <Stack.Screen 
+                name="EventDetail" 
+                component={ModernEventDetailsScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+              <Stack.Screen 
+                name="CreateEvent" 
+                component={CreateEventScreen}
+                options={{
+                  headerShown: false,
+                }}
+              />
+            </>
+          )
         ) : (
           // User is not logged in - show auth screens
           <Stack.Screen name="Auth" component={AuthNavigator} />

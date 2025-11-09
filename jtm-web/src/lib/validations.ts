@@ -6,13 +6,13 @@ export const memberRegistrationSchema = z.object({
   firstName: z.string().min(1, 'First name is required'),
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
-  mobileNumber: z.string().regex(/^\d{10}$/, 'Mobile number must be 10 digits'),
+  mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits').transform(val => val.replace(/\D/g, '')), // Strip non-digits
   membershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'CUSTOM']),
   address: z.object({
     street: z.string().min(1, 'Street address is required'),
     city: z.string().min(1, 'City is required'),
     state: z.string().min(2, 'State is required'),
-    zipCode: z.string().regex(/^\d{5}(-\d{4})?$/, 'Invalid ZIP code'),
+    zipCode: z.string().min(5, 'ZIP code is required'), // More flexible ZIP validation
     country: z.string().default('USA'),
   }),
   familyMembers: z.array(z.object({

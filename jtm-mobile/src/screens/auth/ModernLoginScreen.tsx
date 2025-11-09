@@ -63,8 +63,25 @@ export default function ModernLoginScreen({ navigation }: ModernLoginScreenProps
 
       if (response.ok) {
         if (data.success) {
-          setUser(data.data.user)
-          Alert.alert('Success', data.message || 'Logged in successfully!')
+          const user = data.data.user
+          setUser(user)
+          
+          // Check if user must change password
+          if (user.mustChangePassword) {
+            Alert.alert(
+              '🔒 Password Change Required',
+              'For security reasons, you must change your password before accessing the app.',
+              [
+                {
+                  text: 'Change Password',
+                  onPress: () => navigation.navigate('ChangePassword')
+                }
+              ],
+              { cancelable: false }
+            )
+          } else {
+            Alert.alert('Success', data.message || 'Logged in successfully!')
+          }
         } else {
           Alert.alert('Login Failed', data.error || 'Login failed')
         }

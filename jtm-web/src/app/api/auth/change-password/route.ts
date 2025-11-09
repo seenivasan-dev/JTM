@@ -56,14 +56,19 @@ export async function POST(request: NextRequest) {
     // Verify current password (check both hashed password and temp password)
     let isCurrentPasswordValid = false;
 
-    if (user.tempPassword && user.tempPassword === validatedData.currentPassword) {
-      // User is using temporary password
-      isCurrentPasswordValid = true;
-    } else if (user.password) {
-      // User has a permanent password, verify it
+    // Try regular password first
+    if (user.password) {
       isCurrentPasswordValid = await bcrypt.compare(
         validatedData.currentPassword,
         user.password
+      );
+    }
+
+    // If regular password didn't match, try temp password
+    if (!isCurrentPasswordValid && user.tempPassword) {
+      isCurrentPasswordValid = await bcrypt.compare(
+        validatedData.currentPassword,
+        user.tempPassword
       );
     }
 
@@ -75,14 +80,20 @@ export async function POST(request: NextRequest) {
     }
 
     // Prevent reusing temporary password as new password
-    if (user.tempPassword === validatedData.newPassword) {
-      return NextResponse.json(
-        { 
-          success: false, 
-          error: 'New password cannot be the same as your temporary password' 
-        },
-        { status: 400 }
+    if (user.tempPassword) {
+      const isSameAsTempPassword = await bcrypt.compare(
+        validatedData.newPassword,
+        user.tempPassword
       );
+      if (isSameAsTempPassword) {
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'New password cannot be the same as your temporary password' 
+          },
+          { status: 400 }
+        );
+      }
     }
 
     // Prevent reusing current password

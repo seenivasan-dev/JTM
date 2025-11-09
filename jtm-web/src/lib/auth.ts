@@ -38,10 +38,17 @@ export const authOptions: NextAuthOptions = {
           throw new Error('Account is not active. Please contact admin.')
         }
 
-        // Verify password
-        const isValidPassword = user.password 
-          ? await bcrypt.compare(credentials.password, user.password)
-          : user.tempPassword === credentials.password
+        // Verify password - check both regular password and temp password (both are hashed)
+        let isValidPassword = false;
+        
+        if (user.password) {
+          isValidPassword = await bcrypt.compare(credentials.password, user.password);
+        }
+        
+        // If regular password didn't match, try temp password
+        if (!isValidPassword && user.tempPassword) {
+          isValidPassword = await bcrypt.compare(credentials.password, user.tempPassword);
+        }
 
         if (!isValidPassword) {
           return null
