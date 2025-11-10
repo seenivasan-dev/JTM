@@ -13,9 +13,10 @@ const renewalActionSchema = z.object({
 // PUT /api/users/renewals/[id] - Process renewal request (Admin only)
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id: renewalId } = await params
     const session = await getServerSession(authOptions);
     
     if (!session?.user?.email) {
@@ -31,13 +32,12 @@ export async function PUT(
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { id } = await params;
     const body = await request.json();
     const { action, adminNotes } = renewalActionSchema.parse(body);
 
     // Get the renewal request
     const renewal = await prisma.membershipRenewal.findUnique({
-      where: { id },
+      where: { id: renewalId },
       include: { user: true },
     });
 
@@ -53,7 +53,7 @@ export async function PUT(
 
     // Update renewal status
     const updatedRenewal = await prisma.membershipRenewal.update({
-      where: { id },
+      where: { id: renewalId },
       data: {
         status: action === 'approve' ? 'APPROVED' : 'REJECTED',
         adminNotes,
