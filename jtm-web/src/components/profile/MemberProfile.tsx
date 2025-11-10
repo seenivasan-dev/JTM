@@ -578,6 +578,7 @@ function PasswordChangeDialog({ open, onOpenChange, userId }: any) {
 
   const form = useForm({
     resolver: zodResolver(passwordSchema),
+    mode: 'onChange', // Enable real-time validation
     defaultValues: {
       currentPassword: '',
       newPassword: '',
