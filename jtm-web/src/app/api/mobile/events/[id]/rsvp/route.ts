@@ -6,10 +6,10 @@ import { prisma } from '@/lib/prisma'
 // POST - Submit or update RSVP
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: eventId } = params
+    const { id: eventId } = await params
     const body = await request.json()
     const { userId, response, paymentReference } = body
 
@@ -138,10 +138,10 @@ export async function POST(
 // GET - Check user's RSVP status
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id: eventId } = params
+    const { id: eventId } = await params
     const { searchParams } = new URL(request.url)
     const userId = searchParams.get('userId')
 
