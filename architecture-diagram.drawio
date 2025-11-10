@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="Electron" modified="2024-01-15T10:00:00.000Z" agent="Mozilla/5.0" etag="architecture-v1" version="22.1.11" type="device">
+  <diagram name="JTM-Community-Management-Platform" id="architecture">
+    <mxGraphModel dx="2000" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Title -->
+        <mxCell id="title" value="JTM Community Management Platform - Architecture Overview" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=24;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="20" width="800" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Client Layer -->
+        <mxCell id="client-layer" value="CLIENT LAYER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="100" width="1500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Web Application -->
+        <mxCell id="web-app" value="Next.js Web Application&#xa;(jtm-web)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="100" y="180" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Web Features -->
+        <mxCell id="web-features" value="• Admin Dashboard&#xa;• Member Management&#xa;• Event Management&#xa;• Bulk Import&#xa;• Analytics &amp; Reports&#xa;• RSVP Management" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="100" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Mobile Application -->
+        <mxCell id="mobile-app" value="React Native Mobile App&#xa;(jtm-mobile)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="400" y="180" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Mobile Features -->
+        <mxCell id="mobile-features" value="• Member Login&#xa;• Profile Management&#xa;• Event Viewing&#xa;• RSVP Submission&#xa;• QR Code Display&#xa;• Offline Support" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="400" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Shared Package -->
+        <mxCell id="shared-package" value="Shared Types Package&#xa;(jtm-shared)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="700" y="180" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Shared Contents -->
+        <mxCell id="shared-contents" value="• TypeScript Interfaces&#xa;• API Types&#xa;• Utility Functions&#xa;• Constants&#xa;• Validation Schemas&#xa;• Date/Format Utils" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="700" y="300" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- API Layer -->
+        <mxCell id="api-layer" value="API LAYER (Next.js API Routes)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="450" width="1500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Authentication APIs -->
+        <mxCell id="auth-apis" value="Authentication APIs&#xa;/api/auth/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- User Management APIs -->
+        <mxCell id="user-apis" value="User Management&#xa;/api/users/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Event Management APIs -->
+        <mxCell id="event-apis" value="Event Management&#xa;/api/events/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="460" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Mobile Specific APIs -->
+        <mxCell id="mobile-apis" value="Mobile Endpoints&#xa;/api/mobile/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="640" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Admin APIs -->
+        <mxCell id="admin-apis" value="Admin Operations&#xa;/api/admin/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="820" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- File Upload APIs -->
+        <mxCell id="upload-apis" value="File Upload&#xa;/api/upload/*" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffd966;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1000" y="520" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Database Layer -->
+        <mxCell id="database-layer" value="DATABASE LAYER" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="650" width="1500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- PostgreSQL Database -->
+        <mxCell id="postgresql" value="PostgreSQL Database&#xa;with Prisma ORM" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f0f0f0;strokeColor=#666666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="300" y="720" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Database Tables -->
+        <mxCell id="db-tables" value="Core Tables:&#xa;• Users (Members)&#xa;• Events&#xa;• RSVPs&#xa;• FamilyMembers&#xa;• MembershipRenewals&#xa;• AdminUsers&#xa;• Payments" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="550" y="720" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- External Services -->
+        <mxCell id="external-layer" value="EXTERNAL SERVICES" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="50" y="870" width="1500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Email Service -->
+        <mxCell id="email-service" value="Email Service&#xa;(SMTP/SendGrid)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="100" y="940" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- File Storage -->
+        <mxCell id="file-storage" value="File Storage&#xa;(AWS S3/Cloudinary)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="280" y="940" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Payment Gateway -->
+        <mxCell id="payment-gateway" value="Payment Gateway&#xa;(Stripe/PayPal)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="460" y="940" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Analytics -->
+        <mxCell id="analytics" value="Analytics&#xa;(Google Analytics)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="640" y="940" width="150" height="80" as="geometry" />
+        </mxCell>
+        
+        <!-- Deployment Infrastructure -->
+        <mxCell id="deployment-layer" value="DEPLOYMENT INFRASTRUCTURE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="650" width="500" height="40" as="geometry" />
+        </mxCell>
+        
+        <!-- Web Deployment -->
+        <mxCell id="web-deploy" value="Web Deployment&#xa;Vercel" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#5cb85c;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Mobile Deployment -->
+        <mxCell id="mobile-deploy" value="Mobile Deployment&#xa;EAS Build" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#5cb85c;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1250" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Database Hosting -->
+        <mxCell id="db-hosting" value="Database Hosting&#xa;Railway/Supabase" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d4edda;strokeColor=#5cb85c;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="1400" y="720" width="120" height="60" as="geometry" />
+        </mxCell>
+        
+        <!-- Data Flow Arrows -->
+        <!-- Web to API -->
+        <mxCell id="web-to-api" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="web-app" target="auth-apis">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="200" y="400" as="sourcePoint" />
+            <mxPoint x="250" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Mobile to API -->
+        <mxCell id="mobile-to-api" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="mobile-app" target="mobile-apis">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="500" y="400" as="sourcePoint" />
+            <mxPoint x="550" y="350" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- API to Database -->
+        <mxCell id="api-to-db" style="endArrow=classic;html=1;rounded=0;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="user-apis" target="postgresql">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="355" y="650" as="sourcePoint" />
+            <mxPoint x="400" y="700" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Shared Package Connections -->
+        <mxCell id="shared-to-web" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#ff6600;" edge="1" parent="1" source="shared-package" target="web-app">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="650" y="230" as="sourcePoint" />
+            <mxPoint x="350" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <mxCell id="shared-to-mobile" style="endArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#ff6600;" edge="1" parent="1" source="shared-package" target="mobile-app">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="650" y="230" as="sourcePoint" />
+            <mxPoint x="650" y="230" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Key Features Box -->
+        <mxCell id="key-features" value="KEY PLATFORM FEATURES" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="100" width="500" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="features-list" value="🔐 Authentication &amp; Authorization&#xa;👥 Member Registration &amp; Management&#xa;👨‍👩‍👧‍👦 Family Member Management&#xa;🎉 Event Creation &amp; RSVP System&#xa;📋 Dynamic Form Builder for Events&#xa;📊 Admin Dashboard &amp; Analytics&#xa;📱 Cross-Platform Mobile App&#xa;📤 Bulk Member Import (Excel)&#xa;💳 Payment Verification &amp; QR Codes&#xa;📧 Email Notifications &amp; Reminders&#xa;🔄 Annual Membership Renewals&#xa;📈 Member Insights &amp; Reports&#xa;🌐 Responsive Web Interface&#xa;🔒 Role-Based Access Control" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="160" width="500" height="220" as="geometry" />
+        </mxCell>
+        
+        <!-- Technology Stack -->
+        <mxCell id="tech-stack" value="TECHNOLOGY STACK" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=14;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="400" width="500" height="40" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="tech-details" value="🌐 Frontend: Next.js 15 + React + TypeScript&#xa;📱 Mobile: React Native + Expo&#xa;🗄️ Database: PostgreSQL + Prisma ORM&#xa;🔑 Authentication: NextAuth.js + JWT&#xa;🎨 Styling: Tailwind CSS + Shadcn/UI&#xa;☁️ Deployment: Vercel (Web) + EAS (Mobile)&#xa;📧 Email: SMTP/SendGrid Integration&#xa;💾 File Storage: AWS S3/Cloudinary&#xa;🔧 Development: TypeScript + ESLint + Prettier&#xa;🧪 Testing: Jest + React Testing Library&#xa;📋 Forms: React Hook Form + Zod Validation&#xa;📊 Analytics: Privacy-focused tracking" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=10;align=left;" vertex="1" parent="1">
+          <mxGeometry x="1050" y="460" width="500" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- Security Features -->
+        <mxCell id="security-features" value="🔒 SECURITY &amp; COMPLIANCE" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#ff6666;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="850" y="940" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="security-details" value="• Input validation (Zod)&#xa;• SQL injection prevention&#xa;• XSS protection&#xa;• CORS configuration&#xa;• Rate limiting&#xa;• Secure file uploads&#xa;• GDPR compliance&#xa;• Data encryption" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffcccc;strokeColor=#ff6666;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="850" y="980" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+        <!-- Development Workflow -->
+        <mxCell id="dev-workflow" value="🔄 DEVELOPMENT WORKFLOW" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ccffcc;strokeColor=#66ff66;fontSize=12;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="940" width="200" height="30" as="geometry" />
+        </mxCell>
+        
+        <mxCell id="workflow-details" value="• Git feature branches&#xa;• Conventional commits&#xa;• Automated testing&#xa;• Pre-commit hooks&#xa;• Code reviews&#xa;• Continuous deployment&#xa;• Environment variables&#xa;• Docker containers" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ccffcc;strokeColor=#66ff66;fontSize=9;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="980" width="200" height="100" as="geometry" />
+        </mxCell>
+        
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
