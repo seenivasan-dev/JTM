@@ -7,12 +7,13 @@ import { prisma } from '@/lib/prisma'
 import QRScannerClient from '@/components/events/QRScannerClient'
 
 interface QRScannerPageProps {
-  searchParams: {
+  searchParams: Promise<{
     eventId?: string
-  }
+  }>
 }
 
 export default async function QRScannerPage({ searchParams }: QRScannerPageProps) {
+  const { eventId } = await searchParams
   const session = await getServerSession(authOptions)
   
   if (!session?.user?.email) {
@@ -43,9 +44,9 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
 
   // Get event if specified
   let event = null
-  if (searchParams.eventId) {
+  if (eventId) {
     const eventData = await prisma.event.findUnique({
-      where: { id: searchParams.eventId },
+      where: { id: eventId },
       select: {
         id: true,
         title: true,
