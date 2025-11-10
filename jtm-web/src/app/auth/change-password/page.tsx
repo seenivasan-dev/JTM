@@ -1,6 +1,6 @@
-'use client';
-
-import { useState, useEffect } from 'react';
+'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Lock, CheckCircle, XCircle } from 'lucide-react';

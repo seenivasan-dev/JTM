@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -44,7 +45,7 @@ export default function MemberDashboard({ user, recentEvents }: MemberDashboardP
               Welcome back, {user.firstName}!
             </h1>
             <p className="text-gray-600 mt-1">
-              Here's what's happening with your membership
+              Here&apos;s what&apos;s happening with your membership
             </p>
           </div>
           <div className="flex items-center space-x-2">

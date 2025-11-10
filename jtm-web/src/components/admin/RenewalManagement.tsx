@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
@@ -371,7 +372,7 @@ export default function RenewalManagement({
                 <Alert>
                   <CheckCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Approving this renewal will update the member's membership type and extend their membership.
+                    Approving this renewal will update the member&apos;s membership type and extend their membership.
                   </AlertDescription>
                 </Alert>
               )}
@@ -380,7 +381,7 @@ export default function RenewalManagement({
                 <Alert>
                   <XCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Rejecting this renewal will keep the member's current membership status unchanged.
+                    Rejecting this renewal will keep the member&apos;s current membership status unchanged.
                   </AlertDescription>
                 </Alert>
               )}

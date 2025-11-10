@@ -4,10 +4,10 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const eventId = params.id
+    const { id: eventId } = await params
 
     const event = await prisma.event.findUnique({
       where: { id: eventId },
@@ -80,10 +80,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
-    const eventId = params.id
+    const { id: eventId } = await params
     const body = await request.json()
 
     const updatedEvent = await prisma.event.update({
@@ -117,10 +117,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
-    const eventId = params.id
+    const { id: eventId } = await params
 
     await prisma.event.delete({
       where: { id: eventId },

@@ -34,7 +34,7 @@ const updateUserSchema = z.object({
 // GET /api/users/[id] - Get user by ID
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -43,7 +43,7 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Users can view their own profile, admins can view any profile
     const currentUser = await prisma.user.findUnique({
@@ -93,7 +93,7 @@ export async function GET(
 // PUT /api/users/[id] - Update user
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -102,7 +102,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const { id } = params;
+    const { id } = await params;
     const body = await request.json();
     const validatedData = updateUserSchema.parse(body);
 
@@ -245,7 +245,7 @@ export async function PUT(
 // DELETE /api/users/[id] - Delete user (Admin only)
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
     const session = await getServerSession(authOptions);
@@ -263,7 +263,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Admin access required' }, { status: 403 });
     }
 
-    const { id } = params;
+    const { id } = await params;
 
     // Check if user exists
     const user = await prisma.user.findUnique({

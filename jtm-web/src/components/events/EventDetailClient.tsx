@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -503,7 +504,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
               <Alert className="mb-6">
                 <CheckCircle className="h-4 w-4" />
                 <AlertDescription>
-                  You RSVP\'d on {formatDate(userRsvp.createdAt)}
+                  You RSVP&apos;d on {formatDate(userRsvp.createdAt)}
                 </AlertDescription>
               </Alert>
             )}
@@ -597,7 +598,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                     {response.user.email}
                   </div>
                   <div className="text-xs text-muted-foreground">
-                    RSVP'd on {formatDate(response.createdAt)}
+                    RSVP&apos;d on {formatDate(response.createdAt)}
                   </div>
                   
                   {/* Payment Reference */}

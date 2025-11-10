@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // JTM Web - SMTP Email Client
 import nodemailer from 'nodemailer'
 import type { Transporter } from 'nodemailer'

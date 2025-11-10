@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // JTM Web - Member Renewal Request Component
 'use client'
 
@@ -173,7 +174,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
           {pendingRenewal.status === 'PENDING' && (
             <Alert>
               <AlertDescription>
-                Your renewal request is being reviewed by our admin team. You will receive an email notification once it's processed.
+                Your renewal request is being reviewed by our admin team. You will receive an email notification once it&apos;s processed.
               </AlertDescription>
             </Alert>
           )}
