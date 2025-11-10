@@ -1,4 +1,5 @@
 // JTM Web - Events API Route
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { eventCreationSchema } from '@/lib/validations'

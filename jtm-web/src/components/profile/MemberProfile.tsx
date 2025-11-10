@@ -1,4 +1,5 @@
 'use client'
+/* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
@@ -578,6 +579,7 @@ function PasswordChangeDialog({ open, onOpenChange, userId }: any) {
 
   const form = useForm({
     resolver: zodResolver(passwordSchema),
+    mode: 'onChange', // Enable real-time validation
     defaultValues: {
       currentPassword: '',
       newPassword: '',

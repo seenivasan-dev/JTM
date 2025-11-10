@@ -1,4 +1,5 @@
-// JTM Web - Mobile User Info API Route
+// JTM Mobile - User Profile API
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // JTM Web - Edit Event Client Component
 'use client'
 

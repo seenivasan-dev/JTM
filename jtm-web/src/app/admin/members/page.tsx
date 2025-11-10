@@ -44,7 +44,11 @@ export default async function AdminMembersPage({
   const limit = parseInt(params.limit || '10')
 
   // Build where clause for filtering
-  const where: any = {}
+  const where: {
+    OR?: Array<{ firstName?: { contains: string; mode: string }; lastName?: { contains: string; mode: string }; email?: { contains: string; mode: string } }>;
+    isActive?: boolean;
+    membershipType?: string;
+  } = {}
 
   if (search) {
     where.OR = [

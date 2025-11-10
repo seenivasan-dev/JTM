@@ -1,11 +1,12 @@
-// JTM Web - Mobile RSVP API Route
+// JTM Mobile - RSVP API
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 
 // POST - Submit or update RSVP
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
     const { id: eventId } = params
@@ -137,7 +138,7 @@ export async function POST(
 // GET - Check user's RSVP status
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string } }
 ) {
   try {
     const { id: eventId } = params

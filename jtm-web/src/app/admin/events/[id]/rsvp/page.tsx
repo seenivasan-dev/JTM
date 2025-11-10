@@ -74,7 +74,7 @@ export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
 
   const serializedRSVPs = event.rsvpResponses.map(rsvp => ({
     id: rsvp.id,
-    responses: rsvp.responses as Record<string, any> || {},
+    responses: rsvp.responses as Record<string, string | number | boolean | string[]> || {},
     paymentReference: rsvp.paymentReference,
     paymentConfirmed: rsvp.paymentConfirmed,
     qrCode: rsvp.qrCode,

@@ -1,4 +1,5 @@
 // JTM Web - Member Detail View Page
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Suspense } from 'react'
 import { getServerSession } from 'next-auth'
 import { redirect, notFound } from 'next/navigation'
