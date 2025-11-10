@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { MembershipType, Prisma } from '@prisma/client'
 import AdminLayout from '@/components/admin/AdminLayout'
 import MemberManagement from '@/components/admin/MemberManagement'
 
@@ -44,11 +45,7 @@ export default async function AdminMembersPage({
   const limit = parseInt(params.limit || '10')
 
   // Build where clause for filtering
-  const where: {
-    OR?: Array<{ firstName?: { contains: string; mode: string }; lastName?: { contains: string; mode: string }; email?: { contains: string; mode: string } }>;
-    isActive?: boolean;
-    membershipType?: string;
-  } = {}
+  const where: Prisma.UserWhereInput = {}
 
   if (search) {
     where.OR = [
@@ -63,7 +60,7 @@ export default async function AdminMembersPage({
   }
 
   if (membershipType !== 'all') {
-    where.membershipType = membershipType.toUpperCase()
+    where.membershipType = membershipType.toUpperCase() as MembershipType
   }
 
   // Get members with pagination
