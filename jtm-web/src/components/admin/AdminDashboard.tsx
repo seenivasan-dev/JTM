@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { PageHeader } from '@/components/ui/page-header'
 import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar, BarChart3, Activity, RefreshCw } from 'lucide-react'
 import Link from 'next/link'
 
@@ -159,25 +160,23 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
   ]
 
   return (
-    <div className="space-y-8 p-6">
-      {/* Header with Refresh */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Admin Dashboard</h1>
-          <p className="text-muted-foreground">
-            Last updated: {lastUpdate.toLocaleTimeString()}
-          </p>
-        </div>
-        <Button 
-          onClick={refreshStats} 
-          disabled={isRefreshing}
-          variant="outline"
-          size="sm"
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-          Refresh
-        </Button>
-      </div>
+    <div className="space-y-6">
+      {/* Standardized Page Header */}
+      <PageHeader
+        title="Admin Dashboard"
+        description={`Overview of your community • Last updated: ${lastUpdate.toLocaleTimeString()}`}
+        action={
+          <Button 
+            onClick={refreshStats} 
+            disabled={isRefreshing}
+            variant="outline"
+            size="sm"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        }
+      />
 
       {/* Member Statistics Cards */}
       <div>

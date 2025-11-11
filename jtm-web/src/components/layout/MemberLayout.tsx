@@ -189,8 +189,8 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem asChild>
                       <Link href="/profile">
-                        <Settings className="mr-2 h-4 w-4" />
-                        Profile Settings
+                        <User className="mr-2 h-4 w-4" />
+                        Profile
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
@@ -206,9 +206,9 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Top Header */}
+          {/* Top Header - Simplified */}
           <header className="bg-white border-b border-gray-200 shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4">
+            <div className="flex items-center justify-between px-6 py-3">
               <div className="flex items-center">
                 <Button
                   variant="ghost"
@@ -218,14 +218,9 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                 >
                   <Menu className="h-4 w-4" />
                 </Button>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">
-                    Welcome to JTM Community
-                  </h1>
-                  <p className="text-sm text-gray-500">
-                    Manage your membership and stay connected
-                  </p>
-                </div>
+                <h2 className="text-lg font-semibold text-gray-900">
+                  JTM Community
+                </h2>
               </div>
 
               <div className="flex items-center space-x-2">
@@ -234,38 +229,13 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                     Account Inactive
                   </Badge>
                 )}
-                
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm">
-                      <Avatar className="h-6 w-6 mr-2">
-                        <AvatarFallback className="text-xs">
-                          {userInfo.firstName[0]}{userInfo.lastName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="hidden md:inline">
-                        {userInfo.firstName}
-                      </span>
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/profile">Profile</Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleSignOut}>
-                      Sign out
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
               </div>
             </div>
           </header>
 
           {/* Page Content */}
           <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100">
-            <div className="px-6 py-8 max-w-7xl mx-auto">
+            <div className="px-8 py-6 max-w-7xl mx-auto">
               {children}
             </div>
           </main>

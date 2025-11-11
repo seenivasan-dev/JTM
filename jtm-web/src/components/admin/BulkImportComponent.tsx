@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
+import { PageHeader } from '@/components/ui/page-header'
 import { Download, Upload, FileSpreadsheet, Users, AlertCircle, CheckCircle2, X } from 'lucide-react'
 
 interface ImportError {
@@ -144,18 +145,17 @@ export default function BulkImportComponent() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">Bulk Member Import</h1>
-          <p className="text-gray-600">Upload an Excel/CSV file to import multiple members</p>
-        </div>
-        <Button onClick={downloadTemplate} variant="outline">
-          <Download className="w-4 h-4 mr-2" />
-          Download Template
-        </Button>
-      </div>
+    <div className="space-y-6">
+      <PageHeader
+        title="Bulk Member Import"
+        description="Upload an Excel/CSV file to import multiple members"
+        action={
+          <Button onClick={downloadTemplate} variant="outline">
+            <Download className="w-4 h-4 mr-2" />
+            Download Template
+          </Button>
+        }
+      />
 
       {/* Upload Section */}
       <Card>

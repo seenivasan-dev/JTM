@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
+import { PageHeader } from '@/components/ui/page-header'
 import { 
   Calendar, 
   MapPin, 
@@ -151,21 +152,18 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Events Management</h1>
-          <p className="text-muted-foreground">
-            Manage events, track RSVPs, and plan food requirements
-          </p>
-        </div>
-        <Link href="/events/create">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            Create Event
-          </Button>
-        </Link>
-      </div>
+      <PageHeader
+        title="Events Management"
+        description="Manage events, track RSVPs, and plan food requirements"
+        action={
+          <Link href="/events/create">
+            <Button>
+              <Plus className="h-4 w-4 mr-2" />
+              Create Event
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Overall Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
