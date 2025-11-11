@@ -137,7 +137,7 @@ export default function RegistrationForm() {
     append({
       firstName: '',
       lastName: '',
-      age: 0,
+      age: '' as any, // Start with empty string instead of 0
       contactNumber: '',
       email: '',
       relationship: '',
@@ -289,7 +289,7 @@ export default function RegistrationForm() {
                       <FormItem>
                         <FormLabel>City</FormLabel>
                         <FormControl>
-                          <Input placeholder="New York" {...field} />
+                          <Input placeholder="Jacksonville" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -302,7 +302,7 @@ export default function RegistrationForm() {
                       <FormItem>
                         <FormLabel>State</FormLabel>
                         <FormControl>
-                          <Input placeholder="NY" {...field} />
+                          <Input placeholder="FL" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -315,7 +315,7 @@ export default function RegistrationForm() {
                       <FormItem>
                         <FormLabel>ZIP Code</FormLabel>
                         <FormControl>
-                          <Input placeholder="10001" {...field} />
+                          <Input placeholder="32258" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -437,10 +437,18 @@ export default function RegistrationForm() {
                               <FormLabel>Age</FormLabel>
                               <FormControl>
                                 <Input 
-                                  type="number" 
+                                  type="text"
+                                  inputMode="numeric"
                                   placeholder="25" 
                                   {...field}
-                                  onChange={(e) => field.onChange(Number(e.target.value))}
+                                  value={field.value === 0 ? '' : field.value}
+                                  onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Allow empty string or valid numbers only
+                                    if (value === '' || /^\d+$/.test(value)) {
+                                      field.onChange(value === '' ? 0 : Number(value));
+                                    }
+                                  }}
                                 />
                               </FormControl>
                               <FormMessage />
