@@ -24,6 +24,7 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
+import { PageHeader } from '@/components/ui/page-header'
 
 interface User {
   id: string
@@ -155,8 +156,25 @@ export default function UserManagement({
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header with Stats */}
+    <div className="space-y-6">
+      <PageHeader
+        title="User Management"
+        description="Manage all users and their memberships"
+        action={
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={handleExportUsers}>
+              <Download className="h-4 w-4 mr-2" />
+              Export
+            </Button>
+            <Button onClick={() => setIsCreateDialogOpen(true)}>
+              <UserPlus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          </div>
+        }
+      />
+
+      {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <Card>
           <CardContent className="pt-6">

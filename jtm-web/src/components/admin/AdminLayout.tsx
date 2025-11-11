@@ -221,9 +221,9 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
               <div className="p-4 border-t border-gray-200 dark:border-gray-700">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" className="w-full justify-start p-2">
+                    <Button variant="ghost" className="w-full justify-start p-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
                       <Avatar className="h-8 w-8 mr-3">
-                        <AvatarFallback>
+                        <AvatarFallback className="bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-200">
                           {adminInfo.firstName[0]}{adminInfo.lastName[0]}
                         </AvatarFallback>
                       </Avatar>
@@ -231,19 +231,20 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
                         <div className="text-sm font-medium text-gray-900 dark:text-white">
                           {adminInfo.firstName} {adminInfo.lastName}
                         </div>
-                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                        <div className="text-xs text-gray-500 dark:text-gray-400 capitalize">
                           {adminInfo.role}
                         </div>
                       </div>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                    <DropdownMenuLabel>
+                      <div>
+                        <p className="text-sm font-medium">{adminInfo.firstName} {adminInfo.lastName}</p>
+                        <p className="text-xs text-muted-foreground">{adminInfo.email}</p>
+                      </div>
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem>
-                      <Settings className="mr-2 h-4 w-4" />
-                      Settings
-                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={handleSignOut}>
                       <LogOut className="mr-2 h-4 w-4" />
                       Sign out
@@ -257,22 +258,22 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
 
         {/* Enhanced Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Enhanced Top Header */}
+          {/* Enhanced Top Header - Simplified */}
           <header className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
-            <div className="flex items-center justify-between px-6 py-4">
-              {/* Enhanced Search */}
-              <div className="flex-1 max-w-xl">
-                <div className="relative group">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                  <Input
-                    type="search"
-                    placeholder="Search members, events, notifications..."
-                    className="pl-10 pr-4 w-full bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200"
-                  />
-                  <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                    <kbd className="px-2 py-1 text-xs text-gray-500 bg-gray-100 border border-gray-200 rounded-md">⌘K</kbd>
-                  </div>
-                </div>
+            <div className="flex items-center justify-between px-6 py-3">
+              {/* Left side - Logo/Brand for mobile */}
+              <div className="flex items-center">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSidebarOpen(!sidebarOpen)}
+                  className="lg:hidden mr-2"
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+                <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  Admin Portal
+                </h2>
               </div>
 
               {/* Enhanced Header Actions */}
@@ -324,45 +325,13 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
                     )}
                   </Link>
                 </Button>
-
-                {/* User Menu - Mobile optimized */}
-                {adminInfo && (
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" className="relative rounded-full p-2">
-                        <Avatar className="h-8 w-8">
-                          <AvatarFallback className="bg-blue-100 text-blue-600">
-                            {adminInfo.firstName[0]}{adminInfo.lastName[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-56">
-                      <DropdownMenuLabel>
-                        <div className="flex flex-col space-y-1">
-                          <p className="text-sm font-medium">{adminInfo.firstName} {adminInfo.lastName}</p>
-                          <p className="text-xs text-muted-foreground">{adminInfo.email}</p>
-                        </div>
-                      </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem>
-                        <Settings className="mr-2 h-4 w-4" />
-                        Settings
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={handleSignOut}>
-                        <LogOut className="mr-2 h-4 w-4" />
-                        Sign out
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                )}
               </div>
             </div>
           </header>
 
           {/* Enhanced Page Content */}
           <main className="flex-1 overflow-y-auto bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
-            <div className="px-6 py-8 max-w-7xl mx-auto">
+            <div className="px-8 py-6 max-w-7xl mx-auto">
               {children}
             </div>
           </main>

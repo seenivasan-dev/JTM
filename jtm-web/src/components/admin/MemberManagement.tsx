@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { PageHeader } from '@/components/ui/page-header'
 import { 
   Search, 
   Filter, 
@@ -260,8 +261,27 @@ export default function MemberManagement({
     router.refresh()
   }, [router, searchParams])
 
+  const stats = {
+    total: currentPagination.totalCount,
+    active: members.filter(m => m.isActive).length,
+    inactive: members.filter(m => !m.isActive).length,
+  }
+
   return (
     <div className="space-y-6">
+      <PageHeader
+        title="Member Management"
+        description={`Manage all ${stats.total} members • ${stats.active} active, ${stats.inactive} inactive`}
+        action={
+          selectedMembers.length > 0 ? (
+            <Button onClick={() => setShowBulkDialog(true)} variant="outline">
+              <Users className="h-4 w-4 mr-2" />
+              Bulk Actions ({selectedMembers.length})
+            </Button>
+          ) : null
+        }
+      />
+
       {/* Filters */}
       <Card>
         <CardHeader>

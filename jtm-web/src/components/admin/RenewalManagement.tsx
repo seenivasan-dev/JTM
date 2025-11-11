@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
+import { PageHeader } from '@/components/ui/page-header'
 import { 
   Clock, 
   CheckCircle, 
@@ -187,24 +188,27 @@ export default function RenewalManagement({
 
   return (
     <div className="space-y-6">
-      {/* Header with Actions */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">        
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="outline"
-            onClick={handleSendReminders}
-            disabled={isLoadingReminders}
-          >
-            {isLoadingReminders ? 'Sending...' : 'Send Renewal Reminders'}
-          </Button>
-          
-          {reminderResults && (
-            <Badge variant="secondary" className="text-xs">
-              Sent {reminderResults.sentCount} reminders to {reminderResults.totalMembers} members
-            </Badge>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        title="Renewal Management"
+        description="Manage membership renewal requests and send reminders"
+        action={
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSendReminders}
+              disabled={isLoadingReminders}
+            >
+              <Send className="h-4 w-4 mr-2" />
+              {isLoadingReminders ? 'Sending...' : 'Send Renewal Reminders'}
+            </Button>
+            {reminderResults && (
+              <Badge variant="secondary" className="text-xs">
+                Sent {reminderResults.sentCount} reminders to {reminderResults.totalMembers} members
+              </Badge>
+            )}
+          </div>
+        }
+      />
 
       {/* Status Filter and Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
