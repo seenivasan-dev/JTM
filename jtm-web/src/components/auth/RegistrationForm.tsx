@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray } from 'react-hook-form';
@@ -48,6 +48,17 @@ export default function RegistrationForm() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const router = useRouter();
+  const successAlertRef = useRef<HTMLDivElement>(null);
+
+  // Scroll to success message when it appears
+  useEffect(() => {
+    if (success && successAlertRef.current) {
+      successAlertRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  }, [success]);
 
   const form = useForm<RegistrationFormData>({
     resolver: zodResolver(registrationSchema),
@@ -111,10 +122,10 @@ export default function RegistrationForm() {
       // Use the message from the API response
       setSuccess(result.message || 'Registration successful! Your account is pending admin approval. You will receive an email once activated.');
       
-      // Redirect to login after 5 seconds
+      // Redirect to login after 8 seconds (giving user time to read the message)
       setTimeout(() => {
         router.push('/auth/login');
-      }, 5000);
+      }, 8000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
     } finally {
@@ -150,20 +161,25 @@ export default function RegistrationForm() {
           )}
 
           {success && (
-            <Alert className="mb-6 bg-green-50 border-green-200">
+            <Alert ref={successAlertRef} className="mb-6 bg-green-50 border-green-200">
               <AlertDescription className="text-green-800">
                 <div className="space-y-2">
-                  <p className="font-semibold">{success}</p>
+                  <p className="font-semibold text-lg">{success}</p>
                   <p className="text-sm">
                     You will receive an email with login instructions once an administrator activates your account.
+                  </p>
+                  <p className="text-sm font-medium mt-3">
+                    Redirecting to login page in a few seconds...
                   </p>
                 </div>
               </AlertDescription>
             </Alert>
           )}
 
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {/* Hide form after successful registration */}
+          {!success && (
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               {/* Personal Information */}
               <div className="space-y-4">
                 <h3 className="text-lg font-medium">Personal Information</h3>
@@ -481,6 +497,7 @@ export default function RegistrationForm() {
               </Button>
             </form>
           </Form>
+          )}
         </CardContent>
       </Card>
     </div>
