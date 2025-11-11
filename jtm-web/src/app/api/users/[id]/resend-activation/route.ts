@@ -61,11 +61,15 @@ export async function POST(
 
     // Send welcome email
     try {
+      // Ensure loginUrl has protocol
+      const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+      const loginUrl = baseUrl.startsWith('http') ? `${baseUrl}/auth/login` : `https://${baseUrl}/auth/login`;
+      
       const emailTemplate = generateWelcomeEmail({
         firstName: user.firstName,
         email: user.email,
         tempPassword: tempPassword,
-        loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+        loginUrl,
       });
 
       const emailResult = await sendEmail({

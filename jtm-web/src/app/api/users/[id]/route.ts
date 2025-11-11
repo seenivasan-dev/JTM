@@ -143,11 +143,15 @@ export async function PUT(
 
       // Try to send email BEFORE activating
       try {
+        // Ensure loginUrl has protocol
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const loginUrl = baseUrl.startsWith('http') ? `${baseUrl}/auth/login` : `https://${baseUrl}/auth/login`;
+        
         const emailTemplate = generateWelcomeEmail({
           firstName: existingUser.firstName,
           email: existingUser.email,
           tempPassword: tempPasswordPlainText,
-          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+          loginUrl,
         });
 
         const emailResult = await sendEmail({

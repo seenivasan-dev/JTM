@@ -77,7 +77,9 @@ async function sendActivationEmail(userEmail: string) {
     console.log(`✅ SMTP connection verified`);
 
     // Generate email content
-    const loginUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    // Ensure loginUrl has protocol
+    const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+    const loginUrl = baseUrl.startsWith('http') ? `${baseUrl}/auth/login` : `https://${baseUrl}/auth/login`;
     const fromEmail = process.env.SMTP_FROM_EMAIL || 'noreply@jaxtamilmandram.org';
     const fromName = process.env.SMTP_FROM_NAME || 'JTM Community';
 

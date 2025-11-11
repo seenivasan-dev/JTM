@@ -109,11 +109,15 @@ async function handleBulkActivation(body: any, admin: any) {
       
       try {
         // Try to send email BEFORE activating
+        // Ensure loginUrl has protocol
+        const baseUrl = process.env.NEXTAUTH_URL || 'http://localhost:3000';
+        const loginUrl = baseUrl.startsWith('http') ? `${baseUrl}/auth/login` : `https://${baseUrl}/auth/login`;
+        
         const emailTemplate = generateWelcomeEmail({
           firstName: user.firstName,
           email: user.email,
           tempPassword: tempPassword,
-          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+          loginUrl,
         });
 
         const result = await sendEmail({
