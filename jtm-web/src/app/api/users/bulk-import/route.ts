@@ -76,124 +76,142 @@ async function handleBulkActivation(body: any, admin: any) {
   const validatedData = bulkActivationSchema.parse(body);
   const { userIds, action } = validatedData;
 
-  // If activating, first check which users need temp passwords
-  const tempPasswordMap = new Map<string, string>();
-  
   if (action === 'activate') {
+    // Step 1: Get all users to activate
     const usersToActivate = await prisma.user.findMany({
       where: {
         id: { in: userIds },
-      },
-      select: {
-        id: true,
-        tempPassword: true,
-      },
-    });
-
-    // Generate temp passwords for users who don't have them
-    for (const user of usersToActivate) {
-      if (!user.tempPassword) {
-        const tempPassword = Math.random().toString(36).slice(-8);
-        const hashedTempPassword = await bcrypt.hash(tempPassword, 12);
-        
-        // Update user with temp password and mustChangePassword flag
-        await prisma.user.update({
-          where: { id: user.id },
-          data: {
-            tempPassword: hashedTempPassword,
-            mustChangePassword: true,
-          },
-        });
-        
-        // Store plain text password for email
-        tempPasswordMap.set(user.id, tempPassword);
-      }
-    }
-  }
-
-  const updateData = {
-    isActive: action === 'activate',
-    activatedBy: action === 'activate' ? admin.id : null,
-    activatedAt: action === 'activate' ? new Date() : null,
-  };
-
-  await prisma.user.updateMany({
-    where: {
-      id: { in: userIds },
-    },
-    data: updateData,
-  });
-
-  // Send welcome emails to activated users
-  if (action === 'activate') {
-    const activatedUsers = await prisma.user.findMany({
-      where: {
-        id: { in: userIds },
+        isActive: false, // Only activate inactive users
       },
       select: {
         id: true,
         email: true,
         firstName: true,
+        tempPassword: true,
       },
     });
 
+    if (usersToActivate.length === 0) {
+      return NextResponse.json({
+        success: true,
+        message: 'No inactive users found to activate',
+        count: 0,
+      });
+    }
+
+    // Step 2: Generate temp passwords and send emails FIRST
     const emailResults = [];
+    const successfulActivations: string[] = []; // User IDs where email succeeded
     
-    for (const user of activatedUsers) {
-      // Use the newly generated temp password from the map
-      const tempPassword = tempPasswordMap.get(user.id);
+    for (const user of usersToActivate) {
+      // Always generate new temp password (even if user had one)
+      const tempPassword = Math.random().toString(36).slice(-8);
       
-      if (tempPassword) {
-        try {
-          const emailTemplate = generateWelcomeEmail({
-            firstName: user.firstName,
+      try {
+        // Try to send email BEFORE activating
+        const emailTemplate = generateWelcomeEmail({
+          firstName: user.firstName,
+          email: user.email,
+          tempPassword: tempPassword,
+          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+        });
+
+        const result = await sendEmail({
+          to: user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['activation', 'welcome', 'bulk-activation'],
+        });
+
+        if (result.success) {
+          console.log(`✅ Welcome email sent to ${user.email} - will activate`);
+          
+          // Email succeeded - update with temp password and mark for activation
+          const hashedTempPassword = await bcrypt.hash(tempPassword, 12);
+          await prisma.user.update({
+            where: { id: user.id },
+            data: {
+              tempPassword: hashedTempPassword,
+              mustChangePassword: true,
+            },
+          });
+          
+          successfulActivations.push(user.id);
+          emailResults.push({
             email: user.email,
-            tempPassword: tempPassword, // Use plain text password for email
-            loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+            sent: true,
+            activated: true,
           });
-
-          const result = await sendEmail({
-            to: user.email,
-            subject: emailTemplate.subject,
-            html: emailTemplate.html,
-            text: emailTemplate.text,
-            tags: ['activation', 'welcome', 'bulk-import'],
-          });
-
-          if (result.success) {
-            console.log(`✅ Welcome email sent to ${user.email} with temp password`);
-            emailResults.push({
-              email: user.email,
-              sent: true,
-            });
-          } else {
-            console.error(`❌ Failed to send email to ${user.email}:`, result.error);
-            emailResults.push({
-              email: user.email,
-              sent: false,
-              error: result.error,
-            });
-          }
-        } catch (error) {
-          console.error(`❌ Failed to send email to ${user.email}:`, error);
+        } else {
+          console.error(`❌ Email failed for ${user.email}: ${result.error} - user NOT activated`);
           emailResults.push({
             email: user.email,
             sent: false,
-            error: error instanceof Error ? error.message : 'Unknown error',
+            activated: false,
+            error: result.error,
           });
         }
-      } else {
-        console.log(`⚠️  User ${user.email} already had a temp password, skipping email`);
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`❌ Email exception for ${user.email}: ${errorMsg} - user NOT activated`);
+        emailResults.push({
+          email: user.email,
+          sent: false,
+          activated: false,
+          error: errorMsg,
+        });
       }
     }
 
+    // Step 3: Only activate users whose emails were sent successfully
+    if (successfulActivations.length > 0) {
+      await prisma.user.updateMany({
+        where: {
+          id: { in: successfulActivations },
+        },
+        data: {
+          isActive: true,
+          activatedBy: admin.id,
+          activatedAt: new Date(),
+        },
+      });
+
+      console.log(`✅ Activated ${successfulActivations.length} users (emails sent successfully)`);
+    }
+
+    const failedCount = usersToActivate.length - successfulActivations.length;
+    
+    return NextResponse.json({
+      success: successfulActivations.length > 0,
+      message: failedCount > 0 
+        ? `Activated ${successfulActivations.length} users. ${failedCount} users NOT activated due to email failures.`
+        : `Successfully activated ${successfulActivations.length} users`,
+      totalRequested: userIds.length,
+      totalProcessed: usersToActivate.length,
+      activated: successfulActivations.length,
+      failed: failedCount,
+      emailResults,
+    });
+  }
+
+  // Deactivation doesn't need email, proceed normally
+  if (action === 'deactivate') {
+    await prisma.user.updateMany({
+      where: {
+        id: { in: userIds },
+      },
+      data: {
+        isActive: false,
+        activatedBy: null,
+        activatedAt: null,
+      },
+    });
+
     return NextResponse.json({
       success: true,
-      message: `Successfully ${action}d ${userIds.length} users`,
+      message: `Successfully deactivated ${userIds.length} users`,
       count: userIds.length,
-      emailsSent: emailResults.filter(r => r.sent).length,
-      emailsFailed: emailResults.filter(r => !r.sent).length,
-      emailResults,
     });
   }
 

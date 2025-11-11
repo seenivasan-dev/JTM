@@ -132,14 +132,60 @@ export async function PUT(
                             validatedData.isActive === true && 
                             existingUser.isActive === false;
 
-    // Prepare update data
+    // Generate temp password and send email BEFORE activation
+    // If email fails, we won't activate the user
+    let tempPasswordPlainText: string | undefined;
+    
+    if (isBeingActivated) {
+      // Generate temporary password
+      tempPasswordPlainText = Math.random().toString(36).slice(-8);
+      console.log(`🔑 Generated new temp password for ${existingUser.email} upon ${existingUser.tempPassword ? 're-' : ''}activation`);
+
+      // Try to send email BEFORE activating
+      try {
+        const emailTemplate = generateWelcomeEmail({
+          firstName: existingUser.firstName,
+          email: existingUser.email,
+          tempPassword: tempPasswordPlainText,
+          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
+        });
+
+        const emailResult = await sendEmail({
+          to: existingUser.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['activation', 'welcome', 'user-activation'],
+        });
+
+        if (!emailResult.success) {
+          // Email failed - don't activate the user
+          console.error(`❌ Email failed for ${existingUser.email}:`, emailResult.error);
+          return NextResponse.json({
+            error: 'Failed to send activation email. User was not activated.',
+            details: emailResult.error,
+            suggestion: 'Please check SMTP configuration and try again, or use the resend-activation endpoint after fixing email issues.'
+          }, { status: 500 });
+        }
+
+        console.log(`✅ Welcome email sent to ${existingUser.email} - proceeding with activation`);
+      } catch (error) {
+        // Email sending threw an exception - don't activate
+        const errorMsg = error instanceof Error ? error.message : 'Unknown error';
+        console.error(`❌ Email exception for ${existingUser.email}:`, errorMsg);
+        return NextResponse.json({
+          error: 'Failed to send activation email. User was not activated.',
+          details: errorMsg,
+          suggestion: 'Please check SMTP configuration and try again.'
+        }, { status: 500 });
+      }
+    }
+
+    // Prepare update data (only reached if email succeeded or not activating)
     const updateData: Record<string, unknown> = {};
 
-    // Generate temp password if activating a user who doesn't have one
-    let tempPasswordPlainText: string | undefined;
-    if (isBeingActivated && !existingUser.tempPassword) {
-      tempPasswordPlainText = Math.random().toString(36).slice(-8);
-      // Store hashed version in database
+    // Store the hashed temp password if we're activating
+    if (isBeingActivated && tempPasswordPlainText) {
       updateData.tempPassword = await bcrypt.hash(tempPasswordPlainText, 12);
       updateData.mustChangePassword = true;
     }
@@ -194,42 +240,20 @@ export async function PUT(
       },
     });
 
-    // Send welcome email if user was just activated
-    if (isBeingActivated && tempPasswordPlainText) {
-      try {
-        const emailTemplate = generateWelcomeEmail({
-          firstName: updatedUser.firstName,
-          email: updatedUser.email,
-          tempPassword: tempPasswordPlainText, // Use the plain text version for email
-          loginUrl: `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`,
-        });
-
-        const emailResult = await sendEmail({
-          to: updatedUser.email,
-          subject: emailTemplate.subject,
-          html: emailTemplate.html,
-          text: emailTemplate.text,
-          tags: ['activation', 'welcome', 'user-activation'],
-        });
-
-        if (emailResult.success) {
-          console.log(`✅ Welcome email sent to ${updatedUser.email} upon activation with temp password`);
-        } else {
-          console.error(`❌ Failed to send welcome email to ${updatedUser.email}:`, emailResult.error);
-        }
-      } catch (emailError) {
-        console.error(`❌ Failed to send welcome email to ${updatedUser.email}:`, emailError);
-        // Don't fail the request if email fails
-      }
-    }
-
+    // Email was already sent before activation (if activating)
+    // Return success response
     return NextResponse.json({
-      message: 'User updated successfully',
+      message: isBeingActivated 
+        ? 'User activated successfully and welcome email sent' 
+        : 'User updated successfully',
       user: {
         ...updatedUser,
         password: undefined,
         tempPassword: undefined,
       },
+      ...(isBeingActivated && {
+        emailSent: true,
+      })
     });
   } catch (error) {
     if (error instanceof z.ZodError) {

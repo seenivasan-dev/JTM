@@ -132,10 +132,6 @@ export default function UserManagement({
     }
   }
 
-  const handleSendEmail = (user: User) => {
-    window.location.href = `mailto:${user.email}`
-  }
-
   const handleExportUsers = () => {
     const csvContent = [
       ['Name', 'Email', 'Phone', 'Membership Type', 'Status', 'Join Date'].join(','),
@@ -353,14 +349,6 @@ export default function UserManagement({
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleSendEmail(user)}
-                            className="flex items-center gap-1"
-                          >
-                            <Mail className="h-3 w-3" />
-                          </Button>
                           <Button
                             variant="outline"
                             size="sm"
