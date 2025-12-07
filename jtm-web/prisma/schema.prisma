@@ -7,7 +7,6 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
 }
 
 model User {
@@ -22,6 +21,8 @@ model User {
   password          String?          // Hashed password
   tempPassword      String?          // One-time temporary password
   mustChangePassword Boolean         @default(false)
+  resetToken        String?          // Password reset token
+  resetTokenExpiry  DateTime?        // Reset token expiration
   lastLogin         DateTime?
   importedFromExcel Boolean          @default(false)
   activatedBy       String?          // Admin ID who activated

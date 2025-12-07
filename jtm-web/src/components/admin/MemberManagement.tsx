@@ -9,7 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { PageHeader } from '@/components/ui/page-header'
 import { 
   Search, 
   Filter, 
@@ -269,18 +268,27 @@ export default function MemberManagement({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Member Management"
-        description={`Manage all ${stats.total} members • ${stats.active} active, ${stats.inactive} inactive`}
-        action={
-          selectedMembers.length > 0 ? (
-            <Button onClick={() => setShowBulkDialog(true)} variant="outline">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Member Management</h1>
+              <p className="text-white/90 text-lg">Manage all {stats.total} members • {stats.active} active, {stats.inactive} inactive</p>
+            </div>
+          </div>
+          {selectedMembers.length > 0 && (
+            <Button onClick={() => setShowBulkDialog(true)} className="bg-white text-blue-600 hover:bg-white/90 shadow-lg">
               <Users className="h-4 w-4 mr-2" />
               Bulk Actions ({selectedMembers.length})
             </Button>
-          ) : null
-        }
-      />
+          )}
+        </div>
+      </div>
 
       {/* Filters */}
       <Card>

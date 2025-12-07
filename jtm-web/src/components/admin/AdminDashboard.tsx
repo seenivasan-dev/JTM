@@ -5,8 +5,7 @@ import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { PageHeader } from '@/components/ui/page-header'
-import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar, BarChart3, Activity, RefreshCw, CalendarClock } from 'lucide-react'
+import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar, BarChart3, Activity, RefreshCw, CalendarClock, LayoutDashboard } from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardStats {
@@ -161,22 +160,30 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
 
   return (
     <div className="space-y-6">
-      {/* Standardized Page Header */}
-      <PageHeader
-        title="Admin Dashboard"
-        description={`Overview of your community • Last updated: ${lastUpdate.toLocaleTimeString()}`}
-        action={
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <LayoutDashboard className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Admin Dashboard</h1>
+              <p className="text-white/90 text-lg">Overview of your community • Last updated: {lastUpdate.toLocaleTimeString()}</p>
+            </div>
+          </div>
           <Button 
             onClick={refreshStats} 
             disabled={isRefreshing}
-            variant="outline"
+            className="bg-white text-indigo-600 hover:bg-white/90 shadow-lg"
             size="sm"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-        }
-      />
+        </div>
+      </div>
 
       {/* Member Statistics Cards */}
       <div>

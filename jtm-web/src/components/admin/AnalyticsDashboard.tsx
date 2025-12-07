@@ -4,7 +4,6 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { PageHeader } from '@/components/ui/page-header'
 import { 
   Users, 
   Calendar, 
@@ -139,22 +138,31 @@ export default function AnalyticsDashboard({ data }: AnalyticsDashboardProps) {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Analytics Dashboard"
-        description="Comprehensive insights and reporting for informed decision making"
-        action={
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-amber-600 to-yellow-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <BarChart3 className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Analytics Dashboard</h1>
+              <p className="text-white/90 text-lg">Comprehensive insights and reporting for informed decision making</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={refreshData} disabled={isRefreshing}>
+            <Button variant="outline" size="sm" onClick={refreshData} disabled={isRefreshing} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
               <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
-            <Button onClick={handleExport} size="sm">
+            <Button onClick={handleExport} size="sm" className="bg-white text-orange-600 hover:bg-white/90 shadow-lg">
               <Download className="h-4 w-4 mr-2" />
               Export Report
             </Button>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* Key Performance Indicators */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -110,8 +110,15 @@ export default async function AdminAnalyticsPage() {
     })
   ])
 
+  const adminInfo = {
+    firstName: admin.firstName || 'Admin',
+    lastName: admin.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role),
+  }
+
   return (
-    <Suspense fallback={<div>Loading analytics...</div>}>
+    <Suspense fallback={<div className="p-8">Loading analytics...</div>}>
       <AnalyticsDashboard 
           data={{
             membershipTypeStats: membershipStats,

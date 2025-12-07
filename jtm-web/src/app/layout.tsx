@@ -7,7 +7,11 @@ import AutoExpirationChecker from "@/components/membership/AutoExpirationChecker
 
 const inter = Inter({
   subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700", "800"],
+  display: "swap",
   variable: "--font-inter",
+  preload: true,
+  fallback: ["system-ui", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "Roboto", "sans-serif"],
 });
 
 export const metadata: Metadata = {
@@ -22,7 +26,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <Providers>
           <AutoExpirationChecker />
           <div className="relative min-h-screen bg-background">

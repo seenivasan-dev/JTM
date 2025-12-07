@@ -3,7 +3,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
+import AdminLayout from '@/components/admin/AdminLayoutNew'
 
 export default async function AdminRootLayout({
   children,

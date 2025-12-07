@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import QRScannerClient from '@/components/events/QRScannerClient'
 
 interface QRScannerPageProps {
@@ -26,6 +27,8 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
     select: {
       id: true,
       email: true,
+      firstName: true,
+      lastName: true,
     },
   })
 
@@ -40,6 +43,13 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
 
   if (!admin) {
     redirect('/events') // Redirect non-admin users
+  }
+
+  const adminInfo = {
+    firstName: userData.firstName || 'Admin',
+    lastName: userData.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role),
   }
 
   // Get event if specified
@@ -66,8 +76,8 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <div className="max-w-4xl mx-auto">
+    <AdminLayout adminInfo={adminInfo}>
+      <div className="p-6">
         <div className="mb-6">
           <h1 className="text-3xl font-bold">QR Code Scanner</h1>
           <p className="text-muted-foreground">
@@ -79,6 +89,6 @@ export default async function QRScannerPage({ searchParams }: QRScannerPageProps
           <QRScannerClient event={event} />
         </Suspense>
       </div>
-    </div>
+    </AdminLayout>
   )
 }

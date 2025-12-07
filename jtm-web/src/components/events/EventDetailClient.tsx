@@ -97,7 +97,6 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
   const [rsvpData, setRsvpData] = useState<Record<string, string | number | boolean>>(
     userRsvp?.responses || {}
   )
-  const [paymentReference, setPaymentReference] = useState('')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -145,7 +144,6 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           eventId: event.id,
           userEmail: user.email,
           responses: rsvpData,
-          paymentReference: paymentReference.trim() || null,
         }),
       })
 
@@ -537,26 +535,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                   </div>
                 ))}
 
-                {/* Payment Reference Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="paymentReference">
-                    Payment Reference Number
-                    <span className="text-red-500 ml-1">*</span>
-                  </Label>
-                  <Input
-                    id="paymentReference"
-                    value={paymentReference}
-                    onChange={(e) => setPaymentReference(e.target.value)}
-                    placeholder="Enter your payment confirmation number"
-                    required
-                    className="w-full"
-                  />
-                  <p className="text-sm text-muted-foreground">
-                    Please provide the payment confirmation number for your registration fee.
-                  </p>
-                </div>
-
-                <Button type="submit" disabled={loading} className="w-full">
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg">
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

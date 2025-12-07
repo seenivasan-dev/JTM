@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
@@ -12,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus } from 'lucide-react';
+import { Trash2, Plus, UserPlus, Sparkles } from 'lucide-react';
 
 const familyMemberSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
@@ -145,15 +146,21 @@ export default function RegistrationForm() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-2xl">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Join Our Community</CardTitle>
-          <CardDescription className="text-center">
-            Register for membership in our community. Your application will be reviewed by our admin team.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+    <Card className="w-full max-w-2xl elevated-card border-t-4 border-t-primary backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
+      <CardHeader className="space-y-3 text-center pb-8">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-orange-600 via-blue-600 to-emerald-600 flex items-center justify-center shadow-xl mb-2">
+          <UserPlus className="h-8 w-8 text-white" />
+        </div>
+        <CardTitle className="text-3xl font-bold">
+          <span className="bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
+            Join Our Community
+          </span>
+        </CardTitle>
+        <CardDescription className="text-base">
+          Register for membership. Your application will be reviewed by our admin team.
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
@@ -500,14 +507,39 @@ export default function RegistrationForm() {
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={isSubmitting}>
-                {isSubmitting ? 'Registering...' : 'Register'}
-              </Button>
+              <div className="flex flex-col space-y-4 pt-6">
+                <Button 
+                  type="submit" 
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all" 
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? (
+                    <span className="flex items-center gap-2">
+                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Registering...
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5" />
+                      Complete Registration
+                    </span>
+                  )}
+                </Button>
+                
+                <div className="text-center text-sm text-muted-foreground">
+                  Already have an account?{' '}
+                  <Link 
+                    href="/auth/login" 
+                    className="text-primary hover:text-secondary transition-colors font-semibold"
+                  >
+                    Sign in here
+                  </Link>
+                </div>
+              </div>
             </form>
           </Form>
           )}
         </CardContent>
       </Card>
-    </div>
   );
 }

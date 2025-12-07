@@ -113,52 +113,62 @@ export default function MemberProfile({ user }: MemberProfileProps) {
   const [editingFamilyMember, setEditingFamilyMember] = useState<any>(null)
 
   return (
-    <div className="space-y-6">
-      {/* Profile Header */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      {/* Tamil Cultural Profile Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative z-10">
+          <div className="flex items-start justify-between flex-wrap gap-4">
             <div>
-              <CardTitle className="text-2xl">
+              <h1 className="text-3xl font-bold text-white drop-shadow-lg mb-2">
                 {user.firstName} {user.lastName}
-              </CardTitle>
-              <CardDescription className="flex items-center gap-4 mt-2">
-                <span className="flex items-center gap-1">
+              </h1>
+              <div className="flex items-center flex-wrap gap-3 mt-3">
+                <span className="flex items-center gap-2 text-white drop-shadow-md bg-white/10 backdrop-blur-sm px-3 py-1.5 rounded-lg">
                   <Mail className="h-4 w-4" />
                   {user.email}
                 </span>
-                <Badge variant={user.isActive ? "default" : "secondary"}>
-                  {user.isActive ? "Active Member" : "Inactive"}
+                <Badge className={`${user.isActive ? 'bg-emerald-500/20 border-emerald-300/30' : 'bg-gray-500/20 border-gray-300/30'} backdrop-blur-sm text-white drop-shadow-md border px-3 py-1.5`}>
+                  {user.isActive ? "✓ Active Member" : "Inactive"}
                 </Badge>
-                <Badge variant="outline">
-                  {user.membershipType.toLowerCase()}
+                <Badge className="bg-white/20 backdrop-blur-sm text-white drop-shadow-md border-white/30 px-3 py-1.5 capitalize">
+                  {user.membershipType} Membership
                 </Badge>
-              </CardDescription>
+                {user.membershipExpiry && (
+                  <Badge className="bg-gold/20 backdrop-blur-sm text-white drop-shadow-md border-gold/30 px-3 py-1.5">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    Valid until {new Date(user.membershipExpiry).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </Badge>
+                )}
+              </div>
             </div>
-            <Button onClick={() => setIsEditing(!isEditing)}>
+            <Button 
+              onClick={() => setIsEditing(!isEditing)}
+              className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white drop-shadow-md border-white/30"
+            >
               <Edit className="h-4 w-4 mr-2" />
-              {isEditing ? 'Cancel' : 'Edit Profile'}
+              {isEditing ? 'Cancel Editing' : 'Edit Profile'}
             </Button>
           </div>
-        </CardHeader>
-      </Card>
+        </div>
+      </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="profile">
+        <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-primary/5 to-secondary/5 p-1">
+          <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md">
             <User className="h-4 w-4 mr-2" />
             Profile
           </TabsTrigger>
-          <TabsTrigger value="family">
+          <TabsTrigger value="family" className="data-[state=active]:bg-white data-[state=active]:text-secondary data-[state=active]:shadow-md">
             <Users className="h-4 w-4 mr-2" />
             Family ({user.familyMembers.length})
           </TabsTrigger>
-          <TabsTrigger value="security">
+          <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:text-accent data-[state=active]:shadow-md">
             <Key className="h-4 w-4 mr-2" />
             Security
           </TabsTrigger>
-          <TabsTrigger value="notifications">
+          <TabsTrigger value="notifications" className="data-[state=active]:bg-white data-[state=active]:text-gold data-[state=active]:shadow-md">
             <Bell className="h-4 w-4 mr-2" />
             Notifications
           </TabsTrigger>

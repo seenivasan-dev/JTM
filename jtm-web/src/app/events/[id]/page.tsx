@@ -4,6 +4,8 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import MemberLayout from '@/components/layout/MemberLayout'
+import AdminLayout from '@/components/admin/AdminLayout'
 import EventDetailClient from '@/components/events/EventDetailClient'
 
 interface EventDetailPageProps {
@@ -109,15 +111,37 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
     createdAt: userRsvp.createdAt.toISOString(),
   } : null
 
+  // Render with appropriate layout based on user role
+  if (admin) {
+    const adminInfo = {
+      firstName: userData.firstName || 'Admin',
+      lastName: userData.lastName || 'User',
+      email: session.user.email,
+      role: String(admin.role),
+    }
+
+    return (
+      <AdminLayout adminInfo={adminInfo}>
+        <Suspense fallback={<div className="p-8">Loading event details...</div>}>
+          <EventDetailClient 
+            event={serializedEvent}
+            user={{ ...userData, isAdmin: true }}
+            userRsvp={serializedUserRsvp}
+          />
+        </Suspense>
+      </AdminLayout>
+    )
+  }
+
   return (
-    <div className="container mx-auto py-6">
-      <Suspense fallback={<div>Loading event details...</div>}>
+    <MemberLayout>
+      <Suspense fallback={<div className="p-8">Loading event details...</div>}>
         <EventDetailClient 
           event={serializedEvent}
-          user={{ ...userData, isAdmin: !!admin }}
+          user={{ ...userData, isAdmin: false }}
           userRsvp={serializedUserRsvp}
         />
       </Suspense>
-    </div>
+    </MemberLayout>
   )
 }
