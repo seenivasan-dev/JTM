@@ -4,7 +4,7 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import MembershipExpirationView from '@/components/admin/MembershipExpirationView'
+import MembershipExpirationManagement from '@/components/admin/MembershipExpirationManagement'
 
 export const metadata: Metadata = {
   title: 'Membership Expiration - JTM Admin',
@@ -30,7 +30,7 @@ export default async function MembershipExpirationPage() {
   return (
     <div className="p-6">
       <div className="mt-8">
-        <MembershipExpirationView />
+        <MembershipExpirationManagement />
       </div>
     </div>
   )
