@@ -26,6 +26,8 @@ interface ImportResult {
     firstName: string
     lastName: string
     tempPassword: string
+    membershipType: string
+    familyMembersCount?: number
   }>
 }
 
@@ -38,11 +40,11 @@ export default function BulkImportComponent() {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const downloadTemplate = () => {
-    // Create CSV template
+    // Create CSV template with family members support
     const template = [
-      'firstName,lastName,email,mobileNumber,membershipType,street,city,state,zipCode,country',
-      'John,Doe,john.doe@example.com,1234567890,INDIVIDUAL,123 Main St,Anytown,CA,12345,USA',
-      'Jane,Smith,jane.smith@example.com,0987654321,FAMILY,456 Oak Ave,Somewhere,NY,67890,USA',
+      'firstName,lastName,email,mobileNumber,membershipType,street,city,state,zipCode,country,familyMember1_firstName,familyMember1_lastName,familyMember1_age,familyMember1_relationship,familyMember1_email,familyMember2_firstName,familyMember2_lastName,familyMember2_age,familyMember2_relationship,familyMember2_email,familyMember3_firstName,familyMember3_lastName,familyMember3_age,familyMember3_relationship,familyMember3_email',
+      'John,Doe,john.doe@example.com,1234567890,INDIVIDUAL,123 Main St,Anytown,CA,12345,USA,,,,,,,,,,,,,,,',
+      'Jane,Smith,jane.smith@example.com,0987654321,FAMILY,456 Oak Ave,Somewhere,NY,67890,USA,John,Smith,35,Spouse,john.spouse@example.com,Emily,Smith,8,Child,,Sarah,Smith,5,Child,',
     ].join('\n')
 
     const blob = new Blob([template], { type: 'text/csv' })
@@ -166,9 +168,32 @@ export default function BulkImportComponent() {
           </CardTitle>
           <CardDescription>
             Upload a CSV or Excel file with member information. Make sure to follow the template format.
+            For FAMILY memberships, you can add up to 5 family members using familyMember1_*, familyMember2_*, etc. columns.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Instructions */}
+          <Alert>
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              <div className="space-y-2">
+                <p className="font-medium">CSV Format Instructions:</p>
+                <ul className="list-disc list-inside text-sm space-y-1 ml-2">
+                  <li><strong>Required fields:</strong> firstName, lastName, email, mobileNumber, membershipType, street, city, state, zipCode</li>
+                  <li><strong>Membership Types:</strong> INDIVIDUAL, FAMILY, or CUSTOM</li>
+                  <li><strong>For FAMILY memberships:</strong> Add family members using columns:
+                    <ul className="list-circle list-inside ml-4 mt-1">
+                      <li>familyMember1_firstName, familyMember1_lastName, familyMember1_age, familyMember1_relationship, familyMember1_email</li>
+                      <li>familyMember2_firstName, familyMember2_lastName, familyMember2_age, familyMember2_relationship, familyMember2_email</li>
+                      <li>...and so on up to familyMember5_*</li>
+                    </ul>
+                  </li>
+                  <li><strong>Note:</strong> At least firstName and lastName are required for each family member. Age defaults to 0 if not provided.</li>
+                </ul>
+              </div>
+            </AlertDescription>
+          </Alert>
+          
           {/* File Input */}
           <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
             <input
@@ -285,9 +310,20 @@ export default function BulkImportComponent() {
                   <div className="space-y-2">
                     {result.newUsers.map((user, index) => (
                       <div key={index} className="flex justify-between items-center p-2 bg-white rounded border">
-                        <div>
-                          <span className="font-medium">{user.firstName} {user.lastName}</span>
-                          <span className="text-gray-500 ml-2">({user.email})</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-medium">{user.firstName} {user.lastName}</span>
+                            <Badge variant="outline" className="text-xs">
+                              {user.membershipType}
+                            </Badge>
+                            {user.familyMembersCount && user.familyMembersCount > 0 && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Users className="w-3 h-3 mr-1" />
+                                {user.familyMembersCount} family member{user.familyMembersCount > 1 ? 's' : ''}
+                              </Badge>
+                            )}
+                          </div>
+                          <span className="text-gray-500 text-sm">({user.email})</span>
                         </div>
                         <Badge variant="secondary">
                           Password: {user.tempPassword}

@@ -16,9 +16,18 @@ export default async function DashboardPage() {
     where: { email: session.user.email },
   })
 
-  // Redirect based on role
+  // Get user data to check expiration status
+  const user = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: { isActive: true, membershipExpiry: true },
+  })
+
+  // Redirect based on role and status
   if (admin) {
     redirect('/admin')
+  } else if (user && !user.isActive) {
+    // Expired membership - redirect to renewal page
+    redirect('/renewal')
   } else {
     redirect('/member')
   }

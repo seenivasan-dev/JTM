@@ -325,6 +325,54 @@ export default function AdminLayout({ children, adminInfo, stats }: AdminLayoutP
                     )}
                   </Link>
                 </Button>
+
+                {/* User Profile Dropdown in Top Bar */}
+                {adminInfo && (
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-9 w-9 rounded-full">
+                        <Avatar className="h-9 w-9">
+                          <AvatarFallback className="bg-blue-600 text-white font-semibold">
+                            {adminInfo.firstName[0]}{adminInfo.lastName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end" className="w-56">
+                      <DropdownMenuLabel>
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {adminInfo.firstName} {adminInfo.lastName}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground">
+                            {adminInfo.email}
+                          </p>
+                          <p className="text-xs leading-none text-muted-foreground capitalize mt-1">
+                            Role: {adminInfo.role}
+                          </p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="cursor-pointer">
+                          <LayoutDashboard className="mr-2 h-4 w-4" />
+                          Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin/analytics" className="cursor-pointer">
+                          <BarChart3 className="mr-2 h-4 w-4" />
+                          Analytics
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer text-red-600 focus:text-red-600">
+                        <LogOut className="mr-2 h-4 w-4" />
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                )}
               </div>
             </div>
           </header>

@@ -4,6 +4,7 @@ import { authOptions } from '@/lib/auth';
 import { prisma } from '@/lib/prisma';
 import { z } from 'zod';
 import bcrypt from 'bcryptjs';
+import { sendEmail, generatePasswordResetEmail } from '@/lib/email';
 
 const changePasswordSchema = z.object({
   currentPassword: z.string().min(1, 'Current password is required'),
@@ -104,26 +105,65 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      // Generate new temporary password
-      const tempPassword = Math.random().toString(36).slice(-8);
+      // Generate new temporary password (8 chars: letters + numbers + symbols)
+      const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*';
+      let tempPassword = '';
+      for (let i = 0; i < 8; i++) {
+        tempPassword += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      
       const hashedTempPassword = await bcrypt.hash(tempPassword, 12);
 
-      // Update user with temp password
-      await prisma.user.update({
-        where: { id: user.id },
-        data: {
-          tempPassword: hashedTempPassword,
-          mustChangePassword: true,
-        },
-      });
-
-      // TODO: Send email with temporary password
-      // For now, return temp password (remove in production)
+      // Send email BEFORE updating database
+      const loginUrl = `${process.env.WEB_APP_URL || process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/login`;
       
-      return NextResponse.json({ 
-        message: 'Temporary password sent to your email',
-        tempPassword, // Remove this in production
-      });
+      try {
+        const emailTemplate = generatePasswordResetEmail({
+          firstName: user.firstName,
+          email: user.email,
+          tempPassword,
+          loginUrl,
+        });
+
+        const emailResult = await sendEmail({
+          to: user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['password-reset', 'security'],
+        });
+
+        if (!emailResult.success) {
+          console.error(`❌ Failed to send password reset email to ${user.email}:`, emailResult.error);
+          return NextResponse.json({ 
+            error: 'Failed to send password reset email. Please try again or contact support.',
+            details: emailResult.error,
+          }, { status: 500 });
+        }
+
+        console.log(`✅ Password reset email sent successfully to ${user.email}`);
+
+        // Update user with temp password AFTER successful email
+        await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            tempPassword: hashedTempPassword,
+            mustChangePassword: true,
+          },
+        });
+
+        console.log(`🔑 Temporary password set for ${user.email}`);
+        
+        return NextResponse.json({ 
+          message: 'A temporary password has been sent to your email. Please check your inbox.',
+          success: true,
+        });
+      } catch (emailError) {
+        console.error(`❌ Error sending password reset email to ${user.email}:`, emailError);
+        return NextResponse.json({ 
+          error: 'Failed to send password reset email. Please try again later.',
+        }, { status: 500 });
+      }
     }
 
     if (body.action === 'set-new') {

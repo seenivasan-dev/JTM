@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard'
 
 export default async function AdminAnalyticsPage() {
@@ -112,9 +111,8 @@ export default async function AdminAnalyticsPage() {
   ])
 
   return (
-    <AdminLayout>
-      <Suspense fallback={<div>Loading analytics...</div>}>
-        <AnalyticsDashboard 
+    <Suspense fallback={<div>Loading analytics...</div>}>
+      <AnalyticsDashboard 
           data={{
             membershipTypeStats: membershipStats,
             monthlyRegistrations: recentUsers.map(user => ({
@@ -145,6 +143,5 @@ export default async function AdminAnalyticsPage() {
             }}
           />
         </Suspense>
-    </AdminLayout>
   )
 }

@@ -28,9 +28,14 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if user is active
-    if (!user.isActive) {
+    // Note: We allow expired members to login so they can renew
+    // The dashboard will redirect them to renewal page
+    const isExpired = !user.isActive;
+    
+    // Only block users who were never activated (not just expired)
+    if (!user.isActive && !user.membershipExpiry) {
       return NextResponse.json(
-        { success: false, error: 'Account is not active. Please contact admin.' },
+        { success: false, error: 'Account is not active. Please contact admin for activation.' },
         { status: 403 }
       )
     }
@@ -73,16 +78,21 @@ export async function POST(request: NextRequest) {
       address: user.address,
       notifications: user.notifications,
     }
-    
+
+    // Determine appropriate message
+    let message = 'Login successful';
+    if (user.mustChangePassword) {
+      message = 'Login successful. Please change your password.';
+    } else if (isExpired) {
+      message = 'Your membership has expired. Please renew to continue accessing all features.';
+    }
+
     return NextResponse.json({
       success: true,
       data: { user: userData },
-      message: user.mustChangePassword 
-        ? 'Login successful. Please change your password.'
-        : 'Login successful',
-    })
-    
-  } catch (error) {
+      message,
+      requiresRenewal: isExpired, // Flag for client-side redirect
+    })  } catch (error) {
     console.error('Login error:', error)
     
     if (error instanceof Error && error.name === 'ZodError') {

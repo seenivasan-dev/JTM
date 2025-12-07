@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 
 export default async function AdminPage() {
@@ -72,10 +71,8 @@ export default async function AdminPage() {
   }
 
   return (
-    <AdminLayout>
-      <Suspense fallback={<div>Loading...</div>}>
-        <AdminDashboard initialStats={stats} />
-      </Suspense>
-    </AdminLayout>
+    <Suspense fallback={<div>Loading...</div>}>
+      <AdminDashboard initialStats={stats} />
+    </Suspense>
   )
 }

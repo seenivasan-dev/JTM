@@ -36,13 +36,16 @@ export function LoginForm() {
         // Force session refresh to get latest user data
         await update()
         
-        // Fetch session to check mustChangePassword flag
+        // Fetch session to check mustChangePassword and renewal flags
         const response = await fetch('/api/auth/session')
         const sessionData = await response.json()
         
         if (sessionData?.user?.mustChangePassword) {
           // Redirect to password change page
           router.push('/auth/change-password')
+        } else if (!sessionData?.user?.isActive) {
+          // User's membership has expired - redirect to renewal page
+          router.push('/renewal')
         } else {
           // Redirect to dashboard
           router.push('/dashboard')

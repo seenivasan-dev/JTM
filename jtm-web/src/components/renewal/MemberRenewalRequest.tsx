@@ -40,6 +40,7 @@ interface User {
   lastName: string
   email: string
   membershipType: string
+  isActive: boolean
   membershipExpiry?: string
   familyMembers: Array<{
     id: string
@@ -185,6 +186,21 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
 
   return (
     <div className="space-y-6">
+      {/* Expiration Alert for Inactive Users */}
+      {!user.isActive && (
+        <Alert variant="destructive">
+          <AlertDescription className="flex items-center gap-2">
+            <Calendar className="h-4 w-4" />
+            <div>
+              <strong>Your membership has expired!</strong>
+              <p className="mt-1">
+                Please submit a renewal request below to reactivate your membership and regain access to all community features.
+              </p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Current Membership Info */}
       <Card>
         <CardHeader>
@@ -200,13 +216,10 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
               <p className="font-medium">{user.membershipType}</p>
             </div>
             <div>
-              <p className="text-sm text-muted-foreground">Expires</p>
-              <p className="font-medium">
-                {user.membershipExpiry 
-                  ? new Date(user.membershipExpiry).toLocaleDateString()
-                  : 'December 31, 2025'
-                }
-              </p>
+              <p className="text-sm text-muted-foreground">Status</p>
+              <Badge variant={user.isActive ? "default" : "destructive"}>
+                {user.isActive ? "Active" : "Expired"}
+              </Badge>
             </div>
             <div>
               <p className="text-sm text-muted-foreground">Family Members</p>

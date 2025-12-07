@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { sendEmail, generateRSVPApprovedEmail } from '@/lib/email'
+import { generateQRCodeDataURL, generateEventQRCodeData } from '@/lib/qrcode'
 
 export async function POST(request: NextRequest) {
   try {
@@ -70,7 +71,24 @@ export async function POST(request: NextRequest) {
 
     if (action === 'approve_payment') {
       // Generate QR code data
-      const qrCodeData = `JTM-EVENT:${rsvp.eventId}:${rsvp.userId}:${Date.now()}`
+      const qrCodeData = generateEventQRCodeData(rsvp.eventId, rsvp.userId)
+      
+      // Generate QR code image as data URL
+      let qrCodeImageURL: string | undefined
+      try {
+        qrCodeImageURL = await generateQRCodeDataURL(qrCodeData, {
+          width: 300,
+          margin: 2,
+          color: {
+            dark: '#10b981', // Green color matching the theme
+            light: '#FFFFFF',
+          },
+        })
+        console.log(`✅ QR code image generated for ${rsvp.user.email}`)
+      } catch (qrError) {
+        console.error('❌ Failed to generate QR code image:', qrError)
+        // Continue without image, will use text-based QR code
+      }
       
       updatedRSVP = await prisma.rSVPResponse.update({
         where: { id: rsvpId },
@@ -95,7 +113,7 @@ export async function POST(request: NextRequest) {
           }),
           eventLocation: rsvp.event.location,
           qrCodeData,
-          // qrCodeUrl would be a generated image URL - can be added later
+          qrCodeUrl: qrCodeImageURL, // Include the QR code image
         })
 
         await sendEmail({

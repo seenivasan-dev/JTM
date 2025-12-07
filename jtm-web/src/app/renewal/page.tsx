@@ -65,16 +65,19 @@ export default async function RenewalPage() {
       age: member.age,
       relationship: member.relationship
     })),
-    pendingRenewal: userData.renewalRequests[0] ? {
-      id: userData.renewalRequests[0].id,
-      status: userData.renewalRequests[0].status,
-      submittedAt: userData.renewalRequests[0].createdAt.toISOString(),
-    } : null
   }
+
+  const pendingRenewal = userData.renewalRequests[0] ? {
+    id: userData.renewalRequests[0].id,
+    newType: userData.renewalRequests[0].newType,
+    paymentReference: userData.renewalRequests[0].paymentReference,
+    status: userData.renewalRequests[0].status,
+    createdAt: userData.renewalRequests[0].createdAt.toISOString(),
+  } : undefined
 
   return (
     <MemberLayout user={user}>
-      <MemberRenewalRequest user={user} />
+      <MemberRenewalRequest user={user} pendingRenewal={pendingRenewal} />
     </MemberLayout>
   )
 }
