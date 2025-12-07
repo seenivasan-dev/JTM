@@ -4,7 +4,6 @@ import { authOptions } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import RSVPReports from '@/components/admin/RSVPReports'
-import AdminLayout from '@/components/admin/AdminLayout'
 
 interface RSVPReportsPageProps {
   params: Promise<{ id: string }>
@@ -103,13 +102,11 @@ export default async function RSVPReportsPage({ params }: RSVPReportsPageProps) 
   }))
 
   return (
-    <AdminLayout adminInfo={adminInfo} stats={stats}>
-      <Suspense fallback={<div>Loading reports...</div>}>
-        <RSVPReports 
+    <Suspense fallback={<div>Loading reports...</div>}>
+      <RSVPReports 
           event={serializedEvent}
           rsvps={serializedRSVPs}
         />
       </Suspense>
-    </AdminLayout>
   )
 }

@@ -70,8 +70,15 @@ export default async function AdminPage() {
     checkedInRSVPs,
   }
 
+  const adminInfo = {
+    firstName: admin.firstName || 'Admin',
+    lastName: admin.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role),
+  }
+
   return (
-    <Suspense fallback={<div>Loading...</div>}>
+    <Suspense fallback={<div>Loading dashboard...</div>}>
       <AdminDashboard initialStats={stats} />
     </Suspense>
   )

@@ -1,21 +1,34 @@
 // JTM Web - Admin Membership Expiration Management Page
 import { Metadata } from 'next'
+import { getServerSession } from 'next-auth'
+import { redirect } from 'next/navigation'
+import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import MembershipExpirationManagement from '@/components/admin/MembershipExpirationManagement'
-import { PageHeader } from '@/components/ui/page-header'
 
 export const metadata: Metadata = {
   title: 'Membership Expiration - JTM Admin',
   description: 'Manage automatic membership expiration',
 }
 
-export default function MembershipExpirationPage() {
+export default async function MembershipExpirationPage() {
+  const session = await getServerSession(authOptions)
+  
+  if (!session?.user?.email) {
+    redirect('/auth/login')
+  }
+
+  // Check if user is admin
+  const admin = await prisma.admin.findUnique({
+    where: { email: session.user.email },
+  })
+
+  if (!admin) {
+    redirect('/dashboard')
+  }
+
   return (
-    <div className="container mx-auto py-8 px-4">
-      <PageHeader
-        title="Membership Expiration"
-        description="View and manage automatic membership expiration settings"
-      />
-      
+    <div className="p-6">
       <div className="mt-8">
         <MembershipExpirationManagement />
       </div>

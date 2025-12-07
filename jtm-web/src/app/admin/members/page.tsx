@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
 import { MembershipType, Prisma } from '@prisma/client'
+import AdminLayout from '@/components/admin/AdminLayout'
 import MemberManagement from '@/components/admin/MemberManagement'
 
 interface SearchParams {
@@ -112,21 +113,28 @@ export default async function AdminMembersPage({
     totalPages,
   }
 
+  const adminInfo = {
+    firstName: admin.firstName || 'Admin',
+    lastName: admin.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role),
+  }
+
   return (
     <div className="space-y-6">
       <Suspense fallback={
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="flex items-center gap-3">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
-            <span className="ml-3 text-lg text-muted-foreground">Loading members...</span>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="flex items-center gap-3">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-r-transparent" />
+              <span className="ml-3 text-lg text-muted-foreground">Loading members...</span>
+            </div>
           </div>
-        </div>
-      }>
-        <MemberManagement 
-          initialMembers={members}
-          pagination={pagination}
-          filters={{ search, status, membershipType }}
-        />
+        }>
+          <MemberManagement 
+            initialMembers={members}
+            pagination={pagination}
+            filters={{ search, status, membershipType }}
+          />
       </Suspense>
     </div>
   )

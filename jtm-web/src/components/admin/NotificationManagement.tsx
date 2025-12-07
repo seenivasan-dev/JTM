@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { PageHeader } from '@/components/ui/page-header'
 import { 
   Bell, 
   Send, 
@@ -196,18 +195,28 @@ export default function NotificationManagement() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Notification Management"
-        description="Send announcements, reminders, and updates to your community"
-        action={
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Create Notification
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-600 via-pink-600 to-rose-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <Bell className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Notification Management</h1>
+              <p className="text-white/90 text-lg">Send announcements, reminders, and updates to your community</p>
+            </div>
+          </div>
+          <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-white text-purple-600 hover:bg-white/90 shadow-lg">
+            <Plus className="h-4 w-4 mr-2" />
+            Create Notification
+          </Button>
+        </div>
+      </div>
+
+      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+        <DialogContent className="max-w-2xl">
               <DialogHeader>
                 <DialogTitle>Create New Notification</DialogTitle>
                 <DialogDescription>
@@ -297,8 +306,6 @@ export default function NotificationManagement() {
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        }
-      />
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">

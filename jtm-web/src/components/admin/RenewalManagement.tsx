@@ -11,7 +11,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { PageHeader } from '@/components/ui/page-header'
 import { 
   Clock, 
   CheckCircle, 
@@ -26,7 +25,8 @@ import {
   ChevronRight,
   FileText,
   Send,
-  TrendingUp
+  TrendingUp,
+  RefreshCcw
 } from 'lucide-react'
 
 interface Renewal {
@@ -188,27 +188,37 @@ export default function RenewalManagement({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Renewal Management"
-        description="Manage membership renewal requests and send reminders"
-        action={
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <RefreshCcw className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Renewal Management</h1>
+              <p className="text-white/90 text-lg">Manage membership renewal requests and send reminders</p>
+            </div>
+          </div>
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
               onClick={handleSendReminders}
               disabled={isLoadingReminders}
+              className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
             >
               <Send className="h-4 w-4 mr-2" />
               {isLoadingReminders ? 'Sending...' : 'Send Renewal Reminders'}
             </Button>
             {reminderResults && (
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="secondary" className="text-xs bg-white/20 backdrop-blur-sm text-white border-white/30">
                 Sent {reminderResults.sentCount} reminders to {reminderResults.totalMembers} members
               </Badge>
             )}
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* Status Filter and Stats */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">

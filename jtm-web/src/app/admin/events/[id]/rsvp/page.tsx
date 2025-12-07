@@ -87,9 +87,9 @@ export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
   return (
     <Suspense fallback={<div>Loading RSVP responses...</div>}>
       <AdminRSVPManagement 
-        event={serializedEvent}
-        initialRSVPs={serializedRSVPs}
-      />
-    </Suspense>
+          event={serializedEvent}
+          initialRSVPs={serializedRSVPs}
+        />
+      </Suspense>
   )
 }

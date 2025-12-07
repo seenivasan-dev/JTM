@@ -4,6 +4,7 @@ import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import AdminLayout from '@/components/admin/AdminLayout'
 import EditEventClient from '@/components/events/EditEventClient'
 
 interface EditEventPageProps {
@@ -25,6 +26,22 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
 
   if (!admin) {
     redirect('/events')
+  }
+
+  // Get user data for admin info
+  const userData = await prisma.user.findUnique({
+    where: { email: session.user.email },
+    select: {
+      firstName: true,
+      lastName: true,
+    },
+  })
+
+  const adminInfo = {
+    firstName: userData?.firstName || 'Admin',
+    lastName: userData?.lastName || 'User',
+    email: session.user.email,
+    role: String(admin.role),
   }
 
   // Get event
@@ -61,10 +78,10 @@ export default async function EditEventPage({ params }: EditEventPageProps) {
   }
 
   return (
-    <div className="container mx-auto py-6">
-      <Suspense fallback={<div>Loading event editor...</div>}>
+    <AdminLayout adminInfo={adminInfo}>
+      <Suspense fallback={<div className="p-8">Loading event editor...</div>}>
         <EditEventClient event={serializedEvent} />
       </Suspense>
-    </div>
+    </AdminLayout>
   )
 }

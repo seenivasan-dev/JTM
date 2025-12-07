@@ -28,13 +28,8 @@ export default async function MemberPage() {
     redirect('/auth/login')
   }
 
-  // Check if user must change password
-  if (userData.mustChangePassword) {
-    redirect('/profile?tab=security&action=change-password')
-  }
-
-  // Check if user's membership has expired
-  if (!userData.isActive) {
+  // Check if user's membership has expired (but allow access if just need to change password)
+  if (!userData.isActive && !userData.mustChangePassword) {
     redirect('/renewal')
   }
 

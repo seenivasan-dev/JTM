@@ -43,80 +43,318 @@
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/* JTM - Tamil Cultural Color Palette 
+   Inspired by traditional Tamil art, temple colors, and vibrant festivals
+   Primary: Deep Saffron/Orange (representing festivals, energy, tradition)
+   Secondary: Royal Blue (representing knowledge, sky, divinity)
+   Accent: Emerald Green (representing nature, prosperity, Tamil Nadu's landscape)
+   Gold: Traditional temple gold accents
+*/
+
 :root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
-  --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
-  --accent: oklch(0.968 0.007 247.896);
-  --accent-foreground: oklch(0.208 0.042 265.755);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.984 0.003 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.208 0.042 265.755);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.968 0.007 247.896);
-  --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
-  --sidebar-border: oklch(0.929 0.013 255.508);
-  --sidebar-ring: oklch(0.704 0.04 256.788);
+  --radius: 0.75rem;
+  
+  /* Background - Warm cream/ivory inspired by traditional Tamil art */
+  --background: 0 0% 99%;
+  --foreground: 222 47% 11%;
+  
+  /* Card backgrounds with subtle warmth */
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  
+  /* Primary - Deep Saffron/Orange (Tamil festival color) */
+  --primary: 24 95% 53%;
+  --primary-foreground: 0 0% 100%;
+  
+  /* Secondary - Royal Blue (traditional temple color) */
+  --secondary: 217 91% 60%;
+  --secondary-foreground: 0 0% 100%;
+  
+  /* Muted backgrounds */
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  
+  /* Accent - Emerald Green (Tamil Nadu landscape) */
+  --accent: 142 76% 36%;
+  --accent-foreground: 0 0% 100%;
+  
+  /* Destructive - Traditional red */
+  --destructive: 0 84% 60%;
+  
+  /* Borders with subtle warmth */
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 24 95% 53%;
+  
+  /* Chart colors - Vibrant Tamil palette */
+  --chart-1: 24 95% 53%;    /* Saffron */
+  --chart-2: 217 91% 60%;   /* Royal Blue */
+  --chart-3: 142 76% 36%;   /* Emerald */
+  --chart-4: 45 93% 47%;    /* Gold */
+  --chart-5: 340 82% 52%;   /* Magenta (Pongal celebration) */
+  
+  /* Sidebar - Premium gradient feel */
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 24 95% 53%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 91% 60%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 217 32% 17%;
+  --sidebar-ring: 24 95% 53%;
+  
+  /* JTM Custom colors for cultural elements */
+  --tamil-gold: 45 93% 47%;
+  --temple-stone: 30 8% 52%;
+  --kolam-white: 0 0% 98%;
+  --festival-pink: 340 82% 52%;
+  --rangoli-yellow: 48 96% 53%;
+  --silk-purple: 271 76% 53%;
 }
 
 .dark {
-  --background: oklch(0.129 0.042 264.695);
-  --foreground: oklch(0.984 0.003 247.858);
-  --card: oklch(0.208 0.042 265.755);
-  --card-foreground: oklch(0.984 0.003 247.858);
-  --popover: oklch(0.208 0.042 265.755);
-  --popover-foreground: oklch(0.984 0.003 247.858);
-  --primary: oklch(0.929 0.013 255.508);
-  --primary-foreground: oklch(0.208 0.042 265.755);
-  --secondary: oklch(0.279 0.041 260.031);
-  --secondary-foreground: oklch(0.984 0.003 247.858);
-  --muted: oklch(0.279 0.041 260.031);
-  --muted-foreground: oklch(0.704 0.04 256.788);
-  --accent: oklch(0.279 0.041 260.031);
-  --accent-foreground: oklch(0.984 0.003 247.858);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.551 0.027 264.364);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.208 0.042 265.755);
-  --sidebar-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-accent: oklch(0.279 0.041 260.031);
-  --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.551 0.027 264.364);
+  --background: 222 47% 11%;
+  --foreground: 210 40% 98%;
+  
+  --card: 222 47% 15%;
+  --card-foreground: 210 40% 98%;
+  
+  --popover: 222 47% 15%;
+  --popover-foreground: 210 40% 98%;
+  
+  /* Slightly brighter primary in dark mode */
+  --primary: 24 95% 58%;
+  --primary-foreground: 222 47% 11%;
+  
+  --secondary: 217 91% 65%;
+  --secondary-foreground: 222 47% 11%;
+  
+  --muted: 217 32% 17%;
+  --muted-foreground: 215 20% 65%;
+  
+  --accent: 142 76% 41%;
+  --accent-foreground: 210 40% 98%;
+  
+  --destructive: 0 62% 50%;
+  
+  --border: 217 32% 17%;
+  --input: 217 32% 17%;
+  --ring: 24 95% 58%;
+  
+  --chart-1: 24 95% 58%;
+  --chart-2: 217 91% 65%;
+  --chart-3: 142 76% 41%;
+  --chart-4: 45 93% 52%;
+  --chart-5: 340 82% 57%;
+  
+  --sidebar: 222 47% 11%;
+  --sidebar-foreground: 210 40% 98%;
+  --sidebar-primary: 24 95% 58%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 217 91% 65%;
+  --sidebar-accent-foreground: 0 0% 100%;
+  --sidebar-border: 217 32% 17%;
+  --sidebar-ring: 24 95% 58%;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+  
+  html {
+    /* Better font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    font-feature-settings: "kern" 1;
+    font-kerning: normal;
+    scroll-behavior: smooth;
+  }
+  
   body {
     @apply bg-background text-foreground;
+    /* Enhanced typography settings */
+    font-feature-settings: "rlig" 1, "calt" 1, "ss01" 1;
+    letter-spacing: -0.011em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Better text rendering for all elements */
+  h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    text-rendering: optimizeLegibility;
+  }
+  
+  p, span, div {
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Improve button and input text */
+  button, input, select, textarea {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-muted;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-primary/30 rounded-lg;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-primary/50;
+  }
+}
+
+@layer utilities {
+  /* Z-Index Scale for proper layering */
+  .z-base { z-index: 0; }
+  .z-dropdown { z-index: 1000; }
+  .z-sticky { z-index: 100; }
+  .z-fixed { z-index: 200; }
+  .z-modal-backdrop { z-index: 2000; }
+  .z-modal { z-index: 2001; }
+  .z-popover { z-index: 3000; }
+  .z-tooltip { z-index: 4000; }
+  
+  /* Tamil Cultural Pattern Backgrounds */
+  .bg-kolam-pattern {
+    background-image: 
+      radial-gradient(circle at 25% 25%, hsl(var(--primary)) 2px, transparent 2px),
+      radial-gradient(circle at 75% 75%, hsl(var(--accent)) 2px, transparent 2px);
+    background-size: 50px 50px;
+  }
+  
+  .bg-rangoli-gradient {
+    background: linear-gradient(135deg, 
+      hsl(var(--primary)) 0%, 
+      hsl(var(--festival-pink)) 25%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--secondary)) 75%,
+      hsl(var(--primary)) 100%
+    );
+    background-size: 200% 200%;
+    animation: gradient-shift 15s ease infinite;
+  }
+  
+  .bg-temple-gradient {
+    background: linear-gradient(to bottom right,
+      hsl(var(--sidebar)),
+      hsl(var(--sidebar)) 50%,
+      hsl(222 47% 14%)
+    );
+  }
+  
+  .bg-festival-gradient {
+    background: linear-gradient(135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--secondary)) 100%
+    );
+  }
+  
+  /* Glass morphism effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+  
+  .dark .glass-card {
+    background: rgba(30, 35, 48, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  
+  /* Elevated card with shadow */
+  .elevated-card {
+    @apply bg-card border border-border shadow-lg hover:shadow-xl transition-shadow duration-300;
+  }
+  
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent;
+  }
+  
+  /* Cultural accent decorations */
+  .tamil-border {
+    border-image: linear-gradient(90deg, 
+      hsl(var(--primary)),
+      hsl(var(--accent)),
+      hsl(var(--secondary))
+    ) 1;
+  }
+  
+  /* Animated gradient background */
+  @keyframes gradient-shift {
+    0%, 100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+  
+  /* Pulse animation for badges */
+  @keyframes badge-pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.7;
+    }
+  }
+  
+  .animate-badge-pulse {
+    animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  /* Shimmer loading effect */
+  @keyframes shimmer {
+    0% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  
+  .shimmer {
+    animation: shimmer 2s infinite linear;
+    background: linear-gradient(to right, 
+      transparent 0%,
+      rgba(255, 255, 255, 0.3) 50%,
+      transparent 100%
+    );
+    background-size: 1000px 100%;
+  }
+  
+  /* Floating animation for hero elements */
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
   }
 }

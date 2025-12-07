@@ -7,8 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
-import { PageHeader } from '@/components/ui/page-header'
-import { Download, Upload, FileSpreadsheet, Users, AlertCircle, CheckCircle2, X } from 'lucide-react'
+import { Download, Upload, FileSpreadsheet, Users, AlertCircle, CheckCircle2, X, UserPlus } from 'lucide-react'
 
 interface ImportError {
   row: number
@@ -148,16 +147,25 @@ export default function BulkImportComponent() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Bulk Member Import"
-        description="Upload an Excel/CSV file to import multiple members"
-        action={
-          <Button onClick={downloadTemplate} variant="outline">
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-rose-600 via-orange-600 to-amber-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <UserPlus className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">Bulk Member Import</h1>
+              <p className="text-white/90 text-lg">Upload an Excel/CSV file to import multiple members</p>
+            </div>
+          </div>
+          <Button onClick={downloadTemplate} className="bg-white text-rose-600 hover:bg-white/90 shadow-lg">
             <Download className="w-4 h-4 mr-2" />
             Download Template
           </Button>
-        }
-      />
+        </div>
+      </div>
 
       {/* Upload Section */}
       <Card>

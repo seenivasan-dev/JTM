@@ -15,7 +15,8 @@ import {
   CheckCircle,
   XCircle,
   Clock,
-  MoreHorizontal
+  MoreHorizontal,
+  Users
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -24,7 +25,6 @@ import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Label } from '@/components/ui/label'
-import { PageHeader } from '@/components/ui/page-header'
 
 interface User {
   id: string
@@ -157,22 +157,31 @@ export default function UserManagement({
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="User Management"
-        description="Manage all users and their memberships"
-        action={
+      {/* Header */}
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-8 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
+        <div className="relative flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
+              <Users className="h-8 w-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-white mb-2">User Management</h1>
+              <p className="text-white/90 text-lg">Manage all users and their memberships</p>
+            </div>
+          </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={handleExportUsers}>
+            <Button variant="outline" onClick={handleExportUsers} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
               <Download className="h-4 w-4 mr-2" />
               Export
             </Button>
-            <Button onClick={() => setIsCreateDialogOpen(true)}>
+            <Button onClick={() => setIsCreateDialogOpen(true)} className="bg-white text-cyan-600 hover:bg-white/90 shadow-lg">
               <UserPlus className="h-4 w-4 mr-2" />
               Add User
             </Button>
           </div>
-        }
-      />
+        </div>
+      </div>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">

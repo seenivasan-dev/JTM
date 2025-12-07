@@ -70,7 +70,7 @@ export default async function ProfilePage() {
   }
 
   return (
-    <MemberLayout>
+    <MemberLayout user={user}>
       <MemberProfile user={user} />
     </MemberLayout>
   )
