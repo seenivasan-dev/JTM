@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
 import RenewalManagement from '@/components/admin/RenewalManagement'
 
 interface SearchParams {
@@ -115,35 +114,19 @@ export default async function AdminRenewalsPage({
   }
 
   return (
-    <AdminLayout adminInfo={adminInfo}>
-      <div className="space-y-6">
-        {/* Page Header */}
-        <div className="border-b border-gray-200 pb-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold leading-7 text-gray-900 sm:truncate sm:text-3xl sm:tracking-tight">
-                Renewal Management
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                Review and process membership renewal requests
-              </p>
-            </div>
-          </div>
+    <div className="space-y-6">
+      <Suspense fallback={
+        <div className="flex items-center justify-center py-12">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          <span className="ml-2 text-gray-600">Loading renewals...</span>
         </div>
-
-        <Suspense fallback={
-          <div className="flex items-center justify-center py-12">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span className="ml-2 text-gray-600">Loading renewals...</span>
-          </div>
-        }>
-          <RenewalManagement 
-            initialRenewals={renewals}
-            pagination={pagination}
-            currentStatus={status}
-          />
-        </Suspense>
-      </div>
-    </AdminLayout>
+      }>
+        <RenewalManagement 
+          initialRenewals={renewals}
+          pagination={pagination}
+          currentStatus={status}
+        />
+      </Suspense>
+    </div>
   )
 }

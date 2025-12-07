@@ -11,4 +11,5 @@ export {
   generateRenewalRejectedEmail,
   generateRenewalReminderEmail,
   generateAdminRenewalNotificationEmail,
+  generatePasswordResetEmail,
 } from './templates'

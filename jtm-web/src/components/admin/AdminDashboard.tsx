@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { PageHeader } from '@/components/ui/page-header'
-import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar, BarChart3, Activity, RefreshCw } from 'lucide-react'
+import { Users, UserCheck, UserX, Clock, TrendingUp, Download, Calendar, BarChart3, Activity, RefreshCw, CalendarClock } from 'lucide-react'
 import Link from 'next/link'
 
 interface DashboardStats {
@@ -276,6 +276,12 @@ export default function AdminDashboard({ initialStats }: AdminDashboardProps) {
               <Link href="/admin/renewals">
                 <Clock className="h-6 w-6" />
                 <span className="text-xs">Review Renewals</span>
+              </Link>
+            </Button>
+            <Button asChild variant="outline" className="h-auto flex-col gap-2 p-4">
+              <Link href="/admin/membership-expiration">
+                <CalendarClock className="h-6 w-6" />
+                <span className="text-xs">Auto Expiration</span>
               </Link>
             </Button>
             <Button asChild variant="outline" className="h-auto flex-col gap-2 p-4">

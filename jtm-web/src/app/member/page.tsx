@@ -33,6 +33,11 @@ export default async function MemberPage() {
     redirect('/profile?tab=security&action=change-password')
   }
 
+  // Check if user's membership has expired
+  if (!userData.isActive) {
+    redirect('/renewal')
+  }
+
   // Get recent events
   const eventsData = await prisma.event.findMany({
     take: 5,

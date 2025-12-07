@@ -2,7 +2,6 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
 import UserManagement from '@/components/admin/UserManagement'
 
 export default async function AdminUsersPage() {
@@ -56,11 +55,9 @@ export default async function AdminUsersPage() {
   }))
 
   return (
-    <AdminLayout>
-      <UserManagement 
-        initialUsers={transformedUsers}
-        totalCount={users.length}
-      />
-    </AdminLayout>
+    <UserManagement 
+      initialUsers={transformedUsers}
+      totalCount={users.length}
+    />
   )
 }

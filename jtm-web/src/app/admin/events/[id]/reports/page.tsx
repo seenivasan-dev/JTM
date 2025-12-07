@@ -1,16 +1,16 @@
-// JTM Web - Admin RSVP Management Page
 import { Suspense } from 'react'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
 import { redirect, notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import AdminRSVPManagement from '@/components/admin/AdminRSVPManagement'
+import RSVPReports from '@/components/admin/RSVPReports'
+import AdminLayout from '@/components/admin/AdminLayout'
 
-interface AdminRSVPPageProps {
+interface RSVPReportsPageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
+export default async function RSVPReportsPage({ params }: RSVPReportsPageProps) {
   const resolvedParams = await params
   const session = await getServerSession(authOptions)
 
@@ -54,42 +54,62 @@ export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
     notFound()
   }
 
+  // Get admin info for layout
+  const adminInfo = {
+    firstName: admin.firstName,
+    lastName: admin.lastName,
+    email: admin.email,
+    role: admin.role
+  }
+
+  // Get stats for layout
+  const [pendingRenewals, upcomingEvents] = await Promise.all([
+    prisma.membershipRenewal.count({
+      where: { status: 'PENDING' }
+    }),
+    prisma.event.count({
+      where: {
+        date: {
+          gte: new Date()
+        }
+      }
+    })
+  ])
+
+  const stats = {
+    pendingRenewals,
+    upcomingEvents
+  }
+
   // Serialize the data
   const serializedEvent = {
     id: event.id,
     title: event.title,
     date: event.date.toISOString(),
     location: event.location,
-    rsvpForm: event.rsvpForm as {
-      fields: Array<{
-        id: string
-        type: string
-        label: string
-        required: boolean
-        options?: string[]
-      }>
-    } | undefined
+    maxParticipants: event.maxParticipants,
+    rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
   }
 
   const serializedRSVPs = event.rsvpResponses.map(rsvp => ({
     id: rsvp.id,
-    responses: rsvp.responses as Record<string, string | number | boolean | string[]> || {},
+    responses: rsvp.responses as Record<string, any> || {},
     paymentReference: rsvp.paymentReference,
     paymentConfirmed: rsvp.paymentConfirmed,
-    qrCode: rsvp.qrCode,
     checkedIn: rsvp.checkedIn,
     checkedInAt: rsvp.checkedInAt?.toISOString() || null,
     createdAt: rsvp.createdAt.toISOString(),
-    updatedAt: rsvp.updatedAt.toISOString(),
     user: rsvp.user,
   }))
 
   return (
-    <Suspense fallback={<div>Loading RSVP responses...</div>}>
-      <AdminRSVPManagement 
-        event={serializedEvent}
-        initialRSVPs={serializedRSVPs}
-      />
-    </Suspense>
+    <AdminLayout adminInfo={adminInfo} stats={stats}>
+      <Suspense fallback={<div>Loading reports...</div>}>
+        <RSVPReports 
+          event={serializedEvent}
+          rsvps={serializedRSVPs}
+        />
+      </Suspense>
+    </AdminLayout>
   )
 }

@@ -71,6 +71,34 @@ function generateTempPassword(): string {
   return Math.random().toString(36).slice(-8);
 }
 
+// Helper function to parse family members from CSV row
+function parseFamilyMembers(rowData: any): any[] {
+  const familyMembers = [];
+  
+  // Support up to 5 family members (familyMember1 through familyMember5)
+  for (let i = 1; i <= 5; i++) {
+    const prefix = `familyMember${i}_`;
+    const firstName = rowData[`${prefix}firstName`];
+    const lastName = rowData[`${prefix}lastName`];
+    const age = rowData[`${prefix}age`];
+    const relationship = rowData[`${prefix}relationship`];
+    
+    // Only add if at least firstName and lastName are provided
+    if (firstName && lastName) {
+      familyMembers.push({
+        firstName: firstName.trim(),
+        lastName: lastName.trim(),
+        age: age ? parseInt(age) : 0,
+        relationship: relationship ? relationship.trim() : 'Family Member',
+        contactNumber: rowData[`${prefix}contactNumber`] || '',
+        email: rowData[`${prefix}email`] || '',
+      });
+    }
+  }
+  
+  return familyMembers;
+}
+
 // Handle bulk activation/deactivation
 async function handleBulkActivation(body: any, admin: any) {
   const validatedData = bulkActivationSchema.parse(body);
@@ -379,6 +407,8 @@ export async function POST(request: NextRequest) {
           firstName: string;
           lastName: string;
           tempPassword: string;
+          membershipType: string;
+          familyMembersCount?: number;
         }>
       };
 
@@ -421,39 +451,68 @@ export async function POST(request: NextRequest) {
 
           // Generate temporary password
           const tempPassword = generateTempPassword();
+          const membershipType = rowData.membershipType || 'INDIVIDUAL';
+          
+          // Parse family members if membership type is FAMILY
+          const familyMembers = membershipType === 'FAMILY' ? parseFamilyMembers(rowData) : [];
+          
+          // Validate family members for FAMILY type
+          if (membershipType === 'FAMILY' && familyMembers.length === 0) {
+            results.errors.push({
+              row: rowNumber,
+              field: 'familyMembers',
+              message: 'FAMILY membership requires at least one family member'
+            });
+            results.failed++;
+            continue;
+          }
 
-          // Create user
-          const user = await prisma.user.create({
-            data: {
-              email: rowData.email,
-              firstName: rowData.firstName,
-              lastName: rowData.lastName,
-              mobileNumber: rowData.mobileNumber,
-              membershipType: rowData.membershipType || 'INDIVIDUAL',
-              tempPassword,
-              mustChangePassword: true,
-              isActive: false, // Admin needs to activate
-              importedFromExcel: true,
-              activatedBy: admin.id,
-              address: {
-                create: {
-                  street: rowData.street,
-                  city: rowData.city,
-                  state: rowData.state,
-                  zipCode: rowData.zipCode,
-                  country: rowData.country || 'USA',
+          // Create user with family members in a transaction
+          const user = await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+              data: {
+                email: rowData.email,
+                firstName: rowData.firstName,
+                lastName: rowData.lastName,
+                mobileNumber: rowData.mobileNumber,
+                membershipType,
+                tempPassword,
+                mustChangePassword: true,
+                isActive: false, // Admin needs to activate
+                importedFromExcel: true,
+                activatedBy: admin.id,
+                address: {
+                  create: {
+                    street: rowData.street,
+                    city: rowData.city,
+                    state: rowData.state,
+                    zipCode: rowData.zipCode,
+                    country: rowData.country || 'USA',
+                  }
+                },
+                notifications: {
+                  create: {
+                    email: true,
+                    push: true,
+                    eventReminders: true,
+                    membershipRenewal: true,
+                    adminUpdates: true,
+                  }
                 }
               },
-              notifications: {
-                create: {
-                  email: true,
-                  push: true,
-                  eventReminders: true,
-                  membershipRenewal: true,
-                  adminUpdates: true,
-                }
-              }
-            },
+            });
+            
+            // Create family members if any
+            if (familyMembers.length > 0) {
+              await tx.familyMember.createMany({
+                data: familyMembers.map((fm: any) => ({
+                  ...fm,
+                  userId: newUser.id,
+                })),
+              });
+            }
+            
+            return newUser;
           });
 
           results.newUsers.push({
@@ -461,6 +520,8 @@ export async function POST(request: NextRequest) {
             firstName: user.firstName,
             lastName: user.lastName,
             tempPassword,
+            membershipType,
+            familyMembersCount: familyMembers.length,
           });
 
           results.successful++;

@@ -4,7 +4,6 @@ import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
-import AdminLayout from '@/components/admin/AdminLayout'
 import NotificationManagement from '@/components/admin/NotificationManagement'
 
 export default async function AdminNotificationsPage() {
@@ -60,18 +59,8 @@ export default async function AdminNotificationsPage() {
   }
 
   return (
-    <AdminLayout 
-      adminInfo={{
-        firstName: admin.firstName,
-        lastName: admin.lastName,
-        email: admin.email,
-        role: admin.role
-      }}
-      stats={stats}
-    >
-      <Suspense fallback={<div>Loading notifications...</div>}>
-        <NotificationManagement />
-      </Suspense>
-    </AdminLayout>
+    <Suspense fallback={<div>Loading notifications...</div>}>
+      <NotificationManagement />
+    </Suspense>
   )
 }

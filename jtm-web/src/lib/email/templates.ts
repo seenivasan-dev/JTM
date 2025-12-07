@@ -770,3 +770,99 @@ Please process this request at your earliest convenience.
 
   return { subject, html, text }
 }
+
+/**
+ * Password Reset Email Template (with temporary password)
+ */
+export function generatePasswordResetEmail(params: {
+  firstName: string
+  email: string
+  tempPassword: string
+  loginUrl: string
+}): { subject: string; html: string; text: string } {
+  const { firstName, email, tempPassword, loginUrl } = params
+
+  const subject = '🔐 Password Reset - JTM Community'
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="${baseStyles}">
+  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 28px;">🔐 Password Reset Request</h1>
+  </div>
+  
+  <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+    <p style="font-size: 16px; margin-bottom: 20px;">Hello <strong>${firstName}</strong>,</p>
+    
+    <p>We received a request to reset your password for your JTM Community account.</p>
+    
+    <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+      <h3 style="margin-top: 0; color: #92400e; font-size: 18px;">🔑 Your Temporary Password</h3>
+      <p style="margin: 10px 0;"><strong>Email:</strong> ${email}</p>
+      <p style="margin: 10px 0;">
+        <strong>Temporary Password:</strong> 
+        <code style="background-color: #fed7aa; padding: 6px 12px; border-radius: 4px; font-size: 14px; color: #92400e; font-weight: 600;">${tempPassword}</code>
+      </p>
+    </div>
+    
+    <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; border-left: 4px solid #dc2626; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #991b1b; font-size: 16px;">🔒 Important Security Notice</h4>
+      <ul style="color: #991b1b; margin-bottom: 0; line-height: 1.8;">
+        <li>You will be required to change this temporary password immediately upon login</li>
+        <li>This temporary password will expire after first use</li>
+        <li>If you didn't request this reset, please contact support immediately</li>
+        <li>Never share your password with anyone</li>
+      </ul>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+      <a href="${loginUrl}" style="${buttonStyles}">
+        🔓 Login & Reset Password
+      </a>
+    </div>
+
+    <p style="margin-top: 30px; font-size: 14px; color: #6b7280;">If you didn't request a password reset, please ignore this email or contact our support team at <a href="mailto:${process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org'}" style="color: #3b82f6;">${process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org'}</a>.</p>
+
+    <p style="margin-top: 20px;">Best regards,<br><strong>JTM Community Team</strong></p>
+  </div>
+  
+  <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
+    <p>This is an automated security message. Please do not reply to this email.</p>
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
+  </div>
+</body>
+</html>
+  `
+
+  const text = `
+Password Reset Request
+
+Hello ${firstName},
+
+We received a request to reset your password for your JTM Community account.
+
+Your Temporary Password:
+Email: ${email}
+Temporary Password: ${tempPassword}
+
+IMPORTANT SECURITY NOTICE:
+- You will be required to change this temporary password immediately upon login
+- This temporary password will expire after first use
+- If you didn't request this reset, please contact support immediately
+- Never share your password with anyone
+
+Login here: ${loginUrl}
+
+If you didn't request a password reset, please ignore this email or contact support at ${process.env.ADMIN_EMAIL || 'admin@jaxtamilmandram.org'}.
+
+Best regards,
+JTM Community Team
+  `.trim()
+
+  return { subject, html, text }
+}

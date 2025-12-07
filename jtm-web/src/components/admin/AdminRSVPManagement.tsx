@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay'
 import { 
   Check, 
   X, 
@@ -21,9 +22,11 @@ import {
   Users,
   DollarSign,
   Eye,
-  Mail
+  Mail,
+  BarChart3
 } from 'lucide-react'
 import { format } from 'date-fns'
+import Link from 'next/link'
 import {
   Select,
   SelectContent,
@@ -269,6 +272,12 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
           <p className="text-muted-foreground">{event.title}</p>
         </div>
         <div className="flex gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/admin/events/${event.id}/reports`}>
+              <BarChart3 className="h-4 w-4 mr-2" />
+              View Reports
+            </Link>
+          </Button>
           <Button onClick={exportRSVPData} variant="outline">
             <Download className="h-4 w-4 mr-2" />
             Export
@@ -851,9 +860,22 @@ function RSVPDetailDialog({
           {/* QR Code */}
           {rsvp.qrCode && (
             <div>
-              <h3 className="text-lg font-semibold mb-3">QR Code</h3>
-              <div className="p-4 bg-gray-50 rounded-lg">
-                <p className="text-sm font-mono break-all">{rsvp.qrCode}</p>
+              <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                <QrCode className="h-5 w-5" />
+                QR Code
+              </h3>
+              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                <div className="flex justify-center mb-3">
+                  <QRCodeDisplay data={rsvp.qrCode} size={200} />
+                </div>
+                <details className="mt-3">
+                  <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                    View QR Code Text
+                  </summary>
+                  <div className="text-xs font-mono break-all bg-white p-2 rounded border mt-2">
+                    {rsvp.qrCode}
+                  </div>
+                </details>
               </div>
             </div>
           )}

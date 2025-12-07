@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay'
 import { 
   Calendar, 
   MapPin, 
@@ -440,23 +441,28 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-center">
-                <div className="bg-white p-6 rounded-lg border-2 border-dashed border-green-300">
-                  <div className="w-64 h-64 mx-auto bg-gray-100 flex items-center justify-center border rounded-lg mb-4">
-                    <div className="text-center">
-                      <QrCode className="h-16 w-16 mx-auto mb-2 text-gray-400" />
-                      <p className="text-xs text-gray-500 mb-2">QR Code for Event Check-in</p>
-                      <div className="text-xs font-mono break-all bg-gray-50 p-2 rounded border max-w-full overflow-hidden">
-                        {(userRsvp as any).qrCode}
-                      </div>
-                    </div>
+                <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-6 rounded-lg border-2 border-green-300">
+                  <div className="mx-auto mb-4 flex justify-center">
+                    <QRCodeDisplay 
+                      data={(userRsvp as any).qrCode} 
+                      size={250}
+                    />
                   </div>
                   <p className="text-sm font-semibold text-green-700 mb-2">
                     ✅ Ready for Check-in
                   </p>
-                  <p className="text-sm text-gray-600 mb-1">Show this QR code at the event for check-in</p>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-sm text-gray-600 mb-3">Show this QR code at the event for check-in</p>
+                  <p className="text-xs text-gray-500 mb-3">
                     Screenshot this page or show your phone screen to the event staff
                   </p>
+                  <details className="mt-4">
+                    <summary className="text-xs text-gray-500 cursor-pointer hover:text-gray-700">
+                      View QR Code Text
+                    </summary>
+                    <div className="text-xs font-mono break-all bg-white p-2 rounded border mt-2 text-left">
+                      {(userRsvp as any).qrCode}
+                    </div>
+                  </details>
                 </div>
               </CardContent>
             </Card>
