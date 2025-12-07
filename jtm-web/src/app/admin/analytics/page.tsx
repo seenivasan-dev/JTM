@@ -122,17 +122,17 @@ export default async function AdminAnalyticsPage() {
       <AnalyticsDashboard 
           data={{
             membershipTypeStats: membershipStats,
-            monthlyRegistrations: recentUsers.map(user => ({
+            monthlyRegistrations: recentUsers.map((user: { createdAt: Date }) => ({
               createdAt: user.createdAt.toISOString()
             })),
-            eventAttendanceStats: eventStats.map(event => ({
+            eventAttendanceStats: eventStats.map((event: any) => ({
                 id: event.id,
                 title: event.title,
                 date: event.date.toISOString(),
                 maxParticipants: event.maxParticipants,
                 _count: event._count
               })),
-              topEvents: eventStats.slice(0, 5).map(event => ({
+              topEvents: eventStats.slice(0, 5).map((event: any) => ({
                 id: event.id,
                 title: event.title,
                 date: event.date.toISOString(),
