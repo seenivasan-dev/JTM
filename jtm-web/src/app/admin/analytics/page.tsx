@@ -6,6 +6,27 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import AnalyticsDashboard from '@/components/admin/AnalyticsDashboard'
 
+// Type definitions for the analytics data
+type EventWithStats = {
+  id: string
+  title: string
+  date: Date
+  maxParticipants: number | null
+  _count: {
+    rsvpResponses: number
+  }
+}
+
+type UserWithDate = {
+  id: string
+  firstName: string
+  lastName: string
+  email: string
+  membershipType: string
+  isActive: boolean
+  createdAt: Date
+}
+
 export default async function AdminAnalyticsPage() {
   const session = await getServerSession(authOptions)
   
@@ -122,17 +143,17 @@ export default async function AdminAnalyticsPage() {
       <AnalyticsDashboard 
           data={{
             membershipTypeStats: membershipStats,
-            monthlyRegistrations: recentUsers.map((user: { createdAt: Date }) => ({
+            monthlyRegistrations: recentUsers.map((user: UserWithDate) => ({
               createdAt: user.createdAt.toISOString()
             })),
-            eventAttendanceStats: eventStats.map((event: any) => ({
+            eventAttendanceStats: eventStats.map((event: EventWithStats) => ({
                 id: event.id,
                 title: event.title,
                 date: event.date.toISOString(),
                 maxParticipants: event.maxParticipants,
                 _count: event._count
               })),
-              topEvents: eventStats.slice(0, 5).map((event: any) => ({
+              topEvents: eventStats.slice(0, 5).map((event: EventWithStats) => ({
                 id: event.id,
                 title: event.title,
                 date: event.date.toISOString(),
