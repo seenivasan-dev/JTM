@@ -4,6 +4,7 @@
 import { useSession, signOut } from 'next-auth/react'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -66,11 +67,17 @@ export function Header() {
     <header className="sticky top-0 z-[100] w-full border-b border-border/40 bg-white/80 dark:bg-gray-900/80 backdrop-blur-xl supports-[backdrop-filter]:bg-white/60 shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo - Tamil Inspired */}
+          {/* Logo - Tamil Inspired with JTM Logo Image */}
           <Link href={session ? (isAdmin ? '/admin' : '/dashboard') : '/'} className="flex items-center space-x-3 group">
             <div className="relative">
-              <div className="h-10 w-10 rounded-2xl bg-gradient-to-br from-primary via-secondary to-accent flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300">
-                <span className="text-white font-bold text-lg">JTM</span>
+              <div className="h-10 w-10 rounded-2xl bg-white flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300 overflow-hidden border-2 border-primary/20">
+                <Image
+                  src="/images/jtmlogo.png"
+                  alt="JTM Logo"
+                  width={36}
+                  height={36}
+                  className="object-contain"
+                />
               </div>
               <div className="absolute -top-1 -right-1 h-3 w-3 bg-accent rounded-full animate-pulse"></div>
             </div>

@@ -70,59 +70,6 @@ export default async function AdminEventsPage() {
     const totalRSVPs = rsvps.length
     const checkedIn = rsvps.filter(r => r.checkedIn).length
     const pending = rsvps.filter(r => !r.checkedIn).length
-    
-    // Food preference analytics
-    let totalMeals = 0
-    let vegMeals = 0
-    let nonVegMeals = 0
-    let kidsMeals = 0
-    let adultMeals = 0
-    
-    rsvps.forEach(rsvp => {
-      if (rsvp.responses && typeof rsvp.responses === 'object') {
-        const responses = rsvp.responses as Record<string, unknown>
-        
-        if (responses.foodPreference) {
-          totalMeals++
-          adultMeals++
-          if (responses.foodPreference === 'vegetarian' || responses.foodPreference === 'veg') {
-            vegMeals++
-          } else if (responses.foodPreference === 'non-vegetarian' || responses.foodPreference === 'non-veg') {
-            nonVegMeals++
-          }
-        }
-        
-        if (responses.familyAttending && Array.isArray(responses.familyAttending)) {
-          responses.familyAttending.forEach((familyMember: Record<string, unknown>) => {
-            if (familyMember.attending) {
-              totalMeals++
-              const age = (familyMember.age as number) || 0
-              if (age < 12) {
-                kidsMeals++
-              } else {
-                adultMeals++
-              }
-              
-              if (familyMember.foodPreference === 'vegetarian' || familyMember.foodPreference === 'veg') {
-                vegMeals++
-              } else if (familyMember.foodPreference === 'non-vegetarian' || familyMember.foodPreference === 'non-veg') {
-                nonVegMeals++
-              }
-            }
-          })
-        }
-        
-        if (responses.guestCount && typeof responses.guestCount === 'number') {
-          totalMeals += responses.guestCount
-          adultMeals += responses.guestCount
-          if (responses.guestFoodPreference === 'vegetarian' || responses.guestFoodPreference === 'veg') {
-            vegMeals += responses.guestCount
-          } else if (responses.guestFoodPreference === 'non-vegetarian' || responses.guestFoodPreference === 'non-veg') {
-            nonVegMeals++
-          }
-        }
-      }
-    })
 
     return {
       ...event,
@@ -142,11 +89,6 @@ export default async function AdminEventsPage() {
         totalRSVPs,
         checkedIn,
         pending,
-        totalMeals,
-        vegMeals,
-        nonVegMeals,
-        kidsMeals,
-        adultMeals,
         isActive: new Date(event.date) >= new Date(),
         isUpcoming: new Date(event.date) > new Date(),
         isPast: new Date(event.date) < new Date()
