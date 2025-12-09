@@ -13,7 +13,6 @@ import {
   Plus,
   Eye,
   QrCode,
-  ChefHat,
   Search,
   Download,
   CheckCircle,
@@ -64,11 +63,6 @@ interface Event {
     totalRSVPs: number
     checkedIn: number
     pending: number
-    totalMeals: number
-    vegMeals: number
-    nonVegMeals: number
-    kidsMeals: number
-    adultMeals: number
     isActive: boolean
     isUpcoming: boolean
     isPast: boolean
@@ -101,7 +95,6 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
     upcomingEvents: events.filter(e => e.stats.isUpcoming).length,
     pastEvents: events.filter(e => e.stats.isPast).length,
     totalRSVPs: events.reduce((sum, e) => sum + e.stats.totalRSVPs, 0),
-    totalMeals: events.reduce((sum, e) => sum + e.stats.totalMeals, 0),
     avgRSVPsPerEvent: Math.round(events.reduce((sum, e) => sum + e.stats.totalRSVPs, 0) / Math.max(events.length, 1))
   }
 
@@ -319,27 +312,6 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                     <div className="text-2xl font-bold text-orange-700">{event.stats.pending}</div>
                   </div>
 
-                  <div className="p-3 rounded-lg bg-purple-50 border border-purple-200">
-                    <div className="flex items-center gap-2 text-purple-600 mb-1">
-                      <ChefHat className="h-4 w-4" />
-                      <span className="text-xs font-medium">Total Meals</span>
-                    </div>
-                    <div className="text-2xl font-bold text-purple-700">{event.stats.totalMeals}</div>
-                  </div>
-
-                  <div className="p-3 rounded-lg bg-pink-50 border border-pink-200">
-                    <div className="text-xs font-medium text-pink-600 mb-2">Meal Breakdown</div>
-                    <div className="space-y-1 text-xs">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Veg:</span>
-                        <span className="font-semibold">{event.stats.vegMeals}</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Non-Veg:</span>
-                        <span className="font-semibold">{event.stats.nonVegMeals}</span>
-                      </div>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Action Buttons */}
