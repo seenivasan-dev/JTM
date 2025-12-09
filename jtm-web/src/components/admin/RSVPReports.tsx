@@ -11,7 +11,6 @@ import {
   Clock, 
   XCircle,
   Download,
-  ChefHat,
   CalendarDays,
   TrendingUp,
   DollarSign
@@ -25,6 +24,15 @@ interface RSVPReportsProps {
     location: string
     maxParticipants?: number | null
     rsvpDeadline?: string | null
+    rsvpForm?: {
+      fields: Array<{
+        id: string
+        type: string
+        label: string
+        required: boolean
+        options?: string[]
+      }>
+    }
   }
   rsvps: Array<{
     id: string
@@ -53,22 +61,6 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
     checkedIn: rsvps.filter(r => r.checkedIn).length,
     notCheckedIn: rsvps.filter(r => !r.checkedIn).length,
     
-    // Food stats
-    foodOrders: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food || r.responses?.foodRequired
-      return food && food !== 'no' && food !== 'none'
-    }).length,
-    
-    vegMeals: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food || r.responses?.foodRequired
-      return food === 'veg' || food === 'vegetarian'
-    }).length,
-    
-    nonVegMeals: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food || r.responses?.foodRequired
-      return food === 'nonveg' || food === 'non-vegetarian'
-    }).length,
-    
     // Membership breakdown
     individual: rsvps.filter(r => r.user.membershipType === 'INDIVIDUAL').length,
     family: rsvps.filter(r => r.user.membershipType === 'FAMILY').length,
@@ -93,39 +85,54 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
 
   // Generate detailed CSV
   const exportDetailedReport = () => {
+    // Build dynamic headers from RSVP form fields
+    const dynamicFieldHeaders = event.rsvpForm?.fields?.map(f => f.label) || []
+    const headers = [
+      'Name', 'Email', 'Membership Type', 'RSVP Date', 'Payment Status',
+      'Payment Reference', ...dynamicFieldHeaders, 'Check-in Status', 'Check-in Time'
+    ]
+
+    // Build field ID to label map
+    const fieldMap = new Map<string, string>()
+    event.rsvpForm?.fields?.forEach(f => fieldMap.set(f.id, f.label))
+
     const csvData = [
-      [
-        'Name', 'Email', 'Membership Type', 'RSVP Date', 'Payment Status', 
-        'Payment Reference', 'Food Preference', 'Family Members', 'Special Requirements',
-        'Check-in Status', 'Check-in Time'
-      ],
-      ...rsvps.map(rsvp => [
-        `${rsvp.user.firstName} ${rsvp.user.lastName}`,
-        rsvp.user.email,
-        rsvp.user.membershipType || 'N/A',
-        new Date(rsvp.createdAt).toLocaleDateString('en-US', { 
-          year: 'numeric', 
-          month: 'short', 
-          day: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        }),
-        rsvp.paymentConfirmed ? 'Approved' : 'Pending',
-        rsvp.paymentReference || 'N/A',
-        rsvp.responses?.foodPreference || rsvp.responses?.food || 'None',
-        rsvp.responses?.familyMembers || rsvp.responses?.attendees || '1',
-        rsvp.responses?.specialRequirements || rsvp.responses?.dietary || 'None',
-        rsvp.checkedIn ? 'Checked In' : 'Not Checked In',
-        rsvp.checkedInAt 
-          ? new Date(rsvp.checkedInAt).toLocaleString('en-US', {
-              year: 'numeric',
-              month: 'short',
-              day: 'numeric',
-              hour: '2-digit',
-              minute: '2-digit'
-            })
-          : 'N/A'
-      ])
+      headers,
+      ...rsvps.map(rsvp => {
+        // Get dynamic field values in the same order as headers
+        const dynamicValues = event.rsvpForm?.fields?.map(field => {
+          const value = rsvp.responses[field.id]
+          if (value === undefined || value === null) return 'N/A'
+          if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+          return String(value)
+        }) || []
+
+        return [
+          `${rsvp.user.firstName} ${rsvp.user.lastName}`,
+          rsvp.user.email,
+          rsvp.user.membershipType || 'N/A',
+          new Date(rsvp.createdAt).toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'short', 
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          rsvp.paymentConfirmed ? 'Approved' : 'Pending',
+          rsvp.paymentReference || 'N/A',
+          ...dynamicValues,
+          rsvp.checkedIn ? 'Checked In' : 'Not Checked In',
+          rsvp.checkedInAt 
+            ? new Date(rsvp.checkedInAt).toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+              })
+            : 'N/A'
+        ]
+      })
     ]
     
     const csvContent = csvData.map(row => row.join(',')).join('\n')
@@ -154,11 +161,6 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
       ['Payment Pending', stats.paymentPending.toString()],
       ['Checked In', stats.checkedIn.toString()],
       ['Not Checked In', stats.notCheckedIn.toString()],
-      [''],
-      ['Food Planning'],
-      ['Total Food Orders', stats.foodOrders.toString()],
-      ['Vegetarian Meals', stats.vegMeals.toString()],
-      ['Non-Vegetarian Meals', stats.nonVegMeals.toString()],
       [''],
       ['Membership Breakdown'],
       ['Individual Members', stats.individual.toString()],
@@ -214,7 +216,7 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
       </div>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total RSVPs</CardTitle>
@@ -252,19 +254,6 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
             <div className="text-2xl font-bold text-blue-600">{stats.checkedIn}</div>
             <p className="text-xs text-muted-foreground">
               {stats.total > 0 ? Math.round((stats.checkedIn / stats.total) * 100) : 0}% attended
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Food Orders</CardTitle>
-            <ChefHat className="h-4 w-4 text-orange-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-600">{stats.foodOrders}</div>
-            <p className="text-xs text-muted-foreground">
-              {stats.vegMeals} veg, {stats.nonVegMeals} non-veg
             </p>
           </CardContent>
         </Card>
@@ -371,48 +360,6 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
                   Expected attendees
                 </p>
               </div>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Food Planning */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ChefHat className="h-5 w-5" />
-            Food Planning
-          </CardTitle>
-          <CardDescription>Meal preparation estimates</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="border rounded-lg p-4 bg-green-50">
-              <p className="text-sm text-muted-foreground mb-2">Vegetarian</p>
-              <p className="text-3xl font-bold text-green-700">{stats.vegMeals}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.foodOrders > 0 
-                  ? Math.round((stats.vegMeals / stats.foodOrders) * 100) 
-                  : 0}% of food orders
-              </p>
-            </div>
-
-            <div className="border rounded-lg p-4 bg-orange-50">
-              <p className="text-sm text-muted-foreground mb-2">Non-Vegetarian</p>
-              <p className="text-3xl font-bold text-orange-700">{stats.nonVegMeals}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.foodOrders > 0 
-                  ? Math.round((stats.nonVegMeals / stats.foodOrders) * 100) 
-                  : 0}% of food orders
-              </p>
-            </div>
-
-            <div className="border rounded-lg p-4 bg-blue-50">
-              <p className="text-sm text-muted-foreground mb-2">Total Meals</p>
-              <p className="text-3xl font-bold text-blue-700">{stats.foodOrders}</p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.total - stats.foodOrders} not ordering food
-              </p>
             </div>
           </div>
         </CardContent>

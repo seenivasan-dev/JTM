@@ -18,7 +18,6 @@ import {
   Clock,
   CheckCircle,
   AlertCircle,
-  ChefHat,
   Users,
   DollarSign,
   Eye,
@@ -91,7 +90,6 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
   const [loading, setLoading] = useState(false)
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'pending' | 'approved' | 'checkedIn'>('all')
-  const [foodFilter, setFoodFilter] = useState<'all' | 'veg' | 'nonveg' | 'none'>('all')
   const [selectedRSVP, setSelectedRSVP] = useState<RSVPResponse | null>(null)
   const [bulkSelection, setBulkSelection] = useState<string[]>([])
 
@@ -109,14 +107,7 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
       (statusFilter === 'approved' && rsvp.paymentConfirmed) ||
       (statusFilter === 'checkedIn' && rsvp.checkedIn)
 
-    const foodPreference = rsvp.responses?.foodPreference || rsvp.responses?.food || 'none'
-    const matchesFood = 
-      foodFilter === 'all' ||
-      (foodFilter === 'veg' && foodPreference === 'veg') ||
-      (foodFilter === 'nonveg' && foodPreference === 'nonveg') ||
-      (foodFilter === 'none' && !foodPreference || foodPreference === 'no')
-
-    return matchesSearch && matchesStatus && matchesFood
+    return matchesSearch && matchesStatus
   })
 
   // Calculate statistics
@@ -125,18 +116,6 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
     pending: rsvps.filter(r => !r.paymentConfirmed).length,
     approved: rsvps.filter(r => r.paymentConfirmed).length,
     checkedIn: rsvps.filter(r => r.checkedIn).length,
-    vegMeals: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food
-      return food === 'veg' || food === 'vegetarian'
-    }).length,
-    nonVegMeals: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food
-      return food === 'nonveg' || food === 'non-vegetarian'
-    }).length,
-    totalMeals: rsvps.filter(r => {
-      const food = r.responses?.foodPreference || r.responses?.food || r.responses?.foodRequired
-      return food && food !== 'no' && food !== 'none'
-    }).length
   }
 
   const handleRSVPAction = async (rsvpId: string, action: 'approve_payment' | 'reject_payment' | 'checkin') => {
@@ -209,25 +188,41 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
   }
 
   const exportRSVPData = () => {
+    // Build dynamic headers from RSVP form fields
+    const dynamicFieldHeaders = event.rsvpForm?.fields?.map(f => f.label) || []
+    const headers = [
+      'Name', 'Email', 'Membership Type', 'Payment Reference', 'Payment Status',
+      ...dynamicFieldHeaders,
+      'Check-in Status', 'Check-in Date', 'RSVP Date'
+    ]
+
+    // Build field ID to label map for looking up values
+    const fieldMap = new Map<string, string>()
+    event.rsvpForm?.fields?.forEach(f => fieldMap.set(f.id, f.label))
+
     const csvData = [
-      [
-        'Name', 'Email', 'Membership Type', 'Payment Reference', 'Payment Status', 
-        'Food Preference', 'Special Requirements', 'Family Members', 'Check-in Status', 
-        'Check-in Date', 'RSVP Date'
-      ],
-      ...filteredRSVPs.map(rsvp => [
-        `${rsvp.user.firstName} ${rsvp.user.lastName}`,
-        rsvp.user.email,
-        rsvp.user.membershipType || 'N/A',
-        rsvp.paymentReference || 'N/A',
-        rsvp.paymentConfirmed ? 'Confirmed' : 'Pending',
-        rsvp.responses?.foodPreference || rsvp.responses?.food || 'None',
-        rsvp.responses?.specialRequirements || rsvp.responses?.dietary || 'None',
-        rsvp.responses?.familyMembers || rsvp.responses?.attendees || '1',
-        rsvp.checkedIn ? 'Checked In' : 'Not Checked In',
-        rsvp.checkedInAt ? format(new Date(rsvp.checkedInAt), 'MMM dd, yyyy HH:mm') : 'N/A',
-        format(new Date(rsvp.createdAt), 'MMM dd, yyyy HH:mm')
-      ])
+      headers,
+      ...filteredRSVPs.map(rsvp => {
+        // Get dynamic field values in the same order as headers
+        const dynamicValues = event.rsvpForm?.fields?.map(field => {
+          const value = rsvp.responses[field.id]
+          if (value === undefined || value === null) return 'N/A'
+          if (typeof value === 'boolean') return value ? 'Yes' : 'No'
+          return String(value)
+        }) || []
+
+        return [
+          `${rsvp.user.firstName} ${rsvp.user.lastName}`,
+          rsvp.user.email,
+          rsvp.user.membershipType || 'N/A',
+          rsvp.paymentReference || 'N/A',
+          rsvp.paymentConfirmed ? 'Confirmed' : 'Pending',
+          ...dynamicValues,
+          rsvp.checkedIn ? 'Checked In' : 'Not Checked In',
+          rsvp.checkedInAt ? format(new Date(rsvp.checkedInAt), 'MMM dd, yyyy HH:mm') : 'N/A',
+          format(new Date(rsvp.createdAt), 'MMM dd, yyyy HH:mm')
+        ]
+      })
     ]
     
     const csvContent = csvData.map(row => row.join(',')).join('\n')
@@ -240,25 +235,30 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
     window.URL.revokeObjectURL(url)
   }
 
-  const getFoodPreferenceDisplay = (responses: Record<string, any>) => {
-    const food = responses?.foodPreference || responses?.food || responses?.foodRequired
-    if (!food || food === 'no' || food === 'none') return 'No Food'
-    if (food === 'veg' || food === 'vegetarian') return 'Vegetarian'
-    if (food === 'nonveg' || food === 'non-vegetarian') return 'Non-Vegetarian'
-    return food
-  }
-
   const renderRSVPResponses = (responses: Record<string, any>) => {
     if (!responses || Object.keys(responses).length === 0) return null
 
+    // Create a map of field IDs to labels from the event's RSVP form
+    const fieldLabelMap = new Map<string, string>()
+    if (event.rsvpForm?.fields) {
+      event.rsvpForm.fields.forEach(field => {
+        fieldLabelMap.set(field.id, field.label)
+      })
+    }
+
     return (
       <div className="space-y-2">
-        {Object.entries(responses).map(([key, value]) => (
-          <div key={key} className="flex justify-between">
-            <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
-            <span>{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}</span>
-          </div>
-        ))}
+        {Object.entries(responses).map(([key, value]) => {
+          // Get the field label from the map, fallback to formatted key
+          const label = fieldLabelMap.get(key) || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+          
+          return (
+            <div key={key} className="flex justify-between py-2 border-b last:border-b-0">
+              <span className="font-medium text-gray-700">{label}:</span>
+              <span className="text-gray-900">{typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}</span>
+            </div>
+          )
+        })}
       </div>
     )
   }
@@ -286,7 +286,7 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
       </div>
 
       {/* Statistics Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="p-4">
             <div className="flex items-center gap-2">
@@ -334,42 +334,6 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
             </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <ChefHat className="h-4 w-4 text-orange-500" />
-              <div>
-                <p className="text-sm text-muted-foreground">Total Meals</p>
-                <p className="text-lg font-bold">{stats.totalMeals}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-4 bg-green-500 rounded-full" />
-              <div>
-                <p className="text-sm text-muted-foreground">Veg Meals</p>
-                <p className="text-lg font-bold">{stats.vegMeals}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center gap-2">
-              <div className="h-4 w-4 bg-red-500 rounded-full" />
-              <div>
-                <p className="text-sm text-muted-foreground">Non-Veg</p>
-                <p className="text-lg font-bold">{stats.nonVegMeals}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Filters and Search */}
@@ -395,18 +359,6 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
             <SelectItem value="pending">Pending Payment</SelectItem>
             <SelectItem value="approved">Payment Approved</SelectItem>
             <SelectItem value="checkedIn">Checked In</SelectItem>
-          </SelectContent>
-        </Select>
-
-        <Select value={foodFilter} onValueChange={(value: any) => setFoodFilter(value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Food Preference" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Food</SelectItem>
-            <SelectItem value="veg">Vegetarian</SelectItem>
-            <SelectItem value="nonveg">Non-Vegetarian</SelectItem>
-            <SelectItem value="none">No Food</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -454,12 +406,12 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
           <TabsTrigger value="all">All RSVPs ({stats.total})</TabsTrigger>
           <TabsTrigger value="pending">Pending ({stats.pending})</TabsTrigger>
           <TabsTrigger value="approved">Approved ({stats.approved})</TabsTrigger>
-          <TabsTrigger value="food">Food Orders ({stats.totalMeals})</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
           <RSVPList 
             rsvps={filteredRSVPs}
+            event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
@@ -471,6 +423,7 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
         <TabsContent value="pending" className="space-y-4">
           <RSVPList 
             rsvps={filteredRSVPs.filter(r => !r.paymentConfirmed)}
+            event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
@@ -482,21 +435,12 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
         <TabsContent value="approved" className="space-y-4">
           <RSVPList 
             rsvps={filteredRSVPs.filter(r => r.paymentConfirmed)}
+            event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
             setSelectedRSVP={setSelectedRSVP}
             loading={loading}
-          />
-        </TabsContent>
-
-        <TabsContent value="food" className="space-y-4">
-          <FoodOrdersList 
-            rsvps={filteredRSVPs.filter(r => {
-              const food = r.responses?.foodPreference || r.responses?.food || r.responses?.foodRequired
-              return food && food !== 'no' && food !== 'none'
-            })}
-            setSelectedRSVP={setSelectedRSVP}
           />
         </TabsContent>
       </Tabs>
@@ -517,7 +461,8 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
 
 // RSVP List Component
 function RSVPList({ 
-  rsvps, 
+  rsvps,
+  event,
   bulkSelection, 
   setBulkSelection, 
   onAction, 
@@ -525,6 +470,7 @@ function RSVPList({
   loading 
 }: {
   rsvps: RSVPResponse[]
+  event: Event
   bulkSelection: string[]
   setBulkSelection: (selection: string[]) => void
   onAction: (rsvpId: string, action: 'approve_payment' | 'reject_payment' | 'checkin') => void
@@ -539,58 +485,73 @@ function RSVPList({
     }
   }
 
-  const getFoodPreferenceDisplay = (responses: Record<string, any>) => {
-    const food = responses?.foodPreference || responses?.food || responses?.foodRequired
-    if (!food || food === 'no' || food === 'none') return 'No Food'
-    if (food === 'veg' || food === 'vegetarian') return 'Vegetarian'
-    if (food === 'nonveg' || food === 'non-vegetarian') return 'Non-Vegetarian'
-    return food
+  // Get first 2-3 key responses to display as preview
+  const getResponsePreview = (responses: Record<string, any>) => {
+    if (!event.rsvpForm?.fields || event.rsvpForm.fields.length === 0) {
+      return null
+    }
+
+    const fieldLabelMap = new Map<string, string>()
+    event.rsvpForm.fields.forEach(field => {
+      fieldLabelMap.set(field.id, field.label)
+    })
+
+    const entries = Object.entries(responses).slice(0, 3)
+    return entries.map(([key, value]) => {
+      const label = fieldLabelMap.get(key) || key
+      const displayValue = typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)
+      return { label, value: displayValue }
+    })
   }
 
   return (
     <div className="space-y-4">
-      {rsvps.map((rsvp) => (
-        <Card key={rsvp.id}>
-          <CardContent className="p-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-start gap-4 flex-1">
-                <input
-                  type="checkbox"
-                  checked={bulkSelection.includes(rsvp.id)}
-                  onChange={(e) => handleBulkSelect(rsvp.id, e.target.checked)}
-                  className="mt-1"
-                />
-                
-                <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
-                  {/* User Info */}
-                  <div>
-                    <h3 className="font-semibold">{rsvp.user.firstName} {rsvp.user.lastName}</h3>
-                    <p className="text-sm text-muted-foreground">{rsvp.user.email}</p>
-                    <p className="text-sm text-muted-foreground">{rsvp.user.membershipType || 'Regular'}</p>
-                  </div>
+      {rsvps.map((rsvp) => {
+        const responsePreview = getResponsePreview(rsvp.responses)
+        
+        return (
+          <Card key={rsvp.id}>
+            <CardContent className="p-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-start gap-4 flex-1">
+                  <input
+                    type="checkbox"
+                    checked={bulkSelection.includes(rsvp.id)}
+                    onChange={(e) => handleBulkSelect(rsvp.id, e.target.checked)}
+                    className="mt-1"
+                  />
+                  
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    {/* User Info */}
+                    <div>
+                      <h3 className="font-semibold">{rsvp.user.firstName} {rsvp.user.lastName}</h3>
+                      <p className="text-sm text-muted-foreground">{rsvp.user.email}</p>
+                      <p className="text-sm text-muted-foreground">{rsvp.user.membershipType || 'Regular'}</p>
+                    </div>
 
-                  {/* RSVP Details */}
-                  <div>
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-sm">
-                        <span>Food:</span>
-                        <span>{getFoodPreferenceDisplay(rsvp.responses)}</span>
-                      </div>
-                      {rsvp.paymentReference && (
-                        <div className="flex justify-between text-sm">
-                          <span>Payment Ref:</span>
-                          <span className="font-mono">{rsvp.paymentReference}</span>
+                    {/* RSVP Details */}
+                    <div>
+                      <div className="space-y-1">
+                        {responsePreview && responsePreview.map((item, idx) => (
+                          <div key={idx} className="flex justify-between text-sm">
+                            <span className="text-gray-600">{item.label}:</span>
+                            <span className="font-medium">{item.value}</span>
+                          </div>
+                        ))}
+                        {rsvp.paymentReference && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">Payment Ref:</span>
+                            <span className="font-mono text-xs">{rsvp.paymentReference}</span>
+                          </div>
+                        )}
+                        <div className="text-xs text-muted-foreground pt-1">
+                          RSVP: {format(new Date(rsvp.createdAt), 'MMM dd, yyyy')}
                         </div>
-                      )}
-                      <div className="flex justify-between text-sm">
-                        <span>RSVP Date:</span>
-                        <span>{format(new Date(rsvp.createdAt), 'MMM dd, yyyy')}</span>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Status & Actions */}
-                  <div className="flex flex-col gap-2">
+                    {/* Status & Actions */}
+                    <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
                       <Badge variant={rsvp.paymentConfirmed ? "default" : "secondary"}>
                         {rsvp.paymentConfirmed ? "Payment Approved" : "Payment Pending"}
@@ -652,7 +613,8 @@ function RSVPList({
             </div>
           </CardContent>
         </Card>
-      ))}
+        )
+      })}
       
       {rsvps.length === 0 && (
         <Card>
@@ -663,83 +625,6 @@ function RSVPList({
           </CardContent>
         </Card>
       )}
-    </div>
-  )
-}
-
-// Food Orders List Component
-function FoodOrdersList({ 
-  rsvps, 
-  setSelectedRSVP 
-}: {
-  rsvps: RSVPResponse[]
-  setSelectedRSVP: (rsvp: RSVPResponse) => void
-}) {
-  const getFoodPreferenceDisplay = (responses: Record<string, any>) => {
-    const food = responses?.foodPreference || responses?.food || responses?.foodRequired
-    if (food === 'veg' || food === 'vegetarian') return 'Vegetarian'
-    if (food === 'nonveg' || food === 'non-vegetarian') return 'Non-Vegetarian'
-    return food
-  }
-
-  const getFoodIcon = (responses: Record<string, any>) => {
-    const food = responses?.foodPreference || responses?.food || responses?.foodRequired
-    if (food === 'veg' || food === 'vegetarian') return '🌱'
-    if (food === 'nonveg' || food === 'non-vegetarian') return '🍖'
-    return '🍽️'
-  }
-
-  return (
-    <div className="space-y-4">
-      {rsvps.map((rsvp) => (
-        <Card key={rsvp.id}>
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="text-2xl">{getFoodIcon(rsvp.responses)}</div>
-                <div>
-                  <h3 className="font-semibold">{rsvp.user.firstName} {rsvp.user.lastName}</h3>
-                  <p className="text-sm text-muted-foreground">{rsvp.user.email}</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <p className="font-medium">{getFoodPreferenceDisplay(rsvp.responses)}</p>
-                  <div className="flex gap-2">
-                    <Badge variant={rsvp.paymentConfirmed ? "default" : "secondary"}>
-                      {rsvp.paymentConfirmed ? "Paid" : "Pending"}
-                    </Badge>
-                    {rsvp.checkedIn && (
-                      <Badge variant="outline" className="bg-green-50">
-                        Checked In
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                <Button
-                  onClick={() => setSelectedRSVP(rsvp)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Eye className="h-4 w-4 mr-1" />
-                  Details
-                </Button>
-              </div>
-            </div>
-            
-            {(rsvp.responses?.specialRequirements || rsvp.responses?.dietary) && (
-              <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                <p className="text-sm font-medium">Special Requirements:</p>
-                <p className="text-sm text-muted-foreground">
-                  {rsvp.responses?.specialRequirements || rsvp.responses?.dietary}
-                </p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      ))}
     </div>
   )
 }
@@ -761,16 +646,29 @@ function RSVPDetailDialog({
   const renderRSVPResponses = (responses: Record<string, any>) => {
     if (!responses || Object.keys(responses).length === 0) return null
 
+    // Create a map of field IDs to labels from the event's RSVP form
+    const fieldLabelMap = new Map<string, string>()
+    if (event.rsvpForm?.fields) {
+      event.rsvpForm.fields.forEach(field => {
+        fieldLabelMap.set(field.id, field.label)
+      })
+    }
+
     return (
       <div className="space-y-3">
-        {Object.entries(responses).map(([key, value]) => (
-          <div key={key} className="flex justify-between py-2 border-b">
-            <span className="font-medium capitalize">{key.replace(/([A-Z])/g, ' $1')}:</span>
-            <span className="text-right max-w-48">
-              {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
-            </span>
-          </div>
-        ))}
+        {Object.entries(responses).map(([key, value]) => {
+          // Get the field label from the map, fallback to formatted key
+          const label = fieldLabelMap.get(key) || key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())
+          
+          return (
+            <div key={key} className="flex justify-between py-2 border-b">
+              <span className="font-medium text-gray-700">{label}:</span>
+              <span className="text-right max-w-48 text-gray-900">
+                {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value)}
+              </span>
+            </div>
+          )
+        })}
       </div>
     )
   }

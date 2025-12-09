@@ -14,7 +14,6 @@ import {
   Eye,
   Edit,
   QrCode,
-  ChefHat,
   Search,
   Download,
   CheckCircle,
@@ -63,11 +62,6 @@ interface Event {
     totalRSVPs: number
     checkedIn: number
     pending: number
-    totalMeals: number
-    vegMeals: number
-    nonVegMeals: number
-    kidsMeals: number
-    adultMeals: number
     isActive: boolean
     isUpcoming: boolean
     isPast: boolean
@@ -109,9 +103,6 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
     upcomingEvents: events.filter(e => e.stats.isUpcoming).length,
     activeEvents: events.filter(e => e.stats.isActive).length,
     totalRSVPs: events.reduce((sum, e) => sum + e.stats.totalRSVPs, 0),
-    totalMeals: events.reduce((sum, e) => sum + e.stats.totalMeals, 0),
-    totalVegMeals: events.reduce((sum, e) => sum + e.stats.vegMeals, 0),
-    totalNonVegMeals: events.reduce((sum, e) => sum + e.stats.nonVegMeals, 0)
   }
 
   const getEventStatusBadge = (event: Event) => {
@@ -125,15 +116,15 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
   }
 
   const exportEventData = (event: Event) => {
+    // For simple export without dynamic fields - just basic info
     const csvData = [
-      ['Name', 'Email', 'Membership Type', 'Check-in Date', 'Checked In', 'Food Preference', 'Family Members', 'Payment Status'],
+      ['Name', 'Email', 'Membership Type', 'Check-in Date', 'Checked In', 'Family Members', 'Payment Status'],
       ...event.rsvpResponses.map(rsvp => [
         `${rsvp.user.firstName} ${rsvp.user.lastName}`,
         rsvp.user.email,
         rsvp.user.membershipType,
         rsvp.checkedInAt ? format(new Date(rsvp.checkedInAt), 'MMM dd, yyyy') : 'Not checked in',
         rsvp.checkedIn ? 'Yes' : 'No',
-        getStringValue((rsvp.responses as Record<string, unknown>)?.foodPreference),
         rsvp.user.familyMembers.length.toString(),
         rsvp.paymentConfirmed ? 'Confirmed' : 'Pending'
       ])
@@ -154,7 +145,7 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
       <div className="flex justify-between items-start">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Events Management</h1>
-          <p className="text-muted-foreground">Manage events, track RSVPs, and plan food requirements</p>
+          <p className="text-muted-foreground">Manage events and track RSVPs</p>
         </div>
         <Link href="/events/create">
           <Button>
@@ -165,7 +156,7 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
       </div>
 
       {/* Overall Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total Events</CardTitle>
@@ -188,19 +179,6 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
             <div className="text-2xl font-bold">{overallStats.totalRSVPs}</div>
             <p className="text-xs text-muted-foreground">
               Across all events
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Meals</CardTitle>
-            <ChefHat className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{overallStats.totalMeals}</div>
-            <p className="text-xs text-muted-foreground">
-              {overallStats.totalVegMeals} veg, {overallStats.totalNonVegMeals} non-veg
             </p>
           </CardContent>
         </Card>
@@ -315,36 +293,6 @@ export default function AdminEventManagement({ events }: AdminEventManagementPro
                 <div className="bg-yellow-50 p-3 rounded-lg">
                   <div className="text-lg font-semibold text-yellow-600">{event.stats.pending}</div>
                   <div className="text-sm text-yellow-800">Pending</div>
-                </div>
-                <div className="bg-purple-50 p-3 rounded-lg">
-                  <div className="text-lg font-semibold text-purple-600">{event.stats.totalMeals}</div>
-                  <div className="text-sm text-purple-800">Total Meals</div>
-                </div>
-              </div>
-
-              {/* Food Requirements */}
-              <div className="bg-gray-50 p-4 rounded-lg">
-                <h4 className="font-semibold mb-3 flex items-center gap-2">
-                  <ChefHat className="h-4 w-4" />
-                  Food Planning
-                </h4>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Vegetarian:</span>
-                    <span className="font-medium text-green-600">{event.stats.vegMeals}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Non-Vegetarian:</span>
-                    <span className="font-medium text-red-600">{event.stats.nonVegMeals}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Kids Meals:</span>
-                    <span className="font-medium text-blue-600">{event.stats.kidsMeals}</span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Adult Meals:</span>
-                    <span className="font-medium text-orange-600">{event.stats.adultMeals}</span>
-                  </div>
                 </div>
               </div>
 
