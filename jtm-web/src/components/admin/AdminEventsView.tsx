@@ -136,7 +136,7 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
               <p className="text-white/90 text-lg">Manage all community events and track attendance</p>
             </div>
           </div>
-          <Link href="/admin/events/create">
+          <Link href="/events/create">
             <Button className="bg-white text-blue-600 hover:bg-white/90 shadow-lg">
               <Plus className="h-5 w-5 mr-2" />
               Create Event
