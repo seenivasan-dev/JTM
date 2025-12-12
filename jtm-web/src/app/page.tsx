@@ -155,10 +155,10 @@ export default async function Home() {
       </nav>
 
       {/* Hero Banner Section */}
-      <section className="relative pt-20 overflow-hidden">
-        <div className="relative h-[40vh] md:h-[45vh] lg:h-[50vh] w-full">
+      <section className="relative pt-20">
+        <div className="relative h-[35vh] md:h-[40vh] lg:h-[45vh] w-full">
           <Image
-            src="/images/jtm_main_bn.jpg"
+            src="/images/banner.png"
             alt="Jacksonville Tamil Mandram Community"
             fill
             className="object-cover"
@@ -169,16 +169,16 @@ export default async function Home() {
       </section>
 
       {/* Welcome Section */}
-      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
+      <section className="py-12 bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50">
         <div className="container mx-auto px-4">
           <div className="max-w-5xl mx-auto text-center">
             <div className="inline-block mb-6 px-6 py-3 bg-white shadow-lg rounded-full">
               <span className="text-2xl font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">வணக்கம் | Welcome</span>
             </div>
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
+            <h3 className="text-4xl md:text-6xl lg:text-7xl font-bold text-gray-900 mb-6 leading-tight">
               Celebrating Tamil<br />
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Culture & Heritage</span>
-            </h1>
+            </h3>
             <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed">
               Join Jacksonville's premier Tamil cultural organization. Experience authentic festivals, 
               connect with community members, and preserve our rich heritage for future generations.
@@ -316,7 +316,7 @@ export default async function Home() {
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-5xl font-bold text-gray-900 mb-4">
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                Upcoming Events
+                Events
               </span>
             </h2>
             <p className="text-lg text-gray-600">Join us for exciting cultural celebrations and community gatherings</p>
