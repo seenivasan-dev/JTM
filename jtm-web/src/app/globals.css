@@ -357,4 +357,14 @@
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
+
+  /* Sponsor slider scroll animation */
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
 }

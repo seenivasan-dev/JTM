@@ -7,6 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
+import { SponsorsSlider } from '@/components/landing/SponsorsSlider'
 import { 
   Calendar, 
   Users, 
@@ -26,8 +27,8 @@ import {
 
 // Gallery images
 const galleryImages = [
-  { src: '/images/gallery/JTM Sangamam.jpeg', title: 'JTM Sangamam' },
   { src: '/images/gallery/EC2025Team.jpeg', title: 'EC 2025 Team' },
+  { src: '/images/gallery/JTM Sangamam.jpeg', title: 'JTM Sangamam' },
   { src: '/images/gallery/AnandMemorialTournament.jpeg', title: 'Anand Memorial Tournament' },
   { src: '/images/gallery/YLC.jpeg', title: 'Youth Leadership Camp' },
   { src: '/images/gallery/JTMGuest.jpeg', title: 'Special Guest Visit' },
@@ -38,24 +39,49 @@ const galleryImages = [
 
 // Event images
 const eventImages = [
-  { src: '/images/events/jtm2025GalaEvent.jpg', title: 'Gala Event 2025', date: 'Coming Soon' },
+  { src: '/images/events/jtm2025KalaiVizha.jpg', title: 'Kalai Vizha', date: 'Dec 2025' },
+  { src: '/images/events/jtm2025GalaEvent.jpg', title: 'Gala Event 2025', date: 'Nov 2025' },
   { src: '/images/events/Pongal Event.jpeg', title: 'Pongal Celebration', date: 'January 2025' },
   { src: '/images/events/jtm2025-TamizhVizha.jpg', title: 'Tamilzh Vizha', date: 'March 2025' },
   { src: '/images/events/jtm25Sangamam.jpg', title: 'Sangamam 2025', date: 'April 2025' },
   { src: '/images/events/jtm2025SportsDay.jpg', title: 'Sports Day', date: 'May 2025' },
-  { src: '/images/events/jtm2025KalaiVizha.jpg', title: 'Kalai Vizha', date: 'June 2025' },
+
 ]
 
 // Sponsor images
 const sponsors = [
-  { src: '/images/sponsers/ARVA_Platinum.jpeg', name: 'ARVA', level: 'Platinum' },
-  { src: '/images/sponsers/MasterCraft_Platinum.jpeg', name: 'MasterCraft', level: 'Platinum' },
-  { src: '/images/sponsers/NFMP_Platinum.jpeg', name: 'NFMP', level: 'Platinum' },
-  { src: '/images/sponsers/Century21_Gold.jpeg', name: 'Century 21', level: 'Gold' },
-  { src: '/images/sponsers/DesiPantry_Gold.jpeg', name: 'Desi Pantry', level: 'Gold' },
-  { src: '/images/sponsers/FloridaBlue_Gold.jpeg', name: 'Florida Blue', level: 'Gold' },
-  { src: '/images/sponsers/Krish_Gold.jpeg', name: 'Krish', level: 'Gold' },
-  { src: '/images/sponsers/FreshMeats.jpeg', name: 'Fresh Meats', level: 'Silver' },
+  // Platinum Sponsors
+  { src: '/images/sponsers/Platinum-Bala.jpg', name: 'Bala', level: 'Platinum' },
+  { src: '/images/sponsers/Platinum-Community-Foundation.jpg', name: 'Community Foundation', level: 'Platinum' },
+  { src: '/images/sponsers/Platinum-Dr-Kani.jpg', name: 'Dr. Kani', level: 'Platinum' },
+  { src: '/images/sponsers/Platinum-Mastercraft.jpg', name: 'Mastercraft', level: 'Platinum' },
+  { src: '/images/sponsers/Platinum-Peaky-Blinds.jpg', name: 'Peaky Blinds', level: 'Platinum' },
+  { src: '/images/sponsers/Platinum-Sridhar.jpg', name: 'Sridhar', level: 'Platinum' },
+  
+  // Gold Sponsors
+  { src: '/images/sponsers/Gold-Desi-Pantry.png', name: 'Desi Pantry', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Devi.jpg', name: 'Devi', level: 'Gold' },
+  { src: '/images/sponsers/Gold-FloridaBlue.jpg', name: 'Florida Blue', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Joseph.jpg', name: 'Joseph', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Kishek.jpg', name: 'Kishek', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Kolapasi.jpg', name: 'Kolapasi', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Krish.jpg', name: 'Krish', level: 'Gold' },
+  { src: '/images/sponsers/Gold-Sathiyan.jpg', name: 'Sathiyan', level: 'Gold' },
+  
+  // Silver Sponsors
+  { src: '/images/sponsers/Silver-Manju-FreshMeats.jpg', name: 'Manju Fresh Meats', level: 'Silver' },
+  
+  // Bronze Sponsors
+  { src: '/images/sponsers/Bronze Sponsor - 1.jpg', name: 'Bronze Sponsor 1', level: 'Bronze' },
+  { src: '/images/sponsers/Bronze Sponsor - 2.jpg', name: 'Bronze Sponsor 2', level: 'Bronze' },
+  { src: '/images/sponsers/Bronze Sponsor - 3.jpg', name: 'Bronze Sponsor 3', level: 'Bronze' },
+  { src: '/images/sponsers/Bronze Sponsor - 4.jpg', name: 'Bronze Sponsor 4', level: 'Bronze' },
+  { src: '/images/sponsers/Bronze Sponsor - 5.jpg', name: 'Bronze Sponsor 5', level: 'Bronze' },
+  
+  // Event Sponsors
+  { src: '/images/sponsers/Event-AshleyHomes.jpg', name: 'Ashley Homes', level: 'Event' },
+  { src: '/images/sponsers/Event-Sponsor-ICIHomes.jpeg', name: 'ICI Homes', level: 'Event' },
+  { src: '/images/sponsers/Event-Sponsor-Madurai-Kitchen.jpeg', name: 'Madurai Kitchen', level: 'Event' },
 ]
 
 export default async function Home() {
@@ -82,7 +108,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Professional Navigation Bar */}
-      <nav className="fixed top-0 w-full bg-white/90 backdrop-blur-xl shadow-md z-50 border-b border-blue-100">
+      <nav className="fixed top-0 w-full bg-gradient-to-r from-white/95 via-blue-50/95 to-indigo-50/95 backdrop-blur-xl shadow-lg z-50 border-b-2 border-blue-200">
         <div className="container mx-auto px-4">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
@@ -100,7 +126,7 @@ export default async function Home() {
                 <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                   Jacksonville Tamil Mandram
                 </h1>
-                <p className="text-sm text-gray-600">Connecting Communities Since 2010</p>
+                <p className="text-sm text-gray-600">Connecting Communities Since 2001</p>
               </div>
             </Link>
 
@@ -109,7 +135,7 @@ export default async function Home() {
               <Link href="#home" className="px-3 py-2 text-sm font-semibold text-blue-600 bg-blue-50 rounded-lg">
                 Home
               </Link>
-              {['Election 2025', 'ByLaws', 'Events', 'Membership'].map((item) => (
+              {['Magazines', 'ByLaws', 'Events', 'Membership'].map((item) => (
                 <Link
                   key={item}
                   href={`#${item.toLowerCase().replace(' ', '-')}`}
@@ -155,16 +181,101 @@ export default async function Home() {
       </nav>
 
       {/* Hero Banner Section */}
-      <section className="relative pt-20">
-        <div className="relative h-[35vh] md:h-[40vh] lg:h-[45vh] w-full">
+      <section className="relative pt-20 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100">
+        <div className="relative h-[35vh] md:h-[40vh] lg:h-[45vh] xl:h-[50vh] w-full">
           <Image
             src="/images/banner.png"
             alt="Jacksonville Tamil Mandram Community"
             fill
-            className="object-cover"
+            className="object-contain object-center"
             priority
             quality={95}
           />
+        </div>
+      </section>
+
+      {/* Current EC Team Section */}
+      <section className="py-20 bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-100 relative overflow-hidden">
+        {/* Animated background patterns */}
+        <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `
+              radial-gradient(circle at 20% 50%, #4F46E5 2px, transparent 2px),
+              radial-gradient(circle at 80% 80%, #4F46E5 2px, transparent 2px),
+              radial-gradient(circle at 40% 20%, #4F46E5 1px, transparent 1px)
+            `,
+            backgroundSize: '100px 100px, 150px 150px, 80px 80px'
+          }}></div>
+        </div>
+        
+        {/* Floating orbs */}
+        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-300 rounded-full opacity-10 blur-3xl"></div>
+        <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-300 rounded-full opacity-10 blur-3xl"></div>
+        
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            {/* Header with decorative elements */}
+            <div className="text-center mb-12 relative">
+              <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-4">
+                <div className="flex gap-2">
+                  <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
+                  <div className="w-2 h-2 bg-indigo-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                </div>
+              </div>
+              
+              <div className="inline-block mb-4 px-6 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full border-2 border-blue-300 shadow-lg">
+                <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold text-sm tracking-wider">LEADERSHIP 2025</span>
+              </div>
+              
+              <h2 className="text-4xl md:text-6xl font-bold mb-4">
+                <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Executive Committee
+                </span>
+              </h2>
+              <div className="flex items-center justify-center gap-4 mb-4">
+                <div className="h-px w-16 bg-gradient-to-r from-transparent to-blue-400"></div>
+                <Trophy className="h-6 w-6 text-indigo-600" />
+                <div className="h-px w-16 bg-gradient-to-l from-transparent to-blue-400"></div>
+              </div>
+              <p className="text-lg text-gray-700 max-w-2xl mx-auto">
+                Meet our dedicated leadership team working tirelessly to serve the Tamil community
+              </p>
+            </div>
+            
+            {/* EC Team Photo Container */}
+            <div className="relative max-w-5xl mx-auto">
+              {/* Decorative corner elements */}
+              <div className="absolute -top-4 -left-4 w-20 h-20 border-t-4 border-l-4 border-blue-500 rounded-tl-3xl opacity-60"></div>
+              <div className="absolute -top-4 -right-4 w-20 h-20 border-t-4 border-r-4 border-indigo-500 rounded-tr-3xl opacity-60"></div>
+              <div className="absolute -bottom-4 -left-4 w-20 h-20 border-b-4 border-l-4 border-indigo-500 rounded-bl-3xl opacity-60"></div>
+              <div className="absolute -bottom-4 -right-4 w-20 h-20 border-b-4 border-r-4 border-purple-500 rounded-br-3xl opacity-60"></div>
+              
+              {/* Photo frame with glassmorphism */}
+              <div className="relative bg-white/60 backdrop-blur-md p-4 rounded-3xl shadow-2xl border-2 border-white">
+                <div className="relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-blue-200/50">
+                  <div className="relative aspect-[16/9]">
+                    <Image
+                      src="/images/gallery/EC2025Team.jpeg"
+                      alt="Jacksonville Tamil Mandram Executive Committee 2025"
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
+                </div>
+                
+                {/* Bottom info bar */}
+                <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-inner">
+                  <p className="text-gray-700 text-center leading-relaxed">
+                    Our Executive Committee works tirelessly to serve the Tamil community, organize cultural events, 
+                    and preserve our rich heritage for future generations.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -201,15 +312,15 @@ export default async function Home() {
             {/* Quick Stats */}
             <div className="grid grid-cols-3 gap-8 mt-16 max-w-2xl mx-auto">
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">500+</div>
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">375+</div>
                 <div className="text-sm font-medium text-gray-600">Members</div>
               </div>
               <div className="text-center border-x border-gray-300">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">50+</div>
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">20+</div>
                 <div className="text-sm font-medium text-gray-600">Events/Year</div>
               </div>
               <div className="text-center">
-                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">15+</div>
+                <div className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">25+</div>
                 <div className="text-sm font-medium text-gray-600">Years</div>
               </div>
             </div>
@@ -372,30 +483,8 @@ export default async function Home() {
             <p className="text-lg text-gray-600">Thank you to our generous sponsors who make our events possible</p>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 gap-6 max-w-5xl mx-auto">
-            {sponsors.map((sponsor, index) => (
-              <div key={index} className="bg-white rounded-xl p-6 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 border border-gray-100">
-                <div className="relative aspect-square mb-3">
-                  <Image
-                    src={sponsor.src}
-                    alt={sponsor.name}
-                    fill
-                    className="object-contain"
-                  />
-                </div>
-                <div className="text-center">
-                  <h3 className="font-bold text-gray-900 text-sm mb-1">{sponsor.name}</h3>
-                  <span className={`text-xs px-2 py-1 rounded-full ${
-                    sponsor.level === 'Platinum' ? 'bg-purple-100 text-purple-700' :
-                    sponsor.level === 'Gold' ? 'bg-yellow-100 text-yellow-700' :
-                    'bg-gray-100 text-gray-700'
-                  }`}>
-                    {sponsor.level}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+          {/* Sponsors Slider - One at a time */}
+          <SponsorsSlider sponsors={sponsors} />
 
           <div className="text-center mt-12">
             <Link href="#contact">
@@ -492,12 +581,9 @@ export default async function Home() {
                 </li>
                 <li className="flex items-center gap-2">
                   <Mail className="h-5 w-5 text-blue-400 flex-shrink-0" />
-                  <span>info@jtm.org</span>
+                  <span>jtmec2025@gmail.com</span>
                 </li>
-                <li className="flex items-center gap-2">
-                  <Phone className="h-5 w-5 text-blue-400 flex-shrink-0" />
-                  <span>(904) XXX-XXXX</span>
-                </li>
+                
               </ul>
             </div>
           </div>
