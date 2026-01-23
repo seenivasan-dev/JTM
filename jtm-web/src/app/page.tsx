@@ -181,13 +181,14 @@ export default async function Home() {
       </nav>
 
       {/* Hero Banner Section */}
-      <section className="relative pt-20 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100">
-        <div className="relative h-[35vh] md:h-[40vh] lg:h-[45vh] xl:h-[50vh] w-full">
+      <section className="relative pt-20 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex justify-center">
+        <div className="relative">
           <Image
-            src="/images/banner.png"
+            src="/images/banner5.jpeg"
             alt="Jacksonville Tamil Mandram Community"
-            fill
-            className="object-contain object-center"
+            width={1920}
+            height={400}
+            className="max-w-full h-auto"
             priority
             quality={95}
           />
