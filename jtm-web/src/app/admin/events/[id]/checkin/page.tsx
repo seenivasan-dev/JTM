@@ -25,6 +25,7 @@ interface RSVPDetails {
 interface ScanResult {
   success: boolean
   qrCodeId?: string
+  rsvpResponseId?: string
   alreadyCheckedIn: boolean
   checkInDetails?: {
     checkedInAt: string
