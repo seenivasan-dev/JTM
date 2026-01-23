@@ -67,49 +67,51 @@ model Address {
 }
 
 model Event {
-  id              String         @id @default(cuid())
+  id              String          @id @default(cuid())
   title           String
   description     String
   flyer           String?
   date            DateTime
   location        String
-  rsvpRequired    Boolean        @default(false)
+  rsvpRequired    Boolean         @default(false)
   rsvpDeadline    DateTime?
   maxParticipants Int?
-  rsvpForm        Json?          // Dynamic form configuration
+  rsvpForm        Json?           // Dynamic form configuration
   rsvpResponses   RSVPResponse[]
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
 }
 
 model RSVPResponse {
-  id                String    @id @default(cuid())
+  id                String       @id @default(cuid())
   eventId           String
   userId            String
-  responses         Json      // Dynamic form responses
-  paymentConfirmed  Boolean   @default(false)
+  responses         Json         // Dynamic form responses
+  paymentConfirmed  Boolean      @default(false)
   paymentReference  String?
-  qrCode            String?   // Generated QR code for check-in
-  checkedIn         Boolean   @default(false)
+  qrCode            String?      // Generated QR code for check-in (legacy)
+  checkedIn         Boolean      @default(false)
   checkedInAt       DateTime?
-  event             Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  event             Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
 
   @@unique([eventId, userId]) // One RSVP per user per event
 }
 
 model Admin {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String         @id @default(cuid())
+  email     String         @unique
   firstName String
   lastName  String
-  role      AdminRole @default(ADMIN)
-  isActive  Boolean  @default(true)
-  year      Int      // Admin changes every year
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  name      String?        // Full name for display (optional for backward compatibility)
+  role      AdminRole      @default(ADMIN)
+  isActive  Boolean        @default(true)
+  year      Int            // Admin changes every year
+  qrCheckIns QRCheckIn[]   // Check-ins performed in standalone QR system
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
 }
 
 model NotificationPreferences {
@@ -156,4 +158,76 @@ enum RenewalStatus {
   PENDING
   APPROVED
   REJECTED
+}
+
+// Standalone QR Check-In System - Independent from Events feature
+// This allows managing check-ins for any type of gathering without using the Events module
+
+model CheckInEvent {
+  id          String        @id @default(cuid())
+  title       String
+  description String?
+  date        DateTime
+  time        String?
+  location    String
+  maxAttendees Int?
+  attendees   QRAttendee[]
+  checkIns    QRCheckIn[]
+  createdBy   String        // Admin ID
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([date])
+}
+
+model QRAttendee {
+  id              String        @id @default(cuid())
+  eventId         String
+  event           CheckInEvent  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name            String
+  email           String
+  phone           String?
+  adults          Int           @default(1)
+  kids            Int           @default(0)
+  dietaryRestrictions String?
+  specialRequests String?
+  qrCodeData      String        @unique // Encrypted unique identifier
+  qrCodeImageUrl  String?       // Base64 QR code image
+  emailStatus     EmailStatus   @default(PENDING)
+  emailSentAt     DateTime?
+  emailRetryCount Int           @default(0)
+  lastRetryAt     DateTime?
+  errorMessage    String?
+  checkIn         QRCheckIn?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  @@unique([eventId, email])
+  @@index([emailStatus])
+  @@index([eventId])
+}
+
+model QRCheckIn {
+  id             String       @id @default(cuid())
+  attendeeId     String       @unique
+  attendee       QRAttendee   @relation(fields: [attendeeId], references: [id], onDelete: Cascade)
+  eventId        String
+  event          CheckInEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  checkedInAt    DateTime     @default(now())
+  checkedInBy    String       // Admin ID who scanned
+  admin          Admin        @relation(fields: [checkedInBy], references: [id])
+  foodCouponsGiven Boolean    @default(false)
+  notes          String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([eventId])
+  @@index([checkedInAt])
+}
+
+enum EmailStatus {
+  PENDING
+  SENT
+  FAILED
+  RETRY_SCHEDULED
 }
