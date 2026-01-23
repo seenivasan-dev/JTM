@@ -60,6 +60,11 @@ export default function QRScannerPage() {
     setAttendeeInfo(null)
     
     try {
+      if (!videoRef.current) {
+        setError('Video element not ready')
+        return
+      }
+
       const codeReader = new BrowserMultiFormatReader()
       codeReaderRef.current = codeReader
       
@@ -76,9 +81,9 @@ export default function QRScannerPage() {
 
       setScanning(true)
 
-      codeReader.decodeFromVideoDevice(
+      await codeReader.decodeFromVideoDevice(
         selectedDeviceId,
-        videoRef.current!,
+        videoRef.current,
         async (result, error) => {
           if (result) {
             const qrData = result.getText()
@@ -88,8 +93,9 @@ export default function QRScannerPage() {
         }
       )
     } catch (err) {
-      setError('Failed to start camera')
+      setError('Failed to start camera. Please ensure camera permissions are granted.')
       console.error(err)
+      setScanning(false)
     }
   }
 
@@ -210,15 +216,23 @@ export default function QRScannerPage() {
 
             {scanning && (
               <div className="space-y-4">
-                <div className="relative w-full bg-gray-900 rounded-lg overflow-hidden" style={{ maxHeight: '400px', aspectRatio: '4/3' }}>
+                <div className="relative w-full bg-gray-900 rounded-lg overflow-hidden" style={{ maxHeight: '500px', aspectRatio: '4/3' }}>
                   <video
                     ref={videoRef}
                     className="w-full h-full object-cover"
                     playsInline
                     autoPlay
                     muted
-                    style={{ maxWidth: '100%', maxHeight: '100%', display: 'block' }}
+                    style={{ 
+                      maxWidth: '100%', 
+                      maxHeight: '100%', 
+                      display: 'block',
+                      transform: 'scaleX(-1)'
+                    }}
                   />
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div className="w-64 h-64 border-4 border-blue-500 rounded-lg animate-pulse"></div>
+                  </div>
                 </div>
                 <Button
                   onClick={stopScanning}
