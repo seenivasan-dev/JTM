@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { sendQRCodeEmail } from '@/lib/email-qr'
 
 export async function POST(request: NextRequest) {
@@ -22,50 +22,57 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { qrCodeId, eventId } = body
+    const { rsvpResponseId, eventId } = body
 
-    if (qrCodeId) {
+    if (rsvpResponseId) {
       // Send single QR code email
-      const result = await sendQRCodeEmail(qrCodeId)
+      const result = await sendQRCodeEmail(rsvpResponseId)
       return NextResponse.json(result)
     } else if (eventId) {
       // Send all pending emails for an event
-      const qrCodes = await prisma.rSVPQRCode.findMany({
+      const rsvps = await prisma.rSVPResponse.findMany({
         where: {
-          rsvpResponse: {
-            eventId: eventId
-          },
-          emailStatus: {
-            in: ['PENDING', 'FAILED', 'RETRY_SCHEDULED']
-          }
+          eventId: eventId
         }
       })
 
+      // Filter based on email status in responses JSON
+      const needsEmail = rsvps.filter(rsvp => {
+        const responses = rsvp.responses as any
+        const emailStatus = responses?.emailStatus
+        return !emailStatus || emailStatus === 'PENDING' || emailStatus === 'FAILED' || emailStatus === 'RETRY_SCHEDULED'
+      })
+
       const results = {
-        total: qrCodes.length,
+        total: needsEmail.length,
         sent: 0,
         failed: 0,
         errors: [] as string[]
       }
 
-      for (const qrCode of qrCodes) {
+      for (const rsvp of needsEmail) {
         try {
-          const result = await sendQRCodeEmail(qrCode.id)
+          const result = await sendQRCodeEmail(rsvp.id)
           if (result.success) {
             results.sent++
           } else {
             results.failed++
-            results.errors.push(`${qrCode.id}: ${result.error}`)
+            results.errors.push(`${rsvp.id}: ${result.error}`)
           }
         } catch (error) {
           results.failed++
-          results.errors.push(`${qrCode.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          results.errors.push(`${rsvp.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+        
+        // Add 4 second delay between emails to prevent rate limiting
+        if (results.sent + results.failed < needsEmail.length) {
+          await new Promise(resolve => setTimeout(resolve, 4000))
         }
       }
 
       return NextResponse.json(results)
     } else {
-      return NextResponse.json({ error: 'Either qrCodeId or eventId required' }, { status: 400 })
+      return NextResponse.json({ error: 'Either rsvpResponseId or eventId required' }, { status: 400 })
     }
 
   } catch (error) {

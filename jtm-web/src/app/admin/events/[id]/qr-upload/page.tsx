@@ -18,7 +18,13 @@ interface QRCodeStatus {
   errorMessage?: string
 }
 
-export default function QRUploadPage({ params }: { params: { id: string } }) {
+export default async function QRUploadPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = await params
+  
+  return <QRUploadPageClient eventId={eventId} />
+}
+
+function QRUploadPageClient({ eventId }: { eventId: string }) {
   const router = useRouter()
   const [file, setFile] = useState<File | null>(null)
   const [uploading, setUploading] = useState(false)
@@ -26,8 +32,6 @@ export default function QRUploadPage({ params }: { params: { id: string } }) {
   const [qrCodes, setQrCodes] = useState<QRCodeStatus[]>([])
   const [sending, setSending] = useState(false)
   const [retrying, setRetrying] = useState<string | null>(null)
-
-  const eventId = params.id
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {

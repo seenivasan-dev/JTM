@@ -1,8 +1,12 @@
 // JTM Web - QR Code Email Service
-import prisma from './prisma'
+import { prisma } from './prisma'
 import nodemailer from 'nodemailer'
 
 const MAX_RETRY_COUNT = 3
+const EMAIL_DELAY_MS = 4000 // 4 seconds delay between emails
+
+// Delay utility to prevent rate limiting
+const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
 // Create email transporter
 const transporter = nodemailer.createTransport({
@@ -23,35 +27,35 @@ interface EmailResult {
 /**
  * Send QR code email to RSVP recipient
  */
-export async function sendQRCodeEmail(qrCodeId: string): Promise<EmailResult> {
+export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResult> {
   try {
-    // Get QR code with related data
-    const qrCode = await prisma.rSVPQRCode.findUnique({
-      where: { id: qrCodeId },
+    // Get RSVP response with related data
+    const rsvpResponse = await prisma.rSVPResponse.findUnique({
+      where: { id: rsvpResponseId },
       include: {
-        rsvpResponse: {
-          include: {
-            user: true,
-            event: true
-          }
-        }
+        user: true,
+        event: true
       }
     })
 
-    if (!qrCode) {
-      return { success: false, error: 'QR code not found' }
+    if (!rsvpResponse) {
+      return { success: false, error: 'RSVP not found' }
     }
 
-    const { rsvpResponse } = qrCode
     const { user, event } = rsvpResponse
+    const responses = rsvpResponse.responses as any
+    const emailRetryCount = responses?.emailRetryCount || 0
 
     // Check retry limit
-    if (qrCode.emailRetryCount >= MAX_RETRY_COUNT) {
-      await prisma.rSVPQRCode.update({
-        where: { id: qrCodeId },
+    if (emailRetryCount >= MAX_RETRY_COUNT) {
+      await prisma.rSVPResponse.update({
+        where: { id: rsvpResponseId },
         data: {
-          emailStatus: 'FAILED',
-          errorMessage: 'Max retry count exceeded'
+          responses: {
+            ...responses,
+            emailStatus: 'FAILED',
+            errorMessage: 'Max retry count exceeded'
+          }
         }
       })
       return { success: false, error: 'Max retry count exceeded' }
@@ -137,7 +141,7 @@ export async function sendQRCodeEmail(qrCodeId: string): Promise<EmailResult> {
                   <strong>Date:</strong> ${new Date(event.date).toLocaleDateString()}
                 </div>
                 <div class="detail-row">
-                  <strong>Time:</strong> ${event.time}
+                  <strong>Time:</strong> ${new Date(event.date).toLocaleTimeString()}
                 </div>
                 <div class="detail-row">
                   <strong>Location:</strong> ${event.location}
@@ -146,7 +150,7 @@ export async function sendQRCodeEmail(qrCodeId: string): Promise<EmailResult> {
 
               <div class="qr-code">
                 <h3 style="color: #3b82f6;">Your Check-in QR Code</h3>
-                <img src="${qrCode.qrCodeImageUrl}" alt="QR Code" />
+                <img src="${rsvpResponse.qrCode}" alt="QR Code" />
                 <p style="color: #6b7280; margin-top: 20px;">
                   <strong>Please present this QR code at the event entrance</strong>
                 </p>
@@ -183,12 +187,15 @@ export async function sendQRCodeEmail(qrCodeId: string): Promise<EmailResult> {
       })
 
       // Update email status
-      await prisma.rSVPQRCode.update({
-        where: { id: qrCodeId },
+      await prisma.rSVPResponse.update({
+        where: { id: rsvpResponseId },
         data: {
-          emailStatus: 'SENT',
-          emailSentAt: new Date(),
-          errorMessage: null
+          responses: {
+            ...responses,
+            emailStatus: 'SENT',
+            emailSentAt: new Date(),
+            errorMessage: null
+          }
         }
       })
 
@@ -196,16 +203,19 @@ export async function sendQRCodeEmail(qrCodeId: string): Promise<EmailResult> {
 
     } catch (emailError) {
       // Update retry count and status
-      const retryCount = qrCode.emailRetryCount + 1
+      const retryCount = emailRetryCount + 1
       const newStatus = retryCount >= MAX_RETRY_COUNT ? 'FAILED' : 'RETRY_SCHEDULED'
 
-      await prisma.rSVPQRCode.update({
-        where: { id: qrCodeId },
+      await prisma.rSVPResponse.update({
+        where: { id: rsvpResponseId },
         data: {
-          emailStatus: newStatus,
-          emailRetryCount: retryCount,
-          lastRetryAt: new Date(),
-          errorMessage: emailError instanceof Error ? emailError.message : 'Email send failed'
+          responses: {
+            ...responses,
+            emailStatus: newStatus,
+            emailRetryCount: retryCount,
+            lastRetryAt: new Date(),
+            errorMessage: emailError instanceof Error ? emailError.message : 'Email send failed'
+          }
         }
       })
 
@@ -241,30 +251,38 @@ export async function retryFailedEmails(eventId: string): Promise<{
   }
 
   try {
-    // Get all failed or retry scheduled QR codes for the event
-    const qrCodes = await prisma.rSVPQRCode.findMany({
+    // Get all RSVPs for the event that need email retry
+    const rsvps = await prisma.rSVPResponse.findMany({
       where: {
-        rsvpResponse: {
-          eventId: eventId
-        },
-        emailStatus: {
-          in: ['FAILED', 'RETRY_SCHEDULED']
-        },
-        emailRetryCount: {
-          lt: MAX_RETRY_COUNT
-        }
+        eventId: eventId
       }
     })
 
-    results.total = qrCodes.length
+    // Filter based on email status in responses JSON
+    const needsRetry = rsvps.filter(rsvp => {
+      const responses = rsvp.responses as any
+      const emailStatus = responses?.emailStatus
+      const emailRetryCount = responses?.emailRetryCount || 0
+      return (
+        (!emailStatus || emailStatus === 'FAILED' || emailStatus === 'RETRY_SCHEDULED') &&
+        emailRetryCount < MAX_RETRY_COUNT
+      )
+    })
 
-    for (const qrCode of qrCodes) {
-      const result = await sendQRCodeEmail(qrCode.id)
+    results.total = needsRetry.length
+
+    for (const rsvp of needsRetry) {
+      const result = await sendQRCodeEmail(rsvp.id)
       if (result.success) {
         results.sent++
       } else {
         results.failed++
-        results.errors.push(`${qrCode.id}: ${result.error}`)
+        results.errors.push(`${rsvp.id}: ${result.error}`)
+      }
+      
+      // Add delay between emails to prevent rate limiting
+      if (results.sent + results.failed < needsRetry.length) {
+        await delay(EMAIL_DELAY_MS)
       }
     }
 

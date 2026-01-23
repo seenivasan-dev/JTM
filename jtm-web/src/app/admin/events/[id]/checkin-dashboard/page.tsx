@@ -25,17 +25,23 @@ interface CheckInRecord {
   numberOfGuests: number
 }
 
-export default function CheckInDashboard({ params }: { params: { id: string } }) {
+export default async function CheckInDashboard({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = await params
+  
+  return <CheckInDashboardClient eventId={eventId} />
+}
+
+function CheckInDashboardClient({ eventId }: { eventId: string }) {
   const [stats, setStats] = useState<CheckInStats>({
     total: 0,
     checkedIn: 0,
     pending: 0,
-    percentageComplete: 0
+    percentageComplete: 0,
+    totalFoodCoupons: 0,
+    foodCouponsGiven: 0
   })
   const [recentCheckIns, setRecentCheckIns] = useState<CheckInRecord[]>([])
   const [loading, setLoading] = useState(true)
-
-  const eventId = params.id
 
   const fetchDashboardData = async () => {
     setLoading(true)

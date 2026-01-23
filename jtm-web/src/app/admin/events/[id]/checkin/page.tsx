@@ -34,7 +34,13 @@ interface ScanResult {
   error?: string
 }
 
-export default function CheckInPage({ params }: { params: { id: string } }) {
+export default async function CheckInPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id: eventId } = await params
+  
+  return <CheckInPageClient eventId={eventId} />
+}
+
+function CheckInPageClient({ eventId }: { eventId: string }) {
   const videoRef = useRef<HTMLVideoElement>(null)
   const [scanning, setScanning] = useState(false)
   const [scanResult, setScanResult] = useState<ScanResult | null>(null)
@@ -42,8 +48,6 @@ export default function CheckInPage({ params }: { params: { id: string } }) {
   const [foodToken, setFoodToken] = useState(false)
   const [notes, setNotes] = useState('')
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null)
-
-  const eventId = params.id
 
   useEffect(() => {
     return () => {

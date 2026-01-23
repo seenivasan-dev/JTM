@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { parseQRCodeData } from '@/lib/qrcode'
 
 export async function POST(request: NextRequest) {
@@ -35,53 +35,46 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid QR code' }, { status: 400 })
     }
 
-    // Find QR code record
-    const qrCode = await prisma.rSVPQRCode.findFirst({
+    // Find RSVP record by QR code data
+    const rsvpResponse = await prisma.rSVPResponse.findFirst({
       where: {
-        qrCodeData: qrData
+        qrCode: qrData,
+        eventId: parsed.eventId
       },
       include: {
-        rsvpResponse: {
-          include: {
-            user: true,
-            event: true
-          }
-        },
-        checkIn: true
+        user: true,
+        event: true
       }
     })
 
-    if (!qrCode) {
+    if (!rsvpResponse) {
       return NextResponse.json({ error: 'QR code not found in system' }, { status: 404 })
     }
 
-    // Verify event matches
-    if (qrCode.rsvpResponse.eventId !== parsed.eventId) {
-      return NextResponse.json({ error: 'QR code event mismatch' }, { status: 400 })
-    }
+    const responses = rsvpResponse.responses as any
 
     // Return RSVP details
     return NextResponse.json({
       success: true,
-      qrCodeId: qrCode.id,
-      alreadyCheckedIn: !!qrCode.checkIn,
-      checkInDetails: qrCode.checkIn ? {
-        checkedInAt: qrCode.checkIn.checkedInAt,
-        foodTokenGiven: qrCode.checkIn.foodTokenGiven
+      rsvpResponseId: rsvpResponse.id,
+      alreadyCheckedIn: rsvpResponse.checkedIn,
+      checkInDetails: rsvpResponse.checkedIn ? {
+        checkedInAt: rsvpResponse.checkedInAt,
+        foodTokenGiven: responses?.foodTokenGiven || false
       } : null,
       rsvp: {
-        id: qrCode.rsvpResponse.id,
-        userName: `${qrCode.rsvpResponse.user.firstName} ${qrCode.rsvpResponse.user.lastName}`,
-        userEmail: qrCode.rsvpResponse.user.email,
-        userPhone: qrCode.rsvpResponse.user.mobileNumber,
-        eventTitle: qrCode.rsvpResponse.event.title,
-        eventDate: qrCode.rsvpResponse.event.date,
-        eventTime: (qrCode.rsvpResponse.event as any).time || 'TBD',
-        eventLocation: qrCode.rsvpResponse.event.location,
-        numberOfGuests: (qrCode.rsvpResponse.responses as any)?.numberOfGuests || 0,
-        dietaryRestrictions: (qrCode.rsvpResponse.responses as any)?.dietaryRestrictions,
-        specialRequests: (qrCode.rsvpResponse.responses as any)?.specialRequests,
-        responseStatus: (qrCode.rsvpResponse.responses as any)?.responseStatus || 'ATTENDING'
+        id: rsvpResponse.id,
+        userName: `${rsvpResponse.user.firstName} ${rsvpResponse.user.lastName}`,
+        userEmail: rsvpResponse.user.email,
+        userPhone: rsvpResponse.user.mobileNumber,
+        eventTitle: rsvpResponse.event.title,
+        eventDate: rsvpResponse.event.date,
+        eventTime: (rsvpResponse.event as any).time || 'TBD',
+        eventLocation: rsvpResponse.event.location,
+        numberOfGuests: responses?.numberOfGuests || 0,
+        dietaryRestrictions: responses?.dietaryRestrictions,
+        specialRequests: responses?.specialRequests,
+        responseStatus: responses?.responseStatus || 'ATTENDING'
       }
     })
 

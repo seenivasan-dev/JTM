@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 import { generateQRCodeData, generateQRCodeDataURL } from '@/lib/qrcode'
 import Papa from 'papaparse'
 import * as XLSX from 'xlsx'
@@ -137,48 +137,51 @@ export async function POST(request: NextRequest) {
         })
 
         if (!rsvpResponse) {
-          // Create RSVP response
-          rsvpResponse = await prisma.rSVPResponse.create({
-            data: {
-              eventId: eventId,
-              userId: row.userId,
-              responses: {
-                responseStatus: row.responseStatus || 'ATTENDING',
-                numberOfGuests: row.numberOfGuests ? parseInt(String(row.numberOfGuests)) : 0,
-                dietaryRestrictions: row.dietaryRestrictions,
-                specialRequests: row.specialRequests
-              }
-            }
-          })
-        }
-
-        // Check if QR code already exists
-        const existingQR = await prisma.rSVPQRCode.findUnique({
-          where: { rsvpResponseId: rsvpResponse.id }
-        })
-
-        if (!existingQR) {
-          // Generate QR code data
-          const qrData = generateQRCodeData(rsvpResponse.id, eventId, row.userId)
-          
-          // Generate QR code image
+          // Create RSVP response with QR code
+          const qrData = generateQRCodeData(row.userId, eventId, row.userId)
           const qrCodeImage = await generateQRCodeDataURL(qrData, {
             width: 300,
             margin: 2
           })
 
-          // Create QR code record
-          await prisma.rSVPQRCode.create({
+          rsvpResponse = await prisma.rSVPResponse.create({
             data: {
-              rsvpResponseId: rsvpResponse.id,
-              qrCodeData: qrData,
-              qrCodeImageUrl: qrCodeImage,
-              emailStatus: 'PENDING'
+              eventId: eventId,
+              userId: row.userId,
+              qrCode: qrCodeImage,
+              responses: {
+                responseStatus: row.responseStatus || 'ATTENDING',
+                numberOfGuests: row.numberOfGuests ? parseInt(String(row.numberOfGuests)) : 0,
+                dietaryRestrictions: row.dietaryRestrictions,
+                specialRequests: row.specialRequests,
+                qrCodeData: qrData,
+                emailStatus: 'PENDING'
+              }
             }
           })
-
           results.success++
         } else {
+          // Update existing RSVP if no QR code exists
+          const responses = rsvpResponse.responses as any
+          if (!rsvpResponse.qrCode || !responses?.qrCodeData) {
+            const qrData = generateQRCodeData(rsvpResponse.id, eventId, row.userId)
+            const qrCodeImage = await generateQRCodeDataURL(qrData, {
+              width: 300,
+              margin: 2
+            })
+
+            await prisma.rSVPResponse.update({
+              where: { id: rsvpResponse.id },
+              data: {
+                qrCode: qrCodeImage,
+                responses: {
+                  ...responses,
+                  qrCodeData: qrData,
+                  emailStatus: responses?.emailStatus || 'PENDING'
+                }
+              }
+            })
+          }
           results.success++
         }
       } catch (error) {

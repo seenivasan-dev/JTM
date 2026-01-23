@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 export async function GET(request: NextRequest) {
   try {
@@ -27,71 +27,60 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Event ID required' }, { status: 400 })
     }
 
-    // Get total RSVPs with QR codes
-    const totalQRCodes = await prisma.rSVPQRCode.count({
-      where: {
-        rsvpResponse: {
-          eventId: eventId
-        }
-      }
-    })
-
-    // Get checked in count
-    const checkedInCount = await prisma.eventCheckIn.count({
+    // Get total RSVPs
+    const totalRSVPs = await prisma.rSVPResponse.count({
       where: {
         eventId: eventId
       }
     })
 
-    // Get all QR codes with responses for food coupon calculation
-    const allQRCodes = await prisma.rSVPQRCode.findMany({
+    // Get checked in count
+    const checkedInCount = await prisma.rSVPResponse.count({
       where: {
-        rsvpResponse: {
-          eventId: eventId
-        }
+        eventId: eventId,
+        checkedIn: true
+      }
+    })
+
+    // Get all RSVPs with responses for food coupon calculation
+    const allRSVPs = await prisma.rSVPResponse.findMany({
+      where: {
+        eventId: eventId
       },
       include: {
-        rsvpResponse: true,
-        checkIn: true
+        user: true
       }
     })
 
     // Calculate total food coupons needed (each person + their guests)
-    const totalFoodCoupons = allQRCodes.reduce((sum, qr) => {
-      const numberOfGuests = (qr.rsvpResponse.responses as any)?.numberOfGuests || 0
+    const totalFoodCoupons = allRSVPs.reduce((sum, rsvp) => {
+      const numberOfGuests = (rsvp.responses as any)?.numberOfGuests || 0
       return sum + 1 + numberOfGuests // 1 for person + guests
     }, 0)
 
     // Calculate food coupons given
-    const foodCouponsGiven = allQRCodes.reduce((sum, qr) => {
-      if (qr.checkIn?.foodTokenGiven) {
-        const numberOfGuests = (qr.rsvpResponse.responses as any)?.numberOfGuests || 0
+    const foodCouponsGiven = allRSVPs.reduce((sum, rsvp) => {
+      const responses = rsvp.responses as any
+      if (rsvp.checkedIn && responses?.foodTokenGiven) {
+        const numberOfGuests = responses?.numberOfGuests || 0
         return sum + 1 + numberOfGuests
       }
       return sum
     }, 0)
 
-    const pending = totalQRCodes - checkedInCount
-    const percentageComplete = totalQRCodes > 0 
-      ? Math.round((checkedInCount / totalQRCodes) * 100) 
+    const pending = totalRSVPs - checkedInCount
+    const percentageComplete = totalRSVPs > 0 
+      ? Math.round((checkedInCount / totalRSVPs) * 100) 
       : 0
 
     // Get recent check-ins (last 50)
-    const recentCheckIns = await prisma.eventCheckIn.findMany({
+    const recentCheckIns = await prisma.rSVPResponse.findMany({
       where: {
-        eventId: eventId
+        eventId: eventId,
+        checkedIn: true
       },
       include: {
-        qrCode: {
-          include: {
-            rsvpResponse: {
-              include: {
-                user: true
-              }
-            }
-          }
-        },
-        admin: true
+        user: true
       },
       orderBy: {
         checkedInAt: 'desc'
@@ -99,19 +88,22 @@ export async function GET(request: NextRequest) {
       take: 50
     })
 
-    const formattedCheckIns = recentCheckIns.map(checkIn => ({
-      id: checkIn.id,
-      userName: `${checkIn.qrCode.rsvpResponse.user.firstName} ${checkIn.qrCode.rsvpResponse.user.lastName}`,
-      userEmail: checkIn.qrCode.rsvpResponse.user.email,
-      checkedInAt: checkIn.checkedInAt,
-      foodTokenGiven: checkIn.foodTokenGiven,
-      adminName: checkIn.admin.name || `${checkIn.admin.firstName} ${checkIn.admin.lastName}`,
-      numberOfGuests: (checkIn.qrCode.rsvpResponse.responses as any)?.numberOfGuests || 0
-    }))
+    const formattedCheckIns = recentCheckIns.map(rsvp => {
+      const responses = rsvp.responses as any
+      return {
+        id: rsvp.id,
+        userName: `${rsvp.user.firstName} ${rsvp.user.lastName}`,
+        userEmail: rsvp.user.email,
+        checkedInAt: rsvp.checkedInAt,
+        foodTokenGiven: responses?.foodTokenGiven || false,
+        adminName: responses?.checkedInByName || 'Admin',
+        numberOfGuests: responses?.numberOfGuests || 0
+      }
+    })
 
     return NextResponse.json({
       stats: {
-        total: totalQRCodes,
+        total: totalRSVPs,
         checkedIn: checkedInCount,
         pending: pending,
         percentageComplete: percentageComplete,

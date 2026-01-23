@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import prisma from '@/lib/prisma'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,62 +21,73 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { qrCodeId, eventId, foodTokenGiven, notes } = body
+    const { rsvpResponseId, eventId, foodTokenGiven, notes } = body
 
-    if (!qrCodeId || !eventId) {
-      return NextResponse.json({ error: 'QR code ID and event ID required' }, { status: 400 })
+    if (!rsvpResponseId || !eventId) {
+      return NextResponse.json({ error: 'RSVP response ID and event ID required' }, { status: 400 })
     }
 
-    // Check if already checked in
-    const existingCheckIn = await prisma.eventCheckIn.findUnique({
-      where: { qrCodeId: qrCodeId }
-    })
-
-    if (existingCheckIn) {
-      // Update existing check-in
-      const updated = await prisma.eventCheckIn.update({
-        where: { qrCodeId: qrCodeId },
-        data: {
-          foodTokenGiven: foodTokenGiven ?? existingCheckIn.foodTokenGiven,
-          notes: notes ?? existingCheckIn.notes
+    // Verify RSVP exists and matches the event
+    const existingRSVP = await prisma.rSVPResponse.findUnique({
+      where: { id: rsvpResponseId },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        },
+        event: {
+          select: {
+            title: true
+          }
         }
-      })
-
-      return NextResponse.json({
-        success: true,
-        message: 'Check-in updated',
-        checkIn: updated
-      })
-    }
-
-    // Create new check-in record
-    const checkIn = await prisma.eventCheckIn.create({
-      data: {
-        qrCodeId: qrCodeId,
-        eventId: eventId,
-        checkedInBy: admin.id,
-        foodTokenGiven: foodTokenGiven ?? false,
-        notes: notes
       }
     })
 
-    // Also update legacy checkedIn field on RSVP response
-    const qrCode = await prisma.rSVPQRCode.findUnique({
-      where: { id: qrCodeId },
-      select: { rsvpResponseId: true }
-    })
-
-    if (qrCode) {
-      await prisma.rSVPResponse.update({
-        where: { id: qrCode.rsvpResponseId },
-        data: { checkedIn: true }
-      })
+    if (!existingRSVP) {
+      return NextResponse.json({ error: 'RSVP not found' }, { status: 404 })
     }
+
+    if (existingRSVP.eventId !== eventId) {
+      return NextResponse.json({ error: 'RSVP does not match event' }, { status: 400 })
+    }
+
+    // Update the RSVP with check-in information
+    const updated = await prisma.rSVPResponse.update({
+      where: { id: rsvpResponseId },
+      data: {
+        checkedIn: true,
+        checkedInAt: existingRSVP.checkedIn ? existingRSVP.checkedInAt : new Date(),
+        // Store additional check-in metadata in responses JSON
+        responses: {
+          ...(typeof existingRSVP.responses === 'object' && existingRSVP.responses !== null ? existingRSVP.responses : {}),
+          foodTokenGiven: foodTokenGiven ?? false,
+          checkInNotes: notes,
+          checkedInBy: admin.id
+        }
+      },
+      include: {
+        user: {
+          select: {
+            firstName: true,
+            lastName: true,
+            email: true
+          }
+        },
+        event: {
+          select: {
+            title: true
+          }
+        }
+      }
+    })
 
     return NextResponse.json({
       success: true,
-      message: 'Check-in successful',
-      checkIn
+      message: existingRSVP.checkedIn ? 'Check-in updated' : 'Check-in successful',
+      checkIn: updated
     })
 
   } catch (error) {
