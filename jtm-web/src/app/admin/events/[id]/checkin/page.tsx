@@ -186,11 +186,14 @@ function CheckInPageClient({ eventId }: { eventId: string }) {
         {/* QR Scanner */}
         <Card className="p-6 mb-6">
           <div className="space-y-4">
-            <div className="aspect-square bg-gray-900 rounded-lg overflow-hidden relative">
+            <div className="aspect-square bg-gray-900 rounded-lg overflow-hidden relative max-w-full">
               <video
                 ref={videoRef}
                 className="w-full h-full object-cover"
                 playsInline
+                autoPlay
+                muted
+                style={{ maxWidth: '100%', maxHeight: '100%', display: 'block' }}
               />
               {!scanning && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80">

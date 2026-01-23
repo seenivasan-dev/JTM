@@ -210,11 +210,16 @@ export default function QRScannerPage() {
 
             {scanning && (
               <div className="space-y-4">
-                <video
-                  ref={videoRef}
-                  className="w-full rounded-lg"
-                  style={{ maxHeight: '400px' }}
-                />
+                <div className="relative w-full bg-gray-900 rounded-lg overflow-hidden" style={{ maxHeight: '400px', aspectRatio: '4/3' }}>
+                  <video
+                    ref={videoRef}
+                    className="w-full h-full object-cover"
+                    playsInline
+                    autoPlay
+                    muted
+                    style={{ maxWidth: '100%', maxHeight: '100%', display: 'block' }}
+                  />
+                </div>
                 <Button
                   onClick={stopScanning}
                   variant="outline"
