@@ -50,26 +50,35 @@ export async function POST(request: NextRequest) {
         errors: [] as string[]
       }
 
-      for (const rsvp of needsEmail) {
+      console.log(`Starting bulk email send: ${needsEmail.length} emails to send`)
+
+      for (let i = 0; i < needsEmail.length; i++) {
+        const rsvp = needsEmail[i]
+        console.log(`Processing email ${i + 1}/${needsEmail.length}...`)
         try {
           const result = await sendQRCodeEmail(rsvp.id)
           if (result.success) {
             results.sent++
+            console.log(`✓ Email ${i + 1}/${needsEmail.length} sent successfully`)
           } else {
             results.failed++
             results.errors.push(`${rsvp.id}: ${result.error}`)
+            console.log(`✗ Email ${i + 1}/${needsEmail.length} failed: ${result.error}`)
           }
         } catch (error) {
           results.failed++
           results.errors.push(`${rsvp.id}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+          console.log(`✗ Email ${i + 1}/${needsEmail.length} error: ${error instanceof Error ? error.message : 'Unknown error'}`)
         }
         
-        // Add 4 second delay between emails to prevent rate limiting
-        if (results.sent + results.failed < needsEmail.length) {
-          await new Promise(resolve => setTimeout(resolve, 4000))
+        // Add 2 second delay between emails to prevent rate limiting
+        if (i < needsEmail.length - 1) {
+          console.log('Waiting 2s before next email...')
+          await new Promise(resolve => setTimeout(resolve, 2000))
         }
       }
 
+      console.log(`Bulk email complete: ${results.sent} sent, ${results.failed} failed`)
       return NextResponse.json(results)
     } else {
       return NextResponse.json({ error: 'Either rsvpResponseId or eventId required' }, { status: 400 })
