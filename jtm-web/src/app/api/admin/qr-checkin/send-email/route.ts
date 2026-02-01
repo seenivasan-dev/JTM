@@ -5,11 +5,17 @@ import { prisma } from '@/lib/prisma'
 import nodemailer from 'nodemailer'
 
 const MAX_RETRY_COUNT = 3
+const EMAIL_DELAY_MS = 2000 // 2 seconds delay between emails
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
+  pool: true, // Use connection pooling
+  maxConnections: 1, // Limit to 1 connection to avoid rate limits
+  maxMessages: 100, // Allow up to 100 messages per connection
+  rateDelta: 1000, // 1 second between messages
+  rateLimit: 1, // 1 message per rateDelta
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD
@@ -240,8 +246,9 @@ export async function POST(request: NextRequest) {
         errors: [] as string[]
       }
 
-      for (const attendee of attendees) {
-        console.log(`Processing attendee: ${attendee.email} (status: ${attendee.emailStatus})`)
+      for (let i = 0; i < attendees.length; i++) {
+        const attendee = attendees[i]
+        console.log(`Processing attendee ${i + 1}/${attendees.length}: ${attendee.email} (status: ${attendee.emailStatus})`)
         const result = await sendSingleEmail(attendee.id)
         if (result.success) {
           results.sent++
@@ -250,6 +257,12 @@ export async function POST(request: NextRequest) {
           results.failed++
           results.errors.push(`${attendee.email}: ${result.error}`)
           console.log(`✗ Email failed for ${attendee.email}: ${result.error}`)
+        }
+        
+        // Add delay between emails to prevent rate limiting
+        if (i < attendees.length - 1) {
+          console.log(`Waiting ${EMAIL_DELAY_MS}ms before next email...`)
+          await new Promise(resolve => setTimeout(resolve, EMAIL_DELAY_MS))
         }
       }
 

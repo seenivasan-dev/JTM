@@ -25,6 +25,7 @@ export default function QRScannerPage() {
   const eventId = params.eventId as string
   
   const [scanning, setScanning] = useState(false)
+  const [initializing, setInitializing] = useState(false)
   const [attendeeInfo, setAttendeeInfo] = useState<AttendeeInfo | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [checkingIn, setCheckingIn] = useState(false)
@@ -58,44 +59,78 @@ export default function QRScannerPage() {
   const startScanning = async () => {
     setError(null)
     setAttendeeInfo(null)
+    setInitializing(true)
+    
+    // Set scanning to true first to render the video element
+    setScanning(true)
+    
+    // Wait for next tick to ensure video element is rendered
+    await new Promise(resolve => setTimeout(resolve, 100))
     
     try {
       if (!videoRef.current) {
-        setError('Video element not ready')
+        setError('Camera initialization failed. Please refresh and try again.')
+        setScanning(false)
+        setInitializing(false)
         return
       }
 
       const codeReader = new BrowserMultiFormatReader()
       codeReaderRef.current = codeReader
       
+      // Request camera permissions and list devices
       const videoInputDevices = await codeReader.listVideoInputDevices()
       if (videoInputDevices.length === 0) {
-        setError('No camera found')
+        setError('No camera found. Please ensure camera permissions are granted.')
+        setScanning(false)
+        setInitializing(false)
         return
       }
 
-      // Prefer back camera on mobile
+      // Prefer back camera on mobile (environment facing)
       const selectedDeviceId = videoInputDevices.find(device => 
-        device.label.toLowerCase().includes('back')
+        device.label.toLowerCase().includes('back') || 
+        device.label.toLowerCase().includes('environment')
       )?.deviceId || videoInputDevices[0].deviceId
 
-      setScanning(true)
+      console.log('Using camera:', videoInputDevices.find(d => d.deviceId === selectedDeviceId)?.label)
 
+      // Start decoding with improved error handling
       await codeReader.decodeFromVideoDevice(
         selectedDeviceId,
         videoRef.current,
         async (result, error) => {
           if (result) {
             const qrData = result.getText()
+            console.log('QR Code detected:', qrData)
             await verifyQRCode(qrData)
             stopScanning()
           }
+          // Ignore NotFoundExceptions - they happen every frame when no QR code is detected
+          if (error && !(error instanceof NotFoundException)) {
+            console.error('Scanner error:', error)
+          }
         }
       )
-    } catch (err) {
-      setError('Failed to start camera. Please ensure camera permissions are granted.')
-      console.error(err)
+      
+      setInitializing(false)
+    } catch (err: any) {
+      console.error('Camera error:', err)
+      let errorMessage = 'Failed to start camera. '
+      
+      if (err.name === 'NotAllowedError') {
+        errorMessage += 'Camera permission denied. Please allow camera access and try again.'
+      } else if (err.name === 'NotFoundError') {
+        errorMessage += 'No camera found on this device.'
+      } else if (err.name === 'NotReadableError') {
+        errorMessage += 'Camera is already in use by another application.'
+      } else {
+        errorMessage += 'Please ensure camera permissions are granted and try again.'
+      }
+      
+      setError(errorMessage)
       setScanning(false)
+      setInitializing(false)
     }
   }
 
@@ -230,14 +265,27 @@ export default function QRScannerPage() {
                       transform: 'scaleX(-1)'
                     }}
                   />
+                  {initializing && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-gray-900/80">
+                      <div className="text-center text-white">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
+                        <p className="text-lg font-semibold">Initializing camera...</p>
+                        <p className="text-sm mt-2">Please allow camera access if prompted</p>
+                      </div>
+                    </div>
+                  )}
                   <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                     <div className="w-64 h-64 border-4 border-blue-500 rounded-lg animate-pulse"></div>
+                  </div>
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-4 py-2 rounded-full text-sm">
+                    Position QR code within frame
                   </div>
                 </div>
                 <Button
                   onClick={stopScanning}
                   variant="outline"
                   className="w-full"
+                  size="lg"
                 >
                   Stop Scanning
                 </Button>

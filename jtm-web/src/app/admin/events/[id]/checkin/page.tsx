@@ -49,49 +49,84 @@ function CheckInPageClient({ eventId }: { eventId: string }) {
   const [foodToken, setFoodToken] = useState(false)
   const [notes, setNotes] = useState('')
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null)
+  const [cameraReady, setCameraReady] = useState(false)
 
   useEffect(() => {
+    // Simple check that video element exists
+    const timer = setTimeout(() => {
+      if (videoRef.current) {
+        console.log('Video element is ready')
+        setCameraReady(true)
+      } else {
+        console.error('Video element not found after mount')
+      }
+    }, 100)
+
     return () => {
+      clearTimeout(timer)
       // Cleanup on unmount
       if (codeReaderRef.current) {
-        codeReaderRef.current.reset()
+        try {
+          codeReaderRef.current.reset()
+        } catch (e) {
+          console.error('Error resetting code reader:', e)
+        }
       }
     }
   }, [])
 
   const startScanning = async () => {
-    try {
-      if (!videoRef.current) {
-        alert('Video element not ready')
-        return
-      }
+    console.log('=== START SCANNING CLICKED ===')
+    console.log('videoRef.current:', videoRef.current)
+    console.log('cameraReady:', cameraReady)
 
+    const video = videoRef.current
+    if (!video) {
+      console.error('Video element is NULL')
+      alert('Camera element not ready. Please refresh the page.')
+      return
+    }
+
+    console.log('Video element found, proceeding...')
+
+    try {
       const codeReader = new BrowserMultiFormatReader()
       codeReaderRef.current = codeReader
 
+      console.log('Requesting camera permissions...')
       const videoInputDevices = await codeReader.listVideoInputDevices()
+      console.log('Found cameras:', videoInputDevices.length)
+      videoInputDevices.forEach((device, i) => {
+        console.log(`  Camera ${i}:`, device.label, device.deviceId)
+      })
+      
       if (videoInputDevices.length === 0) {
-        alert('No camera found')
+        alert('No camera found. Please ensure you have granted camera permissions.')
         return
       }
 
       // Prefer back/rear camera on mobile devices
-      const selectedDeviceId = videoInputDevices.find(device => 
+      const selectedDevice = videoInputDevices.find(device => 
         device.label.toLowerCase().includes('back') || 
         device.label.toLowerCase().includes('rear') ||
         device.label.toLowerCase().includes('environment')
-      )?.deviceId || videoInputDevices[videoInputDevices.length - 1]?.deviceId || videoInputDevices[0].deviceId
+      ) || videoInputDevices[videoInputDevices.length - 1] || videoInputDevices[0]
+
+      console.log('Selected camera:', selectedDevice.label, selectedDevice.deviceId)
 
       setScanning(true)
       setScanResult(null)
 
+      console.log('Starting camera stream...')
+      
       // Decode continuously from video device
       await codeReader.decodeFromVideoDevice(
-        selectedDeviceId,
-        videoRef.current,
+        selectedDevice.deviceId,
+        video,
         async (result, err) => {
           if (result) {
             const qrData = result.getText()
+            console.log('✓ QR Code detected:', qrData)
             // Stop scanning temporarily while processing
             if (codeReaderRef.current) {
               codeReaderRef.current.reset()
@@ -104,9 +139,11 @@ function CheckInPageClient({ eventId }: { eventId: string }) {
           }
         }
       )
+      
+      console.log('✓ Camera started successfully')
     } catch (error) {
-      console.error('Start scanning error:', error)
-      alert('Failed to start camera. Please ensure camera permissions are granted.')
+      console.error('!!! Start scanning error:', error)
+      alert(`Failed to start camera: ${error instanceof Error ? error.message : 'Unknown error'}`)
       setScanning(false)
     }
   }
@@ -232,10 +269,11 @@ function CheckInPageClient({ eventId }: { eventId: string }) {
               {!scanning ? (
                 <Button
                   onClick={startScanning}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg py-6"
+                  disabled={!cameraReady}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg py-6 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Camera className="w-5 h-5 mr-2" />
-                  Start Scanning
+                  {cameraReady ? 'Start Scanning' : 'Initializing...'}
                 </Button>
               ) : (
                 <Button

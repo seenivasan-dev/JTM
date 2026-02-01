@@ -3,16 +3,21 @@ import { prisma } from './prisma'
 import nodemailer from 'nodemailer'
 
 const MAX_RETRY_COUNT = 3
-const EMAIL_DELAY_MS = 4000 // 4 seconds delay between emails
+const EMAIL_DELAY_MS = 2000 // 2 seconds delay between emails
 
 // Delay utility to prevent rate limiting
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms))
 
-// Create email transporter
+// Create email transporter with connection pooling
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
   port: parseInt(process.env.SMTP_PORT || '587'),
   secure: false,
+  pool: true, // Use connection pooling
+  maxConnections: 1, // Limit to 1 connection to avoid rate limits
+  maxMessages: 100, // Allow up to 100 messages per connection
+  rateDelta: 1000, // 1 second between messages
+  rateLimit: 1, // 1 message per rateDelta
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASSWORD
