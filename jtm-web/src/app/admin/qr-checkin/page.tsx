@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2 } from 'lucide-react'
+import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2, Pause } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
 
 interface QRAttendeeStatus {
   id: string
@@ -45,6 +46,9 @@ export default function QRCheckInUploadPage() {
   const [eventTime, setEventTime] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [batchSize, setBatchSize] = useState(50)
+  const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0 })
+  const [shouldStop, setShouldStop] = useState(false)
 
   const fetchEvents = async () => {
     try {
@@ -196,39 +200,91 @@ export default function QRCheckInUploadPage() {
     }
   }
 
-  const handleSendAll = async () => {
+  const handleSendBatch = async () => {
     if (!selectedEvent) {
-      console.log('handleSendAll: No event selected')
+      console.log('handleSendBatch: No event selected')
       return
     }
 
-    console.log('Sending emails for event:', selectedEvent.id)
-    console.log('Number of attendees:', attendees.length)
+    const pendingAttendees = attendees.filter(a => 
+      a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED'
+    )
+
+    if (pendingAttendees.length === 0) {
+      alert('No pending emails to send')
+      return
+    }
+
+    const batchCount = batchSize === -1 ? pendingAttendees.length : Math.min(batchSize, pendingAttendees.length)
+    const batchToSend = pendingAttendees.slice(0, batchCount)
+
+    console.log(`Sending ${batchCount} emails in batch`)
 
     setSending(true)
+    setShouldStop(false)
+    setSendingProgress({ current: 0, total: batchCount })
+
+    let successCount = 0
+    let failCount = 0
+    const errors: string[] = []
 
     try {
-      const response = await fetch('/api/admin/qr-checkin/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: selectedEvent.id })
-      })
+      for (let i = 0; i < batchToSend.length; i++) {
+        if (shouldStop) {
+          console.log('Batch sending stopped by user')
+          break
+        }
 
-      console.log('Send email response status:', response.status)
-      const data = await response.json()
-      console.log('Send email response:', data)
+        const attendee = batchToSend[i]
+        setSendingProgress({ current: i + 1, total: batchCount })
 
-      if (response.ok) {
-        alert(`Emails sent: ${data.sent} successful, ${data.failed} failed`)
-        await fetchAttendees()
+        try {
+          const response = await fetch('/api/admin/qr-checkin/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attendeeId: attendee.id })
+          })
+
+          const data = await response.json()
+
+          if (response.ok && data.success) {
+            successCount++
+          } else {
+            failCount++
+            errors.push(`${attendee.email}: ${data.error}`)
+          }
+        } catch (error) {
+          failCount++
+          errors.push(`${attendee.email}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+
+        // Refresh attendees list periodically
+        if ((i + 1) % 10 === 0) {
+          await fetchAttendees()
+        }
+      }
+
+      await fetchAttendees()
+      
+      const message = shouldStop 
+        ? `Batch stopped. Sent: ${successCount}, Failed: ${failCount}`
+        : `Batch complete! Sent: ${successCount}, Failed: ${failCount}`
+      
+      if (errors.length > 0 && errors.length <= 5) {
+        alert(`${message}\n\nErrors:\n${errors.join('\n')}`)
+      } else if (errors.length > 5) {
+        alert(`${message}\n\n${errors.length} errors occurred. Check console for details.`)
+        console.error('Email errors:', errors)
       } else {
-        alert(`Failed to send emails: ${data.error}`)
+        alert(message)
       }
     } catch (error) {
-      console.error('Send emails error:', error)
-      alert('Failed to send emails')
+      console.error('Send batch error:', error)
+      alert('Failed to send batch')
     } finally {
       setSending(false)
+      setSendingProgress({ current: 0, total: 0 })
+      setShouldStop(false)
     }
   }
 
@@ -553,49 +609,95 @@ export default function QRCheckInUploadPage() {
 
             {/* Email Status Section */}
             <Card className="p-3 sm:p-6">
-              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 sm:mb-6 gap-3 sm:gap-0">
-                <div>
-                  <h2 className="text-lg sm:text-xl font-semibold">Step 3: Send QR Code Emails</h2>
-                  {attendees.length > 0 && (
-                    <p className="text-xs sm:text-sm text-gray-600 mt-1">
-                      {attendees.filter(a => a.emailStatus === 'SENT').length} of {attendees.length} emails sent
-                      {attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length > 0 && (
-                        <span className="text-orange-600 font-medium ml-2">
-                          ({attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length} pending)
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-                <div className="flex flex-wrap gap-2 sm:gap-3">
-                  <Button
-                    onClick={fetchAttendees}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs sm:text-sm"
-                  >
-                    <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                    Refresh
-                  </Button>
-                  <Button
-                    onClick={handleSendAll}
-                    disabled={sending || attendees.length === 0 || attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED').length === 0}
-                    className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm"
-                    size="sm"
-                  >
-                    {sending ? (
-                      <>
-                        <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                        Send All Pending
-                      </>
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-2">Step 3: Send QR Code Emails</h2>
+                {attendees.length > 0 && (
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    {attendees.filter(a => a.emailStatus === 'SENT').length} of {attendees.length} emails sent
+                    {attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length > 0 && (
+                      <span className="text-orange-600 font-medium ml-2">
+                        ({attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length} pending)
+                      </span>
                     )}
-                  </Button>
+                  </p>
+                )}
+              </div>
+
+              {/* Batch Controls */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Batch Size (emails per batch)
+                    </label>
+                    <select
+                      value={batchSize}
+                      onChange={(e) => setBatchSize(Number(e.target.value))}
+                      disabled={sending}
+                      className="w-full sm:w-48 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                    >
+                      <option value={25}>25 emails</option>
+                      <option value={50}>50 emails (Recommended)</option>
+                      <option value={100}>100 emails</option>
+                      <option value={-1}>All Pending</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Sending in smaller batches helps avoid rate limits
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={fetchAttendees}
+                      variant="outline"
+                      size="sm"
+                      disabled={sending}
+                      className="text-xs sm:text-sm"
+                    >
+                      <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      Refresh
+                    </Button>
+                    
+                    {sending ? (
+                      <Button
+                        onClick={() => setShouldStop(true)}
+                        variant="outline"
+                        size="sm"
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-300 text-xs sm:text-sm"
+                      >
+                        <Pause className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Stop Batch
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleSendBatch}
+                        disabled={attendees.length === 0 || attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED').length === 0}
+                        className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm"
+                        size="sm"
+                      >
+                        <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Send Batch ({batchSize === -1 ? 'All' : batchSize})
+                      </Button>
+                    )}
+                  </div>
                 </div>
+
+                {/* Progress Bar */}
+                {sending && sendingProgress.total > 0 && (
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-gray-600 mb-2">
+                      <span>Sending emails...</span>
+                      <span>{sendingProgress.current} / {sendingProgress.total}</span>
+                    </div>
+                    <Progress 
+                      value={(sendingProgress.current / sendingProgress.total) * 100} 
+                      className="h-2"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {shouldStop ? 'Stopping after current email...' : 'Please wait, do not close this page'}
+                    </p>
+                  </div>
+                )}
               </div>
 
               {/* Desktop Table View */}
