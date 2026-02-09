@@ -6,7 +6,8 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2 } from 'lucide-react'
+import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2, Pause } from 'lucide-react'
+import { Progress } from '@/components/ui/progress'
 
 interface QRAttendeeStatus {
   id: string
@@ -45,6 +46,9 @@ export default function QRCheckInUploadPage() {
   const [eventTime, setEventTime] = useState('')
   const [eventLocation, setEventLocation] = useState('')
   const [deleting, setDeleting] = useState(false)
+  const [batchSize, setBatchSize] = useState(50)
+  const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0 })
+  const [shouldStop, setShouldStop] = useState(false)
 
   const fetchEvents = async () => {
     try {
@@ -196,39 +200,91 @@ export default function QRCheckInUploadPage() {
     }
   }
 
-  const handleSendAll = async () => {
+  const handleSendBatch = async () => {
     if (!selectedEvent) {
-      console.log('handleSendAll: No event selected')
+      console.log('handleSendBatch: No event selected')
       return
     }
 
-    console.log('Sending emails for event:', selectedEvent.id)
-    console.log('Number of attendees:', attendees.length)
+    const pendingAttendees = attendees.filter(a => 
+      a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED'
+    )
+
+    if (pendingAttendees.length === 0) {
+      alert('No pending emails to send')
+      return
+    }
+
+    const batchCount = batchSize === -1 ? pendingAttendees.length : Math.min(batchSize, pendingAttendees.length)
+    const batchToSend = pendingAttendees.slice(0, batchCount)
+
+    console.log(`Sending ${batchCount} emails in batch`)
 
     setSending(true)
+    setShouldStop(false)
+    setSendingProgress({ current: 0, total: batchCount })
+
+    let successCount = 0
+    let failCount = 0
+    const errors: string[] = []
 
     try {
-      const response = await fetch('/api/admin/qr-checkin/send-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ eventId: selectedEvent.id })
-      })
+      for (let i = 0; i < batchToSend.length; i++) {
+        if (shouldStop) {
+          console.log('Batch sending stopped by user')
+          break
+        }
 
-      console.log('Send email response status:', response.status)
-      const data = await response.json()
-      console.log('Send email response:', data)
+        const attendee = batchToSend[i]
+        setSendingProgress({ current: i + 1, total: batchCount })
 
-      if (response.ok) {
-        alert(`Emails sent: ${data.sent} successful, ${data.failed} failed`)
-        await fetchAttendees()
+        try {
+          const response = await fetch('/api/admin/qr-checkin/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ attendeeId: attendee.id })
+          })
+
+          const data = await response.json()
+
+          if (response.ok && data.success) {
+            successCount++
+          } else {
+            failCount++
+            errors.push(`${attendee.email}: ${data.error}`)
+          }
+        } catch (error) {
+          failCount++
+          errors.push(`${attendee.email}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+        }
+
+        // Refresh attendees list periodically
+        if ((i + 1) % 10 === 0) {
+          await fetchAttendees()
+        }
+      }
+
+      await fetchAttendees()
+      
+      const message = shouldStop 
+        ? `Batch stopped. Sent: ${successCount}, Failed: ${failCount}`
+        : `Batch complete! Sent: ${successCount}, Failed: ${failCount}`
+      
+      if (errors.length > 0 && errors.length <= 5) {
+        alert(`${message}\n\nErrors:\n${errors.join('\n')}`)
+      } else if (errors.length > 5) {
+        alert(`${message}\n\n${errors.length} errors occurred. Check console for details.`)
+        console.error('Email errors:', errors)
       } else {
-        alert(`Failed to send emails: ${data.error}`)
+        alert(message)
       }
     } catch (error) {
-      console.error('Send emails error:', error)
-      alert('Failed to send emails')
+      console.error('Send batch error:', error)
+      alert('Failed to send batch')
     } finally {
       setSending(false)
+      setSendingProgress({ current: 0, total: 0 })
+      setShouldStop(false)
     }
   }
 
@@ -305,16 +361,16 @@ export default function QRCheckInUploadPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8">
       <div className="max-w-6xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">QR Check-In System</h1>
-          <p className="text-gray-600">Upload attendee list and send QR codes for check-in</p>
+        <div className="mb-4 sm:mb-8">
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">QR Check-In System</h1>
+          <p className="text-sm sm:text-base text-gray-600">Upload attendee list and send QR codes for check-in</p>
         </div>
 
         {/* Event Selection/Creation */}
-        <Card className="p-6 mb-8">
-          <h2 className="text-xl font-semibold mb-4">Step 1: Create or Select Event</h2>
+        <Card className="p-3 sm:p-6 mb-4 sm:mb-8">
+          <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Step 1: Create or Select Event</h2>
           
           {!selectedEvent ? (
             <div className="space-y-4">
@@ -398,26 +454,27 @@ export default function QRCheckInUploadPage() {
               )}
             </div>
           ) : (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-              <div className="flex items-start justify-between">
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 sm:gap-0">
                 <div className="flex-1">
-                  <h3 className="font-semibold text-green-900 text-lg">{selectedEvent.title}</h3>
-                  <div className="mt-2 space-y-1 text-sm text-green-700">
+                  <h3 className="font-semibold text-green-900 text-base sm:text-lg">{selectedEvent.title}</h3>
+                  <div className="mt-2 space-y-1 text-xs sm:text-sm text-green-700">
                     <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4" />
+                      <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
                       <span>{new Date(selectedEvent.date).toLocaleDateString()}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span>📍</span>
-                      <span>{selectedEvent.location}</span>
+                      <span className="break-words">{selectedEvent.location}</span>
                     </div>
                   </div>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
                   <Button
                     onClick={() => router.push(`/admin/qr-checkin/scanner/${selectedEvent.id}`)}
                     variant="outline"
                     size="sm"
+                    className="text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     Go to Scanner
                   </Button>
@@ -429,7 +486,7 @@ export default function QRCheckInUploadPage() {
                     }}
                     variant="outline"
                     size="sm"
-                    className="bg-white"
+                    className="bg-white text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     Change Event
                   </Button>
@@ -438,13 +495,13 @@ export default function QRCheckInUploadPage() {
                     disabled={deleting}
                     variant="outline"
                     size="sm"
-                    className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200"
+                    className="bg-red-50 text-red-600 hover:bg-red-100 border-red-200 text-xs sm:text-sm flex-1 sm:flex-none"
                   >
                     {deleting ? (
-                      <RotateCw className="w-4 h-4 animate-spin" />
+                      <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
                     ) : (
                       <>
-                        <Trash2 className="w-4 h-4 mr-1" />
+                        <Trash2 className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
                         Delete
                       </>
                     )}
@@ -458,27 +515,27 @@ export default function QRCheckInUploadPage() {
         {selectedEvent && (
           <>
             {/* Upload Section */}
-            <Card className="p-6 mb-8">
-              <h2 className="text-xl font-semibold mb-4">Step 2: Upload Attendee List</h2>
+            <Card className="p-3 sm:p-6 mb-4 sm:mb-8">
+              <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Step 2: Upload Attendee List</h2>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select CSV or Excel File
                   </label>
-                  <p className="text-sm text-gray-600 mb-3">
+                  <p className="text-xs sm:text-sm text-gray-600 mb-3">
                     Required columns: Email Address, Primary Member - First Name, Primary Member - Last Name, Adults, Kids (optional: Phone Number)
                   </p>
-                  <div className="flex gap-4">
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                     <Input
                       type="file"
                       accept=".csv,.xlsx,.xls"
                       onChange={handleFileChange}
-                      className="flex-1"
+                      className="flex-1 text-sm"
                     />
                     <Button
                       onClick={handleUpload}
                       disabled={!file || uploading}
-                      className="bg-blue-600 hover:bg-blue-700"
+                      className="bg-blue-600 hover:bg-blue-700 text-sm whitespace-nowrap"
                     >
                       {uploading ? (
                         <>
@@ -519,28 +576,28 @@ export default function QRCheckInUploadPage() {
 
             {/* Check-in Statistics */}
             {attendees.length > 0 && (
-              <Card className="p-6 mb-6">
-                <h2 className="text-xl font-semibold mb-4">Check-in Status</h2>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="text-sm text-blue-600 font-medium">Total Attendees</div>
-                    <div className="text-3xl font-bold text-blue-900 mt-1">{attendees.length}</div>
+              <Card className="p-3 sm:p-6 mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Check-in Status</h2>
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-blue-600 font-medium">Total Attendees</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-blue-900 mt-1">{attendees.length}</div>
                   </div>
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div className="text-sm text-green-600 font-medium">Checked In</div>
-                    <div className="text-3xl font-bold text-green-900 mt-1">
+                  <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-green-600 font-medium">Checked In</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-green-900 mt-1">
                       {attendees.filter(a => a.isCheckedIn).length}
                     </div>
                   </div>
-                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                    <div className="text-sm text-orange-600 font-medium">Pending</div>
-                    <div className="text-3xl font-bold text-orange-900 mt-1">
+                  <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-orange-600 font-medium">Pending</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-orange-900 mt-1">
                       {attendees.filter(a => !a.isCheckedIn).length}
                     </div>
                   </div>
-                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                    <div className="text-sm text-purple-600 font-medium">Check-in Rate</div>
-                    <div className="text-3xl font-bold text-purple-900 mt-1">
+                  <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-purple-600 font-medium">Check-in Rate</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-purple-900 mt-1">
                       {attendees.length > 0 
                         ? Math.round((attendees.filter(a => a.isCheckedIn).length / attendees.length) * 100)
                         : 0}%
@@ -551,52 +608,100 @@ export default function QRCheckInUploadPage() {
             )}
 
             {/* Email Status Section */}
-            <Card className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-xl font-semibold">Step 3: Send QR Code Emails</h2>
-                  {attendees.length > 0 && (
-                    <p className="text-sm text-gray-600 mt-1">
-                      {attendees.filter(a => a.emailStatus === 'SENT').length} of {attendees.length} emails sent
-                      {attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length > 0 && (
-                        <span className="text-orange-600 font-medium ml-2">
-                          ({attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length} pending)
-                        </span>
-                      )}
-                    </p>
-                  )}
-                </div>
-                <div className="flex gap-3">
-                  <Button
-                    onClick={fetchAttendees}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <RotateCw className="w-4 h-4 mr-2" />
-                    Refresh
-                  </Button>
-                  <Button
-                    onClick={handleSendAll}
-                    disabled={sending || attendees.length === 0 || attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED').length === 0}
-                    className="bg-purple-600 hover:bg-purple-700"
-                    size="sm"
-                  >
-                    {sending ? (
-                      <>
-                        <RotateCw className="w-4 h-4 mr-2 animate-spin" />
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <Send className="w-4 h-4 mr-2" />
-                        Send All Pending
-                      </>
+            <Card className="p-3 sm:p-6">
+              <div className="mb-4 sm:mb-6">
+                <h2 className="text-lg sm:text-xl font-semibold mb-2">Step 3: Send QR Code Emails</h2>
+                {attendees.length > 0 && (
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    {attendees.filter(a => a.emailStatus === 'SENT').length} of {attendees.length} emails sent
+                    {attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length > 0 && (
+                      <span className="text-orange-600 font-medium ml-2">
+                        ({attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED').length} pending)
+                      </span>
                     )}
-                  </Button>
-                </div>
+                  </p>
+                )}
               </div>
 
-              <div className="overflow-x-auto">
+              {/* Batch Controls */}
+              <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Batch Size (emails per batch)
+                    </label>
+                    <select
+                      value={batchSize}
+                      onChange={(e) => setBatchSize(Number(e.target.value))}
+                      disabled={sending}
+                      className="w-full sm:w-48 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
+                    >
+                      <option value={25}>25 emails</option>
+                      <option value={50}>50 emails (Recommended)</option>
+                      <option value={100}>100 emails</option>
+                      <option value={-1}>All Pending</option>
+                    </select>
+                    <p className="text-xs text-gray-600 mt-1">
+                      Sending in smaller batches helps avoid rate limits
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2">
+                    <Button
+                      onClick={fetchAttendees}
+                      variant="outline"
+                      size="sm"
+                      disabled={sending}
+                      className="text-xs sm:text-sm"
+                    >
+                      <RotateCw className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                      Refresh
+                    </Button>
+                    
+                    {sending ? (
+                      <Button
+                        onClick={() => setShouldStop(true)}
+                        variant="outline"
+                        size="sm"
+                        className="bg-red-50 text-red-600 hover:bg-red-100 border-red-300 text-xs sm:text-sm"
+                      >
+                        <Pause className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Stop Batch
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={handleSendBatch}
+                        disabled={attendees.length === 0 || attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED').length === 0}
+                        className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm"
+                        size="sm"
+                      >
+                        <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
+                        Send Batch ({batchSize === -1 ? 'All' : batchSize})
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Progress Bar */}
+                {sending && sendingProgress.total > 0 && (
+                  <div className="mt-4">
+                    <div className="flex justify-between text-xs text-gray-600 mb-2">
+                      <span>Sending emails...</span>
+                      <span>{sendingProgress.current} / {sendingProgress.total}</span>
+                    </div>
+                    <Progress 
+                      value={(sendingProgress.current / sendingProgress.total) * 100} 
+                      className="h-2"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      {shouldStop ? 'Stopping after current email...' : 'Please wait, do not close this page'}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
@@ -678,6 +783,93 @@ export default function QRCheckInUploadPage() {
                     )}
                   </tbody>
                 </table>
+              </div>
+
+              {/* Mobile Card View */}
+              <div className="lg:hidden space-y-3">
+                {attendees.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 text-sm">
+                    No attendees added yet. Upload a file to get started.
+                  </div>
+                ) : (
+                  attendees.map((attendee) => {
+                    const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+                    return (
+                      <div key={attendee.id} className="border border-gray-200 rounded-lg p-3 bg-white">
+                        <div className="flex justify-between items-start mb-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm truncate">{attendee.name}</h3>
+                            <p className="text-xs text-gray-600 truncate">{attendee.email}</p>
+                          </div>
+                          <div className="ml-2 flex-shrink-0">
+                            {attendee.isCheckedIn ? (
+                              <Badge className="bg-green-100 text-green-800 border-green-300 text-xs">
+                                <CheckCircle className="w-3 h-3 mr-1" /> Checked In
+                              </Badge>
+                            ) : (
+                              <Badge className="bg-gray-100 text-gray-800 border-gray-300 text-xs">
+                                Not Checked In
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-2 my-2 text-xs">
+                          <div className="bg-blue-50 rounded p-2 text-center">
+                            <div className="text-blue-600 font-medium">Adults</div>
+                            <div className="font-bold text-blue-900">{attendee.adults || 1}</div>
+                          </div>
+                          <div className="bg-green-50 rounded p-2 text-center">
+                            <div className="text-green-600 font-medium">Kids</div>
+                            <div className="font-bold text-green-900">{attendee.kids || 0}</div>
+                          </div>
+                          <div className="bg-orange-50 rounded p-2 text-center">
+                            <div className="text-orange-600 font-medium">Coupons</div>
+                            <div className="font-bold text-orange-900">{totalCoupons}</div>
+                          </div>
+                        </div>
+
+                        <div className="space-y-1 text-xs mb-2">
+                          <div className="flex justify-between items-center">
+                            <span className="text-gray-600">Email Status:</span>
+                            {getStatusBadge(attendee.emailStatus)}
+                          </div>
+                          {attendee.emailSentAt && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Sent At:</span>
+                              <span className="text-gray-700">{new Date(attendee.emailSentAt).toLocaleString()}</span>
+                            </div>
+                          )}
+                          {attendee.checkedInAt && (
+                            <div className="flex justify-between items-center">
+                              <span className="text-gray-600">Checked In At:</span>
+                              <span className="text-gray-700">{new Date(attendee.checkedInAt).toLocaleString()}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {!attendee.isCheckedIn && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRetrySingle(attendee.id)}
+                            disabled={retrying === attendee.id}
+                            className="w-full text-xs"
+                          >
+                            {retrying === attendee.id ? (
+                              <RotateCw className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <>
+                                <Send className="w-3 h-3 mr-1" />
+                                {attendee.emailStatus === 'PENDING' ? 'Send Email' : 'Resend Email'}
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </Card>
           </>
