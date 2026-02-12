@@ -49,6 +49,7 @@ export default function QRCheckInUploadPage() {
   const [batchSize, setBatchSize] = useState(50)
   const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0 })
   const [shouldStop, setShouldStop] = useState(false)
+  const [selectedAttendeeIds, setSelectedAttendeeIds] = useState<Set<string>>(new Set())
 
   const fetchEvents = async () => {
     try {
@@ -175,6 +176,27 @@ export default function QRCheckInUploadPage() {
     }
   }
 
+  const handleSelectAll = () => {
+    const pendingAttendees = attendees.filter(a => 
+      !a.isCheckedIn && (a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED')
+    )
+    setSelectedAttendeeIds(new Set(pendingAttendees.map(a => a.id)))
+  }
+
+  const handleDeselectAll = () => {
+    setSelectedAttendeeIds(new Set())
+  }
+
+  const handleToggleAttendee = (attendeeId: string) => {
+    const newSelected = new Set(selectedAttendeeIds)
+    if (newSelected.has(attendeeId)) {
+      newSelected.delete(attendeeId)
+    } else {
+      newSelected.add(attendeeId)
+    }
+    setSelectedAttendeeIds(newSelected)
+  }
+
   const fetchAttendees = async () => {
     if (!selectedEvent) {
       console.log('fetchAttendees: No event selected')
@@ -206,23 +228,19 @@ export default function QRCheckInUploadPage() {
       return
     }
 
-    const pendingAttendees = attendees.filter(a => 
-      a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED'
-    )
-
-    if (pendingAttendees.length === 0) {
-      alert('No pending emails to send')
+    if (selectedAttendeeIds.size === 0) {
+      alert('Please select at least one attendee to send emails')
       return
     }
 
-    const batchCount = batchSize === -1 ? pendingAttendees.length : Math.min(batchSize, pendingAttendees.length)
-    const batchToSend = pendingAttendees.slice(0, batchCount)
+    const selectedAttendees = attendees.filter(a => selectedAttendeeIds.has(a.id))
+    const batchToSend = selectedAttendees
 
-    console.log(`Sending ${batchCount} emails in batch`)
+    console.log(`Sending ${batchToSend.length} selected emails`)
 
     setSending(true)
     setShouldStop(false)
-    setSendingProgress({ current: 0, total: batchCount })
+    setSendingProgress({ current: 0, total: batchToSend.length })
 
     let successCount = 0
     let failCount = 0
@@ -236,7 +254,7 @@ export default function QRCheckInUploadPage() {
         }
 
         const attendee = batchToSend[i]
-        setSendingProgress({ current: i + 1, total: batchCount })
+        setSendingProgress({ current: i + 1, total: batchToSend.length })
 
         try {
           const response = await fetch('/api/admin/qr-checkin/send-email', {
@@ -265,6 +283,15 @@ export default function QRCheckInUploadPage() {
       }
 
       await fetchAttendees()
+      
+      // Clear successfully sent attendees from selection
+      if (successCount > 0) {
+        const newSelected = new Set(selectedAttendeeIds)
+        batchToSend.forEach(attendee => {
+          newSelected.delete(attendee.id)
+        })
+        setSelectedAttendeeIds(newSelected)
+      }
       
       const message = shouldStop 
         ? `Batch stopped. Sent: ${successCount}, Failed: ${failCount}`
@@ -625,24 +652,49 @@ export default function QRCheckInUploadPage() {
 
               {/* Batch Controls */}
               <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+                {/* Selection Controls */}
+                <div className="mb-3 pb-3 border-b border-purple-300">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-medium text-gray-700">
+                        <span className="text-purple-600 font-bold">{selectedAttendeeIds.size}</span> attendee{selectedAttendeeIds.size !== 1 ? 's' : ''} selected
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        {attendees.filter(a => !a.isCheckedIn && (a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED')).length} available to send
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSelectAll}
+                        variant="outline"
+                        size="sm"
+                        disabled={sending}
+                        className="text-xs"
+                      >
+                        Select All Pending
+                      </Button>
+                      <Button
+                        onClick={handleDeselectAll}
+                        variant="outline"
+                        size="sm"
+                        disabled={sending}
+                        className="text-xs"
+                      >
+                        Deselect All
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="flex flex-col sm:flex-row sm:items-end gap-3">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Batch Size (emails per batch)
+                      How it works
                     </label>
-                    <select
-                      value={batchSize}
-                      onChange={(e) => setBatchSize(Number(e.target.value))}
-                      disabled={sending}
-                      className="w-full sm:w-48 border border-gray-300 rounded-md px-3 py-2 text-sm bg-white"
-                    >
-                      <option value={25}>25 emails</option>
-                      <option value={50}>50 emails (Recommended)</option>
-                      <option value={100}>100 emails</option>
-                      <option value={-1}>All Pending</option>
-                    </select>
-                    <p className="text-xs text-gray-600 mt-1">
-                      Sending in smaller batches helps avoid rate limits
+                    <p className="text-xs text-gray-600">
+                      ✓ Select attendees using checkboxes below<br/>
+                      ✓ Click "Send to Selected" to send emails<br/>
+                      ✓ Successfully sent emails will be auto-deselected
                     </p>
                   </div>
 
@@ -671,12 +723,12 @@ export default function QRCheckInUploadPage() {
                     ) : (
                       <Button
                         onClick={handleSendBatch}
-                        disabled={attendees.length === 0 || attendees.filter(a => a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED').length === 0}
+                        disabled={selectedAttendeeIds.size === 0}
                         className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm"
                         size="sm"
                       >
                         <Send className="w-3 h-3 sm:w-4 sm:h-4 mr-2" />
-                        Send Batch ({batchSize === -1 ? 'All' : batchSize})
+                        Send to Selected ({selectedAttendeeIds.size})
                       </Button>
                     )}
                   </div>
@@ -705,6 +757,15 @@ export default function QRCheckInUploadPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-gray-200">
+                      <th className="text-center py-3 px-2 font-semibold text-gray-700 w-12">
+                        <input
+                          type="checkbox"
+                          checked={selectedAttendeeIds.size > 0 && selectedAttendeeIds.size === attendees.filter(a => !a.isCheckedIn && (a.emailStatus === 'PENDING' || a.emailStatus === 'FAILED' || a.emailStatus === 'RETRY_SCHEDULED')).length}
+                          onChange={(e) => e.target.checked ? handleSelectAll() : handleDeselectAll()}
+                          className="w-4 h-4 cursor-pointer"
+                          disabled={sending}
+                        />
+                      </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Adults</th>
@@ -719,15 +780,25 @@ export default function QRCheckInUploadPage() {
                   <tbody>
                     {attendees.length === 0 ? (
                       <tr>
-                        <td colSpan={9} className="text-center py-8 text-gray-500">
+                        <td colSpan={10} className="text-center py-8 text-gray-500">
                           No attendees added yet. Upload a file to get started.
                         </td>
                       </tr>
                     ) : (
                       attendees.map((attendee) => {
                         const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+                        const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                         return (
                         <tr key={attendee.id} className="border-b border-gray-100 hover:bg-gray-50">
+                          <td className="py-3 px-2 text-center">
+                            <input
+                              type="checkbox"
+                              checked={selectedAttendeeIds.has(attendee.id)}
+                              onChange={() => handleToggleAttendee(attendee.id)}
+                              disabled={!canSelect || sending}
+                              className="w-4 h-4 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </td>
                           <td className="py-3 px-4">{attendee.name}</td>
                           <td className="py-3 px-4">{attendee.email}</td>
                           <td className="py-3 px-4 text-center font-semibold text-blue-600">{attendee.adults || 1}</td>
@@ -794,9 +865,19 @@ export default function QRCheckInUploadPage() {
                 ) : (
                   attendees.map((attendee) => {
                     const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+                    const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                     return (
                       <div key={attendee.id} className="border border-gray-200 rounded-lg p-3 bg-white">
-                        <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-start gap-2 mb-2">
+                          <div className="pt-1">
+                            <input
+                              type="checkbox"
+                              checked={selectedAttendeeIds.has(attendee.id)}
+                              onChange={() => handleToggleAttendee(attendee.id)}
+                              disabled={!canSelect || sending}
+                              className="w-4 h-4 cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                            />
+                          </div>
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900 text-sm truncate">{attendee.name}</h3>
                             <p className="text-xs text-gray-600 truncate">{attendee.email}</p>
