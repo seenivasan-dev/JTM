@@ -55,6 +55,8 @@ async function sendSingleEmail(attendeeId: string) {
   }
 
   const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
+  const totalAttendees = (attendee.attendingAdults || 0) + (attendee.kidsFood || 0)
+  const eventOnly = totalCoupons === 0
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -69,6 +71,7 @@ async function sendSingleEmail(attendeeId: string) {
           .qr-code img { max-width: 300px; border: 2px solid #3b82f6; border-radius: 10px; padding: 10px; }
           .coupons { background: #fef3c7; border: 3px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
           .coupons-number { font-size: 48px; font-weight: bold; color: #f59e0b; }
+          .event-only { background: #f0fdf4; border: 3px solid #16a34a; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
           .event-details { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
           .detail-row { margin: 10px 0; padding: 10px; border-left: 3px solid #3b82f6; background: #f3f4f6; }
         </style>
@@ -82,15 +85,23 @@ async function sendSingleEmail(attendeeId: string) {
           <div class="content">
             <p>Dear ${attendee.name},</p>
             <p>You're registered for <strong>${attendee.event.title}</strong>!</p>
-            
+
             <div class="event-details">
               <h2 style="color: #3b82f6; margin-top: 0;">Event Details</h2>
               <div class="detail-row"><strong>Event:</strong> ${attendee.event.title}</div>
               <div class="detail-row"><strong>Date:</strong> ${new Date(attendee.event.date).toLocaleDateString()}</div>
               ${attendee.event.time ? `<div class="detail-row"><strong>Time:</strong> ${attendee.event.time}</div>` : ''}
               <div class="detail-row"><strong>Location:</strong> ${attendee.event.location}</div>
+              ${totalAttendees > 0 ? `<div class="detail-row"><strong>Total Attendees:</strong> ${totalAttendees} person${totalAttendees !== 1 ? 's' : ''}</div>` : ''}
             </div>
 
+            ${eventOnly ? `
+            <div class="event-only">
+              <h3 style="color: #15803d; margin-top: 0;">🎉 Event Only</h3>
+              <p style="color: #166534; font-weight: bold; margin: 5px 0;">No food coupons for this registration</p>
+              ${totalAttendees > 0 ? `<p style="color: #166534; margin: 5px 0;">${totalAttendees} attendee${totalAttendees !== 1 ? 's' : ''} attending</p>` : ''}
+            </div>
+            ` : `
             <div class="coupons">
               <h3 style="color: #78350f; margin-top: 0;">🍽️ Food Coupons</h3>
               <div class="coupons-number">${totalCoupons}</div>
@@ -118,6 +129,7 @@ async function sendSingleEmail(attendeeId: string) {
                 ` : ''}
               </div>
             </div>
+            `}
 
             <div class="qr-code">
               <h3 style="color: #3b82f6;">Your Check-in QR Code</h3>
@@ -138,13 +150,16 @@ async function sendSingleEmail(attendeeId: string) {
               <strong>Important:</strong>
               <ul style="margin: 10px 0;">
                 <li>Save this email or screenshot the QR code</li>
-                <li>You'll receive <strong>${totalCoupons} food ${totalCoupons === 1 ? 'coupon' : 'coupons'}</strong> upon check-in</li>
+                ${eventOnly
+                  ? '<li>No food coupons — event attendance only</li>'
+                  : `<li>You'll receive <strong>${totalCoupons} food ${totalCoupons === 1 ? 'coupon' : 'coupons'}</strong> upon check-in</li>`
+                }
                 <li>One QR code for your entire group</li>
               </ul>
             </div>
 
             <p>See you at the event!</p>
-            
+
             <div style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
               <p>Jacksonville Tamil Mandram<br/>This is an automated email.</p>
             </div>

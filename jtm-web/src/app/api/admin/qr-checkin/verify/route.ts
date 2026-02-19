@@ -71,6 +71,7 @@ export async function POST(request: NextRequest) {
         name: attendee.name,
         email: attendee.email,
         phone: attendee.phone,
+        attendingAdults: attendee.attendingAdults,
         adults: attendee.adults,
         kids: attendee.kids,
         adultVegFood: attendee.adultVegFood,

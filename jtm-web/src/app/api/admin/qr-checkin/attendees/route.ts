@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
       id: att.id,
       name: att.name,
       email: att.email,
+      attendingAdults: att.attendingAdults,
       adults: att.adults,
       kids: att.kids,
       adultVegFood: att.adultVegFood,
