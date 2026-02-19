@@ -189,6 +189,9 @@ model QRAttendee {
   phone           String?
   adults          Int           @default(1)
   kids            Int           @default(0)
+  adultVegFood    Int           @default(0)
+  adultNonVegFood Int           @default(0)
+  kidsFood        Int           @default(0)
   dietaryRestrictions String?
   specialRequests String?
   qrCodeData      String        @unique // Encrypted unique identifier
