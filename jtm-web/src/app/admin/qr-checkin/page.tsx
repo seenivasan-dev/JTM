@@ -323,7 +323,7 @@ export default function QRCheckInUploadPage() {
       alert('Failed to send batch')
     } finally {
       setSending(false)
-      setSendingProgress({ current: 0, total: 0 })
+      setSendingProgress({ current: 0, total: 0, waiting: false })
       setShouldStop(false)
     }
   }
