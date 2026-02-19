@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
-import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2, Pause } from 'lucide-react'
+import { Upload, Send, RotateCw, CheckCircle, XCircle, Clock, Plus, Calendar, Trash2, Pause, Download } from 'lucide-react'
 import { Progress } from '@/components/ui/progress'
 
 interface QRAttendeeStatus {
@@ -548,12 +548,35 @@ export default function QRCheckInUploadPage() {
             <Card className="p-3 sm:p-6 mb-4 sm:mb-8">
               <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Step 2: Upload Attendee List</h2>
               <div className="space-y-4">
+                {/* Template Download Banner */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-xl p-4">
+                  <div>
+                    <p className="text-sm font-semibold text-indigo-900">Need the upload template?</p>
+                    <p className="text-xs text-indigo-600 mt-0.5">
+                      Download the Excel template with sample data and instructions
+                    </p>
+                  </div>
+                  <a href="/api/admin/qr-checkin/template" download>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="whitespace-nowrap border-indigo-300 text-indigo-700 hover:bg-indigo-100 bg-white"
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      Download Template
+                    </Button>
+                  </a>
+                </div>
+
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Select CSV or Excel File
                   </label>
-                  <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                    Required columns: Email Address, Primary Member - First Name, Primary Member - Last Name, Adults, Kids (optional: Phone Number)
+                  <p className="text-xs sm:text-sm text-gray-500 mb-3">
+                    Required columns: <span className="font-medium text-gray-700">name, email</span> &nbsp;·&nbsp;
+                    Food columns: <span className="font-medium text-green-700">Adult Veg Food</span>,{' '}
+                    <span className="font-medium text-red-700">Adult Non-Veg Food</span>,{' '}
+                    <span className="font-medium text-blue-700">Kids Food</span>
                   </p>
                   <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
                     <Input
