@@ -54,7 +54,7 @@ async function sendSingleEmail(attendeeId: string) {
     return { success: false, error: 'Max retry count exceeded' }
   }
 
-  const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+  const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
 
   const emailHtml = `
     <!DOCTYPE html>
@@ -97,9 +97,26 @@ async function sendSingleEmail(attendeeId: string) {
               <p style="color: #78350f; font-weight: bold; margin: 10px 0;">
                 ${totalCoupons === 1 ? 'coupon will be given' : 'coupons will be given'}
               </p>
-              <p style="color: #78350f; font-size: 14px;">
-                (${attendee.adults || 1} Adult${(attendee.adults || 1) !== 1 ? 's' : ''}${(attendee.kids || 0) > 0 ? ` + ${attendee.kids} Kid${attendee.kids !== 1 ? 's' : ''}` : ''})
-              </p>
+              <div style="display: flex; justify-content: center; gap: 10px; margin-top: 15px; flex-wrap: wrap;">
+                ${(attendee.adultVegFood || 0) > 0 ? `
+                <div style="background: #dcfce7; padding: 8px 16px; border-radius: 8px; border: 2px solid #16a34a;">
+                  <div style="font-weight: bold; color: #15803d;">🥗 ${attendee.adultVegFood}</div>
+                  <div style="font-size: 12px; color: #166534;">Adult Veg</div>
+                </div>
+                ` : ''}
+                ${(attendee.adultNonVegFood || 0) > 0 ? `
+                <div style="background: #fee2e2; padding: 8px 16px; border-radius: 8px; border: 2px solid #dc2626;">
+                  <div style="font-weight: bold; color: #991b1b;">🍗 ${attendee.adultNonVegFood}</div>
+                  <div style="font-size: 12px; color: #7f1d1d;">Adult Non-Veg</div>
+                </div>
+                ` : ''}
+                ${(attendee.kidsFood || 0) > 0 ? `
+                <div style="background: #dbeafe; padding: 8px 16px; border-radius: 8px; border: 2px solid #2563eb;">
+                  <div style="font-weight: bold; color: #1e40af;">👶 ${attendee.kidsFood}</div>
+                  <div style="font-size: 12px; color: #1e3a8a;">Kids Food</div>
+                </div>
+                ` : ''}
+              </div>
             </div>
 
             <div class="qr-code">

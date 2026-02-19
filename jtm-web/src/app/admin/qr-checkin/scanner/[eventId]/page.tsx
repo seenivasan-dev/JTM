@@ -14,6 +14,9 @@ interface AttendeeInfo {
   phone?: string
   adults: number
   kids: number
+  adultVegFood: number
+  adultNonVegFood: number
+  kidsFood: number
   alreadyCheckedIn: boolean
   checkedInAt?: string
   checkedInBy?: string
@@ -202,7 +205,7 @@ export default function QRScannerPage() {
     }
   }, [])
 
-  const totalCoupons = attendeeInfo ? (attendeeInfo.adults + attendeeInfo.kids) : 0
+  const totalCoupons = attendeeInfo ? (attendeeInfo.adultVegFood + attendeeInfo.adultNonVegFood + attendeeInfo.kidsFood) : 0
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -362,19 +365,26 @@ export default function QRScannerPage() {
               <div className="text-8xl font-black text-orange-600 mb-4">
                 {totalCoupons}
               </div>
-              <div className="grid grid-cols-2 gap-4 max-w-md mx-auto mt-6">
-                <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
-                  <Users className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-4xl font-bold text-blue-600">{attendeeInfo.adults}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Adult{attendeeInfo.adults !== 1 ? 's' : ''}
+              <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-6">
+                <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                  <div className="w-8 h-8 mx-auto mb-2 text-2xl">🥗</div>
+                  <div className="text-3xl font-bold text-green-600">{attendeeInfo.adultVegFood}</div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Adult Veg
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-4 border-2 border-green-300">
-                  <Baby className="w-8 h-8 text-green-600 mx-auto mb-2" />
-                  <div className="text-4xl font-bold text-green-600">{attendeeInfo.kids}</div>
-                  <div className="text-sm text-gray-600 mt-1">
-                    Kid{attendeeInfo.kids !== 1 ? 's' : ''}
+                <div className="bg-white rounded-lg p-4 border-2 border-red-300">
+                  <div className="w-8 h-8 mx-auto mb-2 text-2xl">🍗</div>
+                  <div className="text-3xl font-bold text-red-600">{attendeeInfo.adultNonVegFood}</div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Adult Non-Veg
+                  </div>
+                </div>
+                <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                  <Baby className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                  <div className="text-3xl font-bold text-blue-600">{attendeeInfo.kidsFood}</div>
+                  <div className="text-xs text-gray-600 mt-1">
+                    Kids Food
                   </div>
                 </div>
               </div>

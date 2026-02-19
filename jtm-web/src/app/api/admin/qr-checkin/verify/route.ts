@@ -73,6 +73,9 @@ export async function POST(request: NextRequest) {
         phone: attendee.phone,
         adults: attendee.adults,
         kids: attendee.kids,
+        adultVegFood: attendee.adultVegFood,
+        adultNonVegFood: attendee.adultNonVegFood,
+        kidsFood: attendee.kidsFood,
         alreadyCheckedIn,
         checkedInAt: attendee.checkIn?.checkedInAt,
         checkedInBy: attendee.checkIn?.admin?.name || attendee.checkIn?.admin?.email

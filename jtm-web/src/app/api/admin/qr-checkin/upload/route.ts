@@ -13,6 +13,9 @@ interface AttendeeRow {
   'Phone Number (used for JTM Member Identification)'?: string
   'Adults'?: number
   'Kids'?: number
+  'Adult Veg Food'?: number
+  'Adult Non-Veg Food'?: number
+  'Kids Food'?: number
   // Also support simplified column names
   email?: string
   name?: string
@@ -21,6 +24,9 @@ interface AttendeeRow {
   phone?: string
   adults?: number
   kids?: number
+  adultVegFood?: number
+  adultNonVegFood?: number
+  kidsFood?: number
   dietaryRestrictions?: string
   specialRequests?: string
 }
@@ -113,6 +119,10 @@ export async function POST(request: NextRequest) {
         const phone = row['Phone Number (used for JTM Member Identification)'] || row.phone
         const adults = row['Adults'] || row.adults || 1
         const kids = row['Kids'] || row.kids || 0
+        // New food count fields with flexible naming
+        const adultVegFood = row['Adult Veg Food'] || row.adultVegFood || 0
+        const adultNonVegFood = row['Adult Non-Veg Food'] || row.adultNonVegFood || 0
+        const kidsFood = row['Kids Food'] || row.kidsFood || 0
 
         // Validate required fields
         if (!name || !email) {
@@ -157,6 +167,9 @@ export async function POST(request: NextRequest) {
             phone: phone ? String(phone) : null,
             adults: adults ? parseInt(String(adults)) : 1,
             kids: kids ? parseInt(String(kids)) : 0,
+            adultVegFood: adultVegFood ? parseInt(String(adultVegFood)) : 0,
+            adultNonVegFood: adultNonVegFood ? parseInt(String(adultNonVegFood)) : 0,
+            kidsFood: kidsFood ? parseInt(String(kidsFood)) : 0,
             dietaryRestrictions: row.dietaryRestrictions,
             specialRequests: row.specialRequests,
             qrCodeData: qrData,
