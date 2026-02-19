@@ -12,6 +12,7 @@ interface AttendeeInfo {
   name: string
   email: string
   phone?: string
+  attendingAdults: number
   adults: number
   kids: number
   adultVegFood: number
@@ -206,6 +207,8 @@ export default function QRScannerPage() {
   }, [])
 
   const totalCoupons = attendeeInfo ? (attendeeInfo.adultVegFood + attendeeInfo.adultNonVegFood + attendeeInfo.kidsFood) : 0
+  const totalAttendees = attendeeInfo ? ((attendeeInfo.attendingAdults || 0) + (attendeeInfo.kidsFood || 0)) : 0
+  const eventOnly = attendeeInfo ? totalCoupons === 0 : false
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
@@ -356,39 +359,53 @@ export default function QRScannerPage() {
               </div>
             </div>
 
-            {/* FOOD COUPONS - PROMINENT DISPLAY */}
-            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-4 border-orange-400 rounded-2xl p-8 mb-6 text-center">
-              <div className="flex items-center justify-center gap-3 mb-4">
-                <UtensilsCrossed className="w-16 h-16 text-orange-600" />
+            {/* FOOD COUPONS or EVENT ONLY - PROMINENT DISPLAY */}
+            {totalAttendees > 0 && (
+              <div className="bg-indigo-50 border-2 border-indigo-200 rounded-xl p-4 mb-4 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5 text-indigo-600" />
+                  <span className="font-semibold text-indigo-900">Total Attendees</span>
+                </div>
+                <span className="text-2xl font-black text-indigo-600">{totalAttendees}</span>
               </div>
-              <h3 className="text-2xl font-bold text-orange-900 mb-3">FOOD COUPONS NEEDED</h3>
-              <div className="text-8xl font-black text-orange-600 mb-4">
-                {totalCoupons}
+            )}
+            {eventOnly ? (
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-4 border-green-400 rounded-2xl p-8 mb-6 text-center">
+                <div className="text-6xl mb-3">🎉</div>
+                <h3 className="text-2xl font-bold text-green-900 mb-2">EVENT ONLY</h3>
+                <p className="text-green-700 font-medium">No food coupons for this attendee</p>
+                {totalAttendees > 0 && (
+                  <p className="text-green-600 mt-2">{totalAttendees} person{totalAttendees !== 1 ? 's' : ''} attending</p>
+                )}
               </div>
-              <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-6">
-                <div className="bg-white rounded-lg p-4 border-2 border-green-300">
-                  <div className="w-8 h-8 mx-auto mb-2 text-2xl">🥗</div>
-                  <div className="text-3xl font-bold text-green-600">{attendeeInfo.adultVegFood}</div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    Adult Veg
+            ) : (
+              <div className="bg-gradient-to-r from-orange-50 to-amber-50 border-4 border-orange-400 rounded-2xl p-8 mb-6 text-center">
+                <div className="flex items-center justify-center gap-3 mb-4">
+                  <UtensilsCrossed className="w-16 h-16 text-orange-600" />
+                </div>
+                <h3 className="text-2xl font-bold text-orange-900 mb-3">FOOD COUPONS NEEDED</h3>
+                <div className="text-8xl font-black text-orange-600 mb-4">
+                  {totalCoupons}
+                </div>
+                <div className="grid grid-cols-3 gap-3 max-w-2xl mx-auto mt-6">
+                  <div className="bg-white rounded-lg p-4 border-2 border-green-300">
+                    <div className="w-8 h-8 mx-auto mb-2 text-2xl">🥗</div>
+                    <div className="text-3xl font-bold text-green-600">{attendeeInfo.adultVegFood}</div>
+                    <div className="text-xs text-gray-600 mt-1">Adult Veg</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-red-300">
+                    <div className="w-8 h-8 mx-auto mb-2 text-2xl">🍗</div>
+                    <div className="text-3xl font-bold text-red-600">{attendeeInfo.adultNonVegFood}</div>
+                    <div className="text-xs text-gray-600 mt-1">Adult Non-Veg</div>
+                  </div>
+                  <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
+                    <Baby className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                    <div className="text-3xl font-bold text-blue-600">{attendeeInfo.kidsFood}</div>
+                    <div className="text-xs text-gray-600 mt-1">Kids Food</div>
                   </div>
                 </div>
-                <div className="bg-white rounded-lg p-4 border-2 border-red-300">
-                  <div className="w-8 h-8 mx-auto mb-2 text-2xl">🍗</div>
-                  <div className="text-3xl font-bold text-red-600">{attendeeInfo.adultNonVegFood}</div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    Adult Non-Veg
-                  </div>
-                </div>
-                <div className="bg-white rounded-lg p-4 border-2 border-blue-300">
-                  <Baby className="w-8 h-8 text-blue-600 mx-auto mb-2" />
-                  <div className="text-3xl font-bold text-blue-600">{attendeeInfo.kidsFood}</div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    Kids Food
-                  </div>
-                </div>
               </div>
-            </div>
+            )}
 
             {/* Action Buttons */}
             {!attendeeInfo.alreadyCheckedIn && (
@@ -404,7 +421,9 @@ export default function QRScannerPage() {
                   ) : (
                     <>
                       <span className="text-xl">✓ Confirm Check-in</span>
-                      <span className="text-sm font-semibold opacity-90">Give {totalCoupons} Coupon{totalCoupons !== 1 ? 's' : ''}</span>
+                      <span className="text-sm font-semibold opacity-90">
+                        {eventOnly ? 'Event Only — No Food Coupons' : `Give ${totalCoupons} Coupon${totalCoupons !== 1 ? 's' : ''}`}
+                      </span>
                     </>
                   )}
                 </Button>

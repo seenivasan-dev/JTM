@@ -13,6 +13,7 @@ interface QRAttendeeStatus {
   id: string
   name: string
   email: string
+  attendingAdults: number
   adults: number
   kids: number
   adultVegFood: number
@@ -635,10 +636,16 @@ export default function QRCheckInUploadPage() {
             {attendees.length > 0 && (
               <Card className="p-3 sm:p-6 mb-4 sm:mb-6">
                 <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-4">Check-in Status</h2>
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 sm:gap-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4">
-                    <div className="text-xs sm:text-sm text-blue-600 font-medium">Total Attendees</div>
+                    <div className="text-xs sm:text-sm text-blue-600 font-medium">Registrations</div>
                     <div className="text-2xl sm:text-3xl font-bold text-blue-900 mt-1">{attendees.length}</div>
+                  </div>
+                  <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-3 sm:p-4">
+                    <div className="text-xs sm:text-sm text-indigo-600 font-medium">Total Persons</div>
+                    <div className="text-2xl sm:text-3xl font-bold text-indigo-900 mt-1">
+                      {attendees.reduce((sum, a) => sum + (a.attendingAdults || 0) + (a.kidsFood || 0), 0)}
+                    </div>
                   </div>
                   <div className="bg-green-50 border border-green-200 rounded-lg p-3 sm:p-4">
                     <div className="text-xs sm:text-sm text-green-600 font-medium">Checked In</div>
@@ -647,7 +654,7 @@ export default function QRCheckInUploadPage() {
                     </div>
                   </div>
                   <div className="bg-orange-50 border border-orange-200 rounded-lg p-3 sm:p-4">
-                    <div className="text-xs sm:text-sm text-orange-600 font-medium">Pending</div>
+                    <div className="text-xs sm:text-sm text-orange-600 font-medium">Not Checked In</div>
                     <div className="text-2xl sm:text-3xl font-bold text-orange-900 mt-1">
                       {attendees.filter(a => !a.isCheckedIn).length}
                     </div>
@@ -655,7 +662,7 @@ export default function QRCheckInUploadPage() {
                   <div className="bg-purple-50 border border-purple-200 rounded-lg p-3 sm:p-4">
                     <div className="text-xs sm:text-sm text-purple-600 font-medium">Check-in Rate</div>
                     <div className="text-2xl sm:text-3xl font-bold text-purple-900 mt-1">
-                      {attendees.length > 0 
+                      {attendees.length > 0
                         ? Math.round((attendees.filter(a => a.isCheckedIn).length / attendees.length) * 100)
                         : 0}%
                     </div>
@@ -798,10 +805,11 @@ export default function QRCheckInUploadPage() {
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
+                      <th className="text-center py-3 px-4 font-semibold text-indigo-700">Attending</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Adult Veg</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Adult Non-Veg</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Kids</th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Coupons</th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Food / Status</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Email Status</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Check-in Status</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Sent At</th>
@@ -811,13 +819,15 @@ export default function QRCheckInUploadPage() {
                   <tbody>
                     {attendees.length === 0 ? (
                       <tr>
-                        <td colSpan={10} className="text-center py-8 text-gray-500">
+                        <td colSpan={11} className="text-center py-8 text-gray-500">
                           No attendees added yet. Upload a file to get started.
                         </td>
                       </tr>
                     ) : (
                       attendees.map((attendee) => {
                         const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
+                        const totalPersons = (attendee.attendingAdults || 0) + (attendee.kidsFood || 0)
+                        const eventOnly = totalCoupons === 0
                         const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                         return (
                         <tr key={attendee.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -832,13 +842,28 @@ export default function QRCheckInUploadPage() {
                           </td>
                           <td className="py-3 px-4">{attendee.name}</td>
                           <td className="py-3 px-4">{attendee.email}</td>
+                          <td className="py-3 px-4 text-center">
+                            {totalPersons > 0 ? (
+                              <span className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded-full font-semibold text-sm">
+                                {totalPersons}
+                              </span>
+                            ) : (
+                              <span className="text-gray-400">—</span>
+                            )}
+                          </td>
                           <td className="py-3 px-4 text-center font-semibold text-green-600">{attendee.adultVegFood || 0}</td>
                           <td className="py-3 px-4 text-center font-semibold text-red-600">{attendee.adultNonVegFood || 0}</td>
                           <td className="py-3 px-4 text-center font-semibold text-blue-600">{attendee.kidsFood || 0}</td>
                           <td className="py-3 px-4 text-center">
-                            <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">
-                              {totalCoupons}
-                            </span>
+                            {eventOnly ? (
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full font-semibold text-xs">
+                                Event Only
+                              </span>
+                            ) : (
+                              <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">
+                                {totalCoupons}
+                              </span>
+                            )}
                           </td>
                           <td className="py-3 px-4">{getStatusBadge(attendee.emailStatus)}</td>
                           <td className="py-3 px-4">
@@ -897,6 +922,8 @@ export default function QRCheckInUploadPage() {
                 ) : (
                   attendees.map((attendee) => {
                     const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
+                    const totalPersons = (attendee.attendingAdults || 0) + (attendee.kidsFood || 0)
+                    const eventOnly = totalCoupons === 0
                     const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                     return (
                       <div key={attendee.id} className="border border-gray-200 rounded-lg p-3 bg-white">
@@ -913,6 +940,9 @@ export default function QRCheckInUploadPage() {
                           <div className="flex-1 min-w-0">
                             <h3 className="font-semibold text-gray-900 text-sm truncate">{attendee.name}</h3>
                             <p className="text-xs text-gray-600 truncate">{attendee.email}</p>
+                            {totalPersons > 0 && (
+                              <p className="text-xs text-indigo-600 font-medium mt-0.5">{totalPersons} person{totalPersons !== 1 ? 's' : ''} attending</p>
+                            )}
                           </div>
                           <div className="ml-2 flex-shrink-0">
                             {attendee.isCheckedIn ? (
@@ -927,24 +957,30 @@ export default function QRCheckInUploadPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-4 gap-2 my-2 text-xs">
-                          <div className="bg-green-50 rounded p-2 text-center">
-                            <div className="text-green-600 font-medium">Veg</div>
-                            <div className="font-bold text-green-900">{attendee.adultVegFood || 0}</div>
+                        {eventOnly ? (
+                          <div className="bg-green-50 border border-green-200 rounded-lg p-2 my-2 text-center">
+                            <span className="text-green-700 font-semibold text-xs">🎉 Event Only — No Food Coupons</span>
                           </div>
-                          <div className="bg-red-50 rounded p-2 text-center">
-                            <div className="text-red-600 font-medium">Non-Veg</div>
-                            <div className="font-bold text-red-900">{attendee.adultNonVegFood || 0}</div>
+                        ) : (
+                          <div className="grid grid-cols-4 gap-2 my-2 text-xs">
+                            <div className="bg-green-50 rounded p-2 text-center">
+                              <div className="text-green-600 font-medium">Veg</div>
+                              <div className="font-bold text-green-900">{attendee.adultVegFood || 0}</div>
+                            </div>
+                            <div className="bg-red-50 rounded p-2 text-center">
+                              <div className="text-red-600 font-medium">Non-Veg</div>
+                              <div className="font-bold text-red-900">{attendee.adultNonVegFood || 0}</div>
+                            </div>
+                            <div className="bg-blue-50 rounded p-2 text-center">
+                              <div className="text-blue-600 font-medium">Kids</div>
+                              <div className="font-bold text-blue-900">{attendee.kidsFood || 0}</div>
+                            </div>
+                            <div className="bg-orange-50 rounded p-2 text-center">
+                              <div className="text-orange-600 font-medium">Total</div>
+                              <div className="font-bold text-orange-900">{totalCoupons}</div>
+                            </div>
                           </div>
-                          <div className="bg-blue-50 rounded p-2 text-center">
-                            <div className="text-blue-600 font-medium">Kids</div>
-                            <div className="font-bold text-blue-900">{attendee.kidsFood || 0}</div>
-                          </div>
-                          <div className="bg-orange-50 rounded p-2 text-center">
-                            <div className="text-orange-600 font-medium">Total</div>
-                            <div className="font-bold text-orange-900">{totalCoupons}</div>
-                          </div>
-                        </div>
+                        )}
 
                         <div className="space-y-1 text-xs mb-2">
                           <div className="flex justify-between items-center">

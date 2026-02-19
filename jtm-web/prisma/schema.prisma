@@ -187,6 +187,7 @@ model QRAttendee {
   name            String
   email           String
   phone           String?
+  attendingAdults Int           @default(0)
   adults          Int           @default(1)
   kids            Int           @default(0)
   adultVegFood    Int           @default(0)

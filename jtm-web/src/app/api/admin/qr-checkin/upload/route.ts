@@ -11,6 +11,8 @@ interface AttendeeRow {
   'Primary Member - First Name'?: string
   'Primary Member - Last Name'?: string
   'Phone Number (used for JTM Member Identification)'?: string
+  'Adults attending Events including visiting parents'?: number
+  'Attending Adults'?: number
   'Adults'?: number
   'Kids'?: number
   'Adult Veg Food'?: number
@@ -22,6 +24,7 @@ interface AttendeeRow {
   firstName?: string
   lastName?: string
   phone?: string
+  attendingAdults?: number
   adults?: number
   kids?: number
   adultVegFood?: number
@@ -119,6 +122,8 @@ export async function POST(request: NextRequest) {
         const phone = row['Phone Number (used for JTM Member Identification)'] || row.phone
         const adults = row['Adults'] || row.adults || 1
         const kids = row['Kids'] || row.kids || 0
+        // Attending adults - the actual headcount column
+        const attendingAdults = row['Adults attending Events including visiting parents'] || row['Attending Adults'] || row.attendingAdults || 0
         // New food count fields with flexible naming
         const adultVegFood = row['Adult Veg Food'] || row.adultVegFood || 0
         const adultNonVegFood = row['Adult Non-Veg Food'] || row.adultNonVegFood || 0
@@ -167,6 +172,7 @@ export async function POST(request: NextRequest) {
             phone: phone ? String(phone) : null,
             adults: adults ? parseInt(String(adults)) : 1,
             kids: kids ? parseInt(String(kids)) : 0,
+            attendingAdults: attendingAdults ? parseInt(String(attendingAdults)) : 0,
             adultVegFood: adultVegFood ? parseInt(String(adultVegFood)) : 0,
             adultNonVegFood: adultNonVegFood ? parseInt(String(adultNonVegFood)) : 0,
             kidsFood: kidsFood ? parseInt(String(kidsFood)) : 0,
