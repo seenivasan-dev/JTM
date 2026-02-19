@@ -51,7 +51,7 @@ export default function QRCheckInUploadPage() {
   const [eventLocation, setEventLocation] = useState('')
   const [deleting, setDeleting] = useState(false)
   const [batchSize, setBatchSize] = useState(50)
-  const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0 })
+  const [sendingProgress, setSendingProgress] = useState({ current: 0, total: 0, waiting: false })
   const [shouldStop, setShouldStop] = useState(false)
   const [selectedAttendeeIds, setSelectedAttendeeIds] = useState<Set<string>>(new Set())
 
@@ -244,11 +244,14 @@ export default function QRCheckInUploadPage() {
 
     setSending(true)
     setShouldStop(false)
-    setSendingProgress({ current: 0, total: batchToSend.length })
+    setSendingProgress({ current: 0, total: batchToSend.length, waiting: false })
 
     let successCount = 0
     let failCount = 0
     const errors: string[] = []
+
+    // 5-second gap between emails to avoid Gmail SMTP rate limiting
+    const EMAIL_DELAY_MS = 5000
 
     try {
       for (let i = 0; i < batchToSend.length; i++) {
@@ -258,7 +261,7 @@ export default function QRCheckInUploadPage() {
         }
 
         const attendee = batchToSend[i]
-        setSendingProgress({ current: i + 1, total: batchToSend.length })
+        setSendingProgress({ current: i + 1, total: batchToSend.length, waiting: false })
 
         try {
           const response = await fetch('/api/admin/qr-checkin/send-email', {
@@ -283,6 +286,12 @@ export default function QRCheckInUploadPage() {
         // Refresh attendees list periodically
         if ((i + 1) % 10 === 0) {
           await fetchAttendees()
+        }
+
+        // Wait between emails (except after the last one) to avoid Gmail rate limiting
+        if (i < batchToSend.length - 1 && !shouldStop) {
+          setSendingProgress({ current: i + 1, total: batchToSend.length, waiting: true })
+          await new Promise(resolve => setTimeout(resolve, EMAIL_DELAY_MS))
         }
       }
 
@@ -314,7 +323,7 @@ export default function QRCheckInUploadPage() {
       alert('Failed to send batch')
     } finally {
       setSending(false)
-      setSendingProgress({ current: 0, total: 0 })
+      setSendingProgress({ current: 0, total: 0, waiting: false })
       setShouldStop(false)
     }
   }
@@ -326,7 +335,7 @@ export default function QRCheckInUploadPage() {
       const response = await fetch('/api/admin/qr-checkin/send-email', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ attendeeId })
+        body: JSON.stringify({ attendeeId, forceRetry: true })
       })
 
       const data = await response.json()
@@ -783,7 +792,11 @@ export default function QRCheckInUploadPage() {
                       className="h-2"
                     />
                     <p className="text-xs text-gray-500 mt-1">
-                      {shouldStop ? 'Stopping after current email...' : 'Please wait, do not close this page'}
+                      {shouldStop
+                        ? 'Stopping after current email...'
+                        : sendingProgress.waiting
+                          ? 'Waiting 5s before next send (Gmail rate limit)...'
+                          : 'Sending email, do not close this page'}
                     </p>
                   </div>
                 )}
