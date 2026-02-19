@@ -7,22 +7,21 @@ import nodemailer from 'nodemailer'
 const MAX_RETRY_COUNT = 3
 const EMAIL_DELAY_MS = 2000 // 2 seconds delay between emails
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT || '587'),
-  secure: false,
-  pool: true, // Use connection pooling
-  maxConnections: 1, // Limit to 1 connection to avoid rate limits
-  maxMessages: 100, // Allow up to 100 messages per connection
-  rateDelta: 1000, // 1 second between messages
-  rateLimit: 1, // 1 message per rateDelta
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASSWORD
-  }
-})
+function createTransporter() {
+  // Create a fresh transporter each time — pool/rateLimit settings are
+  // meaningless in serverless (each invocation is a new process).
+  return nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
+    secure: false,
+    auth: {
+      user: process.env.SMTP_USER,
+      pass: process.env.SMTP_PASSWORD
+    }
+  })
+}
 
-async function sendSingleEmail(attendeeId: string) {
+async function sendSingleEmail(attendeeId: string, forceRetry = false) {
   const attendee = await prisma.qRAttendee.findUnique({
     where: { id: attendeeId },
     include: {
@@ -44,14 +43,21 @@ async function sendSingleEmail(attendeeId: string) {
   }
 
   if (attendee.emailRetryCount >= MAX_RETRY_COUNT) {
+    if (!forceRetry) {
+      await prisma.qRAttendee.update({
+        where: { id: attendeeId },
+        data: {
+          emailStatus: 'FAILED',
+          errorMessage: 'Max retry count exceeded. Use the individual Resend button to force retry.'
+        }
+      })
+      return { success: false, error: 'Max retry count exceeded' }
+    }
+    // forceRetry: reset the counter so the send proceeds
     await prisma.qRAttendee.update({
       where: { id: attendeeId },
-      data: {
-        emailStatus: 'FAILED',
-        errorMessage: 'Max retry count exceeded'
-      }
+      data: { emailRetryCount: 0, errorMessage: null }
     })
-    return { success: false, error: 'Max retry count exceeded' }
   }
 
   const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
@@ -200,7 +206,7 @@ async function sendSingleEmail(attendeeId: string) {
       subject: mailOptions.subject
     })
     
-    const info = await transporter.sendMail(mailOptions)
+    const info = await createTransporter().sendMail(mailOptions)
     
     console.log('Email sent successfully!')
     console.log('Message ID:', info.messageId)
@@ -254,10 +260,10 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { attendeeId, eventId } = body
+    const { attendeeId, eventId, forceRetry } = body
 
     if (attendeeId) {
-      const result = await sendSingleEmail(attendeeId)
+      const result = await sendSingleEmail(attendeeId, !!forceRetry)
       return NextResponse.json(result)
     } else if (eventId) {
       const attendees = await prisma.qRAttendee.findMany({
