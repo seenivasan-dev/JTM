@@ -396,10 +396,17 @@ export default function QRScannerPage() {
                 <Button
                   onClick={confirmCheckIn}
                   disabled={checkingIn}
-                  className="w-full bg-green-600 hover:bg-green-700 text-white py-6 text-xl font-bold"
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-5 font-bold flex flex-col h-auto"
                   size="lg"
                 >
-                  {checkingIn ? 'Checking In...' : `✓ Confirm Check-in & Give ${totalCoupons} Coupon${totalCoupons !== 1 ? 's' : ''}`}
+                  {checkingIn ? (
+                    'Checking In...'
+                  ) : (
+                    <>
+                      <span className="text-xl">✓ Confirm Check-in</span>
+                      <span className="text-sm font-semibold opacity-90">Give {totalCoupons} Coupon{totalCoupons !== 1 ? 's' : ''}</span>
+                    </>
+                  )}
                 </Button>
                 <Button
                   onClick={() => {

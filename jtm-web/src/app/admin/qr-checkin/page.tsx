@@ -438,37 +438,41 @@ export default function QRCheckInUploadPage() {
                 </Button>
               ) : (
                 <div className="space-y-4">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="min-w-0">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Event Title *</label>
                       <Input
                         value={eventTitle}
                         onChange={(e) => setEventTitle(e.target.value)}
                         placeholder="e.g., Annual Gathering 2026"
+                        className="w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Date *</label>
                       <Input
                         type="date"
                         value={eventDate}
                         onChange={(e) => setEventDate(e.target.value)}
+                        className="w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Time</label>
                       <Input
                         type="time"
                         value={eventTime}
                         onChange={(e) => setEventTime(e.target.value)}
+                        className="w-full"
                       />
                     </div>
-                    <div>
+                    <div className="min-w-0">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Location *</label>
                       <Input
                         value={eventLocation}
                         onChange={(e) => setEventLocation(e.target.value)}
                         placeholder="e.g., Tokyo Community Center"
+                        className="w-full"
                       />
                     </div>
                   </div>
