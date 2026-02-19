@@ -15,6 +15,9 @@ interface QRAttendeeStatus {
   email: string
   adults: number
   kids: number
+  adultVegFood: number
+  adultNonVegFood: number
+  kidsFood: number
   emailStatus: 'PENDING' | 'SENT' | 'FAILED' | 'RETRY_SCHEDULED'
   emailSentAt?: string
   emailRetryCount: number
@@ -768,7 +771,8 @@ export default function QRCheckInUploadPage() {
                       </th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Name</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Email</th>
-                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Adults</th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Adult Veg</th>
+                      <th className="text-center py-3 px-4 font-semibold text-gray-700">Adult Non-Veg</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Kids</th>
                       <th className="text-center py-3 px-4 font-semibold text-gray-700">Total Coupons</th>
                       <th className="text-left py-3 px-4 font-semibold text-gray-700">Email Status</th>
@@ -786,7 +790,7 @@ export default function QRCheckInUploadPage() {
                       </tr>
                     ) : (
                       attendees.map((attendee) => {
-                        const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+                        const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
                         const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                         return (
                         <tr key={attendee.id} className="border-b border-gray-100 hover:bg-gray-50">
@@ -801,8 +805,9 @@ export default function QRCheckInUploadPage() {
                           </td>
                           <td className="py-3 px-4">{attendee.name}</td>
                           <td className="py-3 px-4">{attendee.email}</td>
-                          <td className="py-3 px-4 text-center font-semibold text-blue-600">{attendee.adults || 1}</td>
-                          <td className="py-3 px-4 text-center font-semibold text-green-600">{attendee.kids || 0}</td>
+                          <td className="py-3 px-4 text-center font-semibold text-green-600">{attendee.adultVegFood || 0}</td>
+                          <td className="py-3 px-4 text-center font-semibold text-red-600">{attendee.adultNonVegFood || 0}</td>
+                          <td className="py-3 px-4 text-center font-semibold text-blue-600">{attendee.kidsFood || 0}</td>
                           <td className="py-3 px-4 text-center">
                             <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full font-semibold">
                               {totalCoupons}
@@ -864,7 +869,7 @@ export default function QRCheckInUploadPage() {
                   </div>
                 ) : (
                   attendees.map((attendee) => {
-                    const totalCoupons = (attendee.adults || 1) + (attendee.kids || 0)
+                    const totalCoupons = (attendee.adultVegFood || 0) + (attendee.adultNonVegFood || 0) + (attendee.kidsFood || 0)
                     const canSelect = !attendee.isCheckedIn && (attendee.emailStatus === 'PENDING' || attendee.emailStatus === 'FAILED' || attendee.emailStatus === 'RETRY_SCHEDULED')
                     return (
                       <div key={attendee.id} className="border border-gray-200 rounded-lg p-3 bg-white">
@@ -895,17 +900,21 @@ export default function QRCheckInUploadPage() {
                           </div>
                         </div>
 
-                        <div className="grid grid-cols-3 gap-2 my-2 text-xs">
-                          <div className="bg-blue-50 rounded p-2 text-center">
-                            <div className="text-blue-600 font-medium">Adults</div>
-                            <div className="font-bold text-blue-900">{attendee.adults || 1}</div>
-                          </div>
+                        <div className="grid grid-cols-4 gap-2 my-2 text-xs">
                           <div className="bg-green-50 rounded p-2 text-center">
-                            <div className="text-green-600 font-medium">Kids</div>
-                            <div className="font-bold text-green-900">{attendee.kids || 0}</div>
+                            <div className="text-green-600 font-medium">Veg</div>
+                            <div className="font-bold text-green-900">{attendee.adultVegFood || 0}</div>
+                          </div>
+                          <div className="bg-red-50 rounded p-2 text-center">
+                            <div className="text-red-600 font-medium">Non-Veg</div>
+                            <div className="font-bold text-red-900">{attendee.adultNonVegFood || 0}</div>
+                          </div>
+                          <div className="bg-blue-50 rounded p-2 text-center">
+                            <div className="text-blue-600 font-medium">Kids</div>
+                            <div className="font-bold text-blue-900">{attendee.kidsFood || 0}</div>
                           </div>
                           <div className="bg-orange-50 rounded p-2 text-center">
-                            <div className="text-orange-600 font-medium">Coupons</div>
+                            <div className="text-orange-600 font-medium">Total</div>
                             <div className="font-bold text-orange-900">{totalCoupons}</div>
                           </div>
                         </div>
