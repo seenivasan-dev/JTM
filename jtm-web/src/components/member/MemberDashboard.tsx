@@ -44,7 +44,7 @@ export default function MemberDashboard({ user, recentEvents }: MemberDashboardP
   return (
     <div className="space-y-8">
       {/* Tamil Welcome Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-8 shadow-xl">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between flex-wrap gap-4">
@@ -102,7 +102,7 @@ export default function MemberDashboard({ user, recentEvents }: MemberDashboardP
               Your membership expires in <strong>{daysUntilExpiry} days</strong> on {membershipExpiryDate?.toLocaleDateString()}. 
               Renew now to continue enjoying all benefits!
             </span>
-            <Button asChild size="sm" className="bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white">
+            <Button asChild size="sm" className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white">
               <Link href="/renewal">Renew Membership</Link>
             </Button>
           </AlertDescription>
@@ -237,7 +237,7 @@ export default function MemberDashboard({ user, recentEvents }: MemberDashboardP
               </div>
             )}
 
-            <Button asChild className="w-full bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white">
+            <Button asChild className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white">
               <Link href="/profile">
                 <TrendingUp className="mr-2 h-4 w-4" />
                 Update Profile
@@ -284,7 +284,7 @@ export default function MemberDashboard({ user, recentEvents }: MemberDashboardP
                         </p>
                       </div>
                     </div>
-                    <Button size="sm" asChild className="bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white ml-3">
+                    <Button size="sm" asChild className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white ml-3">
                       <Link href={`/events`}>
                         Details
                       </Link>
