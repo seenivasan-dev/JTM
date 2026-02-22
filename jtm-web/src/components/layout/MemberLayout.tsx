@@ -89,24 +89,25 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
   const initials = `${userInfo.firstName[0] || ''}${userInfo.lastName[0] || ''}`.toUpperCase()
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-blue-50">
-      {/* Header with Tamil Cultural Design - Enhanced */}
-      <header className="sticky top-0 z-[100] bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800 shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50/30">
+      {/* Header with Admin-matched Gradient Theme */}
+      <header className="sticky top-0 z-[100] bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 shadow-xl">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none"></div>
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             {/* Logo & Branding */}
             <Link href="/member" className="flex items-center gap-3 group">
               <div className="relative">
-                <div className="w-10 h-10 bg-gradient-to-br from-orange-500 via-blue-500 to-emerald-500 rounded-xl flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-300">
+                <div className="w-10 h-10 bg-white/20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg border border-white/30 transform group-hover:scale-110 transition-transform duration-300">
                   <span className="text-white font-bold text-lg">JTM</span>
                 </div>
                 <div className="absolute -top-1 -right-1 w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
               </div>
               <div className="hidden sm:block">
-                <div className="text-base font-bold bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
+                <div className="text-base font-bold text-white drop-shadow">
                   Jacksonville Tamil Mandram
                 </div>
-                <div className="text-xs text-gray-600 dark:text-gray-400 font-medium">Member Portal</div>
+                <div className="text-xs text-white/70 font-medium">Member Portal</div>
               </div>
             </Link>
 
@@ -120,13 +121,13 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                     href={item.href}
                   >
                     <Button
-                      variant={item.current ? 'default' : 'ghost'}
+                      variant="ghost"
                       size="sm"
                       className={`
                         rounded-lg transition-all duration-200
-                        ${item.current 
-                          ? 'bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-md' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ${item.current
+                          ? 'bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-md'
+                          : 'text-white/80 hover:bg-white/15 hover:text-white'
                         }
                       `}
                     >
@@ -148,30 +149,30 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 px-2 py-1.5">
+                  <Button variant="ghost" className="rounded-lg hover:bg-white/15 px-2 py-1.5">
                     <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8 ring-2 ring-orange-500/20">
-                        <AvatarFallback className="bg-gradient-to-br from-orange-500 to-blue-500 text-white text-sm font-bold">
+                      <Avatar className="h-8 w-8 ring-2 ring-white/30">
+                        <AvatarFallback className="bg-white/20 text-white text-sm font-bold backdrop-blur-sm">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
                       <div className="hidden md:block text-left">
-                        <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">
+                        <div className="text-sm font-semibold text-white">
                           {userInfo.firstName}
                         </div>
-                        <div className="text-xs text-gray-600 dark:text-gray-400 capitalize">
+                        <div className="text-xs text-white/70 capitalize">
                           {userInfo.membershipType}
                         </div>
                       </div>
-                      <ChevronDown className="h-4 w-4 text-gray-500" />
+                      <ChevronDown className="h-4 w-4 text-white/70" />
                     </div>
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-72 p-2">
                   <DropdownMenuLabel>
-                    <div className="flex items-center space-x-3 p-2 bg-gradient-to-br from-orange-50 to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-xl">
-                      <Avatar className="h-12 w-12 ring-2 ring-orange-500/30">
-                        <AvatarFallback className="bg-gradient-to-br from-orange-500 to-blue-500 text-white font-bold text-lg">
+                    <div className="flex items-center space-x-3 p-2 bg-gradient-to-br from-cyan-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-xl">
+                      <Avatar className="h-12 w-12 ring-2 ring-cyan-500/30">
+                        <AvatarFallback className="bg-gradient-to-br from-cyan-600 to-indigo-600 text-white font-bold text-lg">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
@@ -182,7 +183,7 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                         <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {userInfo.email}
                         </p>
-                        <Badge className="mt-1 capitalize text-xs bg-gradient-to-r from-orange-500 to-blue-500 text-white border-0">
+                        <Badge className="mt-1 capitalize text-xs bg-gradient-to-r from-cyan-600 to-indigo-600 text-white border-0">
                           <Sparkles className="h-3 w-3 mr-1" />
                           {userInfo.membershipType} Member
                         </Badge>
@@ -228,7 +229,7 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
           </div>
 
           {/* Mobile Navigation */}
-          <div className="md:hidden pb-3 pt-2 border-t border-gray-100 dark:border-gray-800">
+          <div className="md:hidden pb-3 pt-2 border-t border-white/20">
             <nav className="flex items-center gap-2 overflow-x-auto pb-1">
               {navigation.map((item) => {
                 const Icon = item.icon
@@ -238,13 +239,13 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                     href={item.href}
                   >
                     <Button
-                      variant={item.current ? 'default' : 'ghost'}
+                      variant="ghost"
                       size="sm"
                       className={`
                         whitespace-nowrap rounded-lg transition-all
-                        ${item.current 
-                          ? 'bg-gradient-to-r from-orange-500 to-blue-500 text-white shadow-md' 
-                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800'
+                        ${item.current
+                          ? 'bg-white/20 backdrop-blur-sm border border-white/30 text-white shadow-md'
+                          : 'text-white/80 hover:bg-white/15 hover:text-white'
                         }
                       `}
                     >

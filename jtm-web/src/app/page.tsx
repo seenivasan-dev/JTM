@@ -108,12 +108,13 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       {/* Professional Navigation Bar */}
-      <nav className="fixed top-0 w-full bg-gradient-to-r from-white/95 via-blue-50/95 to-indigo-50/95 backdrop-blur-xl shadow-lg z-50 border-b-2 border-blue-200">
-        <div className="container mx-auto px-4">
+      <nav className="fixed top-0 w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 shadow-xl z-50">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none"></div>
+        <div className="container mx-auto px-4 relative z-10">
           <div className="flex items-center justify-between h-20">
             {/* Logo */}
             <Link href="/" className="flex items-center gap-4 group">
-              <div className="relative h-16 w-16 rounded-xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform ring-2 ring-blue-300">
+              <div className="relative h-14 w-14 rounded-xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform ring-2 ring-white/30">
                 <Image
                   src="/images/JTMLogo.jpg"
                   alt="Jacksonville Tamil Mandram"
@@ -123,29 +124,29 @@ export default async function Home() {
                 />
               </div>
               <div className="hidden md:block">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold text-white drop-shadow">
                   Jacksonville Tamil Mandram
                 </h1>
-                <p className="text-sm text-gray-600">Connecting Communities Since 2001</p>
+                <p className="text-sm text-white/70">Connecting Communities Since 2001</p>
               </div>
             </Link>
 
             {/* Desktop Menu */}
             <div className="hidden xl:flex items-center gap-1">
-              <Link href="#home" className="px-3 py-2 text-sm font-semibold text-blue-600 bg-blue-50 rounded-lg">
+              <Link href="#home" className="px-3 py-2 text-sm font-semibold text-white bg-white/20 backdrop-blur-sm rounded-lg">
                 Home
               </Link>
               {['Magazines', 'ByLaws', 'Events', 'Membership'].map((item) => (
                 <Link
                   key={item}
                   href={`#${item.toLowerCase().replace(' ', '-')}`}
-                  className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
+                  className="px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-all"
                 >
                   {item}
                 </Link>
               ))}
               <div className="relative group">
-                <button className="px-3 py-2 text-sm font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all flex items-center gap-1">
+                <button className="px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-all flex items-center gap-1">
                   More <ChevronDown className="h-3 w-3" />
                 </button>
                 <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-white shadow-2xl rounded-xl py-2 min-w-[200px] border border-gray-100">
@@ -164,16 +165,16 @@ export default async function Home() {
             {/* Auth Buttons */}
             <div className="flex items-center gap-3">
               <Link href="/auth/login" className="hidden md:inline-flex">
-                <Button variant="ghost" className="text-gray-700 hover:text-blue-600">Sign In</Button>
+                <Button variant="ghost" className="text-white/90 hover:text-white hover:bg-white/15">Sign In</Button>
               </Link>
               <Link href="/auth/register">
-                <Button className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-xl transition-all">
+                <Button className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 shadow-lg transition-all">
                   <Users className="mr-2 h-4 w-4" />
                   Join Now
                 </Button>
               </Link>
-              <button className="xl:hidden p-2 hover:bg-blue-50 rounded-lg">
-                <Menu className="h-6 w-6 text-gray-700" />
+              <button className="xl:hidden p-2 hover:bg-white/15 rounded-lg">
+                <Menu className="h-6 w-6 text-white" />
               </button>
             </div>
           </div>
@@ -297,7 +298,7 @@ export default async function Home() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link href="/auth/register">
-                <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-xl px-8 py-6 text-lg">
+                <Button size="lg" className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 shadow-xl px-8 py-6 text-lg">
                   <Users className="mr-2 h-5 w-5" />
                   Become a Member
                 </Button>
@@ -415,7 +416,7 @@ export default async function Home() {
           </div>
 
           <div className="text-center mt-12">
-            <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+            <Button size="lg" className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700">
               View Full Gallery <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </div>
@@ -454,7 +455,7 @@ export default async function Home() {
                     <Calendar className="h-4 w-4 mr-2" />
                     <span>{event.date}</span>
                   </div>
-                  <Button className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+                  <Button className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700">
                     Learn More
                   </Button>
                 </CardContent>
@@ -489,7 +490,7 @@ export default async function Home() {
 
           <div className="text-center mt-12">
             <Link href="#contact">
-              <Button size="lg" className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700">
+              <Button size="lg" className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700">
                 Become a Sponsor <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
             </Link>
@@ -498,13 +499,8 @@ export default async function Home() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute inset-0" style={{
-            backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-            backgroundSize: '40px 40px'
-          }}></div>
-        </div>
+      <section className="py-20 bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 relative overflow-hidden">
+        <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="container mx-auto px-4 text-center relative z-10">
           <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">
             Ready to Join Our Community?
