@@ -6,7 +6,7 @@ import { sendEmail, generateRSVPConfirmationEmail } from '@/lib/email'
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { eventId, userEmail, responses, paymentReference } = body
+    const { eventId, userEmail, responses, paymentReference, vegCount, nonVegCount, kidsCount, noFood } = body
 
     if (!eventId || !userEmail || !responses) {
       return NextResponse.json(
@@ -46,6 +46,19 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // Determine if this event has food enabled
+    const foodEnabled = (event.foodConfig as any)?.enabled === true
+
+    // Sanitise food counts — zero out if food is not enabled for this event
+    const foodData = foodEnabled
+      ? {
+          vegCount: Math.max(0, parseInt(vegCount) || 0),
+          nonVegCount: Math.max(0, parseInt(nonVegCount) || 0),
+          kidsCount: Math.max(0, parseInt(kidsCount) || 0),
+          noFood: Boolean(noFood),
+        }
+      : { vegCount: 0, nonVegCount: 0, kidsCount: 0, noFood: false }
+
     // Check if RSVP deadline has passed
     if (event.rsvpDeadline && new Date() > event.rsvpDeadline) {
       return NextResponse.json(
@@ -79,6 +92,7 @@ export async function POST(request: NextRequest) {
         data: {
           responses,
           paymentReference: paymentReference || existingRSVP.paymentReference,
+          ...foodData,
         },
       })
 
@@ -97,6 +111,7 @@ export async function POST(request: NextRequest) {
           paymentReference: paymentReference || null,
           paymentConfirmed: false,
           checkedIn: false,
+          ...foodData,
         },
       })
 
