@@ -220,27 +220,41 @@ export function generateRSVPApprovedEmail(params: {
   const html = `
 <!DOCTYPE html>
 <html>
+<head>
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <style>
+    @media (prefers-color-scheme: dark) {
+      .qr-wrapper { background-color: #ffffff !important; }
+      .qr-image { background-color: #ffffff !important; filter: none !important; }
+    }
+  </style>
+</head>
 <body style="${baseStyles}">
   <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Payment Approved!</h1>
   </div>
-  
+
   <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
     <p style="font-size: 16px;">Hello <strong>${firstName}</strong>,</p>
-    
+
     <p>Great news! Your payment has been approved for:</p>
-    
+
     <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
       <h3 style="margin-top: 0; color: #1e40af; font-size: 18px;">📅 Event Details</h3>
       <p style="margin: 10px 0;"><strong>Event:</strong> ${eventTitle}</p>
       <p style="margin: 10px 0;"><strong>Date:</strong> ${eventDate}</p>
       <p style="margin: 10px 0;"><strong>Location:</strong> ${eventLocation}</p>
     </div>
-    
+
     <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; text-align: center; margin: 25px 0;">
       <h3 style="margin-top: 0; color: #065f46; font-size: 18px;">🎫 Your Event QR Code</h3>
       <p style="color: #059669; margin-bottom: 15px;">Please show this QR code at the event entrance</p>
-      ${qrCodeUrl ? `<img src="${qrCodeUrl}" alt="Event QR Code" style="max-width: 250px; border: 2px solid #10b981; border-radius: 8px;" />` : ''}
+      ${qrCodeUrl ? `
+      <div class="qr-wrapper" style="display:inline-block;background-color:#ffffff;padding:16px;border-radius:8px;border:2px solid #10b981;">
+        <img class="qr-image" src="${qrCodeUrl}" alt="Event QR Code"
+          style="display:block;background-color:#ffffff;max-width:250px;filter:none;" />
+      </div>` : ''}
       <p style="font-size: 12px; color: #6b7280; margin-top: 15px;">QR Code: ${qrCodeData}</p>
       <p style="font-size: 14px; color: #065f46; margin-top: 10px;"><strong>Tip:</strong> Save this email or take a screenshot for easy access</p>
     </div>

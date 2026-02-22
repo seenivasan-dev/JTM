@@ -27,7 +27,7 @@ const familyMemberSchema = z.object({
 })
 
 const renewalSchema = z.object({
-  newMembershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'CUSTOM']),
+  newMembershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'STUDENT', 'SENIOR', 'CUSTOM']),
   paymentReference: z.string().min(5, 'Payment reference is required'),
   familyMembers: z.array(familyMemberSchema).optional(),
 })
@@ -341,6 +341,16 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4" />
                               <span className="font-semibold">Family</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="STUDENT" className="py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">Student</span>
+                            </div>
+                          </SelectItem>
+                          <SelectItem value="SENIOR" className="py-3">
+                            <div className="flex items-center gap-2">
+                              <span className="font-semibold">Senior</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="CUSTOM" className="py-3">

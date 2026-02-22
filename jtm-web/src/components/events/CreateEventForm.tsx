@@ -11,15 +11,16 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
-  Plus, 
-  Trash2, 
+import {
+  Plus,
+  Trash2,
   Calendar,
   MapPin,
   Users,
   Save,
   ArrowLeft,
-  GripVertical
+  GripVertical,
+  UtensilsCrossed
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -29,6 +30,14 @@ interface RSVPField {
   label: string
   required: boolean
   options?: string[]
+}
+
+interface FoodConfig {
+  enabled: boolean
+  vegFood: boolean
+  nonVegFood: boolean
+  kidsFood: boolean
+  allowNoFood: boolean
 }
 
 interface EventFormData {
@@ -43,6 +52,7 @@ interface EventFormData {
   rsvpForm: {
     fields: RSVPField[]
   }
+  foodConfig: FoodConfig
 }
 
 export default function CreateEventForm() {
@@ -59,13 +69,27 @@ export default function CreateEventForm() {
     maxParticipants: '',
     rsvpForm: {
       fields: []
+    },
+    foodConfig: {
+      enabled: false,
+      vegFood: false,
+      nonVegFood: false,
+      kidsFood: false,
+      allowNoFood: false,
     }
   })
 
-  const updateFormData = (field: keyof EventFormData, value: string | boolean | { fields: RSVPField[] }) => {
+  const updateFormData = (field: keyof EventFormData, value: string | boolean | { fields: RSVPField[] } | FoodConfig) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }))
+  }
+
+  const updateFoodConfig = (key: keyof FoodConfig, value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      foodConfig: { ...prev.foodConfig, [key]: value }
     }))
   }
 
@@ -162,6 +186,9 @@ export default function CreateEventForm() {
       if (formData.rsvpRequired && formData.rsvpForm.fields.length > 0) {
         eventData.rsvpForm = formData.rsvpForm
       }
+
+      // Always include foodConfig (API will store it; UI hides food section if enabled=false)
+      eventData.foodConfig = formData.foodConfig
 
       const response = await fetch('/api/events', {
         method: 'POST',
@@ -314,6 +341,69 @@ export default function CreateEventForm() {
                   placeholder="Leave empty for unlimited"
                   min="1"
                 />
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Food Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5" />
+            Food at this Event?
+          </CardTitle>
+          <CardDescription>
+            Enable food so members can specify their meal preferences when they RSVP
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="foodEnabled"
+              checked={formData.foodConfig.enabled}
+              onCheckedChange={(checked: boolean) => updateFoodConfig('enabled', checked)}
+            />
+            <Label htmlFor="foodEnabled">This event has food</Label>
+          </div>
+
+          {formData.foodConfig.enabled && (
+            <div className="pl-6 space-y-3 border-l-2 border-muted">
+              <p className="text-sm text-muted-foreground">Select which food categories to offer:</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="vegFood"
+                    checked={formData.foodConfig.vegFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('vegFood', checked)}
+                  />
+                  <Label htmlFor="vegFood">🥦 Veg (Adults)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="nonVegFood"
+                    checked={formData.foodConfig.nonVegFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('nonVegFood', checked)}
+                  />
+                  <Label htmlFor="nonVegFood">🍗 Non-Veg (Adults)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="kidsFood"
+                    checked={formData.foodConfig.kidsFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('kidsFood', checked)}
+                  />
+                  <Label htmlFor="kidsFood">🧒 Kids Meals</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allowNoFood"
+                    checked={formData.foodConfig.allowNoFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('allowNoFood', checked)}
+                  />
+                  <Label htmlFor="allowNoFood">🚫 Allow &quot;No Food&quot; option</Label>
+                </div>
               </div>
             </div>
           )}

@@ -77,6 +77,7 @@ model Event {
   rsvpDeadline    DateTime?
   maxParticipants Int?
   rsvpForm        Json?           // Dynamic form configuration
+  foodConfig      Json?           // { enabled, vegFood, nonVegFood, kidsFood, allowNoFood }
   rsvpResponses   RSVPResponse[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt
@@ -92,6 +93,10 @@ model RSVPResponse {
   qrCode            String?      // Generated QR code for check-in (legacy)
   checkedIn         Boolean      @default(false)
   checkedInAt       DateTime?
+  vegCount          Int          @default(0)  // Number of veg meals requested
+  nonVegCount       Int          @default(0)  // Number of non-veg meals requested
+  kidsCount         Int          @default(0)  // Number of kids meals requested
+  noFood            Boolean      @default(false) // Member opted out of food
   event             Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
   user              User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt         DateTime     @default(now())
@@ -145,6 +150,8 @@ model MembershipRenewal {
 enum MembershipType {
   INDIVIDUAL
   FAMILY
+  STUDENT
+  SENIOR
   CUSTOM
 }
 

@@ -1,14 +1,14 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { 
-  Search, 
-  Filter, 
-  UserPlus, 
-  Edit, 
-  Trash2, 
-  Mail, 
-  Phone, 
+import {
+  Search,
+  Filter,
+  UserPlus,
+  Edit,
+  Trash2,
+  Mail,
+  Phone,
   Calendar,
   Download,
   Upload,
@@ -16,7 +16,9 @@ import {
   XCircle,
   Clock,
   MoreHorizontal,
-  Users
+  Users,
+  RefreshCcw,
+  AlertTriangle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -43,11 +45,13 @@ interface User {
 interface UserManagementProps {
   initialUsers?: User[]
   totalCount?: number
+  currentAdminRole?: string
 }
 
-export default function UserManagement({ 
-  initialUsers = [], 
-  totalCount = 0 
+export default function UserManagement({
+  initialUsers = [],
+  totalCount = 0,
+  currentAdminRole = ''
 }: UserManagementProps) {
   const [users, setUsers] = useState<User[]>(initialUsers)
   const [searchTerm, setSearchTerm] = useState('')
@@ -59,6 +63,9 @@ export default function UserManagement({
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage] = useState(20)
+  const [isTransitionDialogOpen, setIsTransitionDialogOpen] = useState(false)
+  const [isTransitioning, setIsTransitioning] = useState(false)
+  const [transitionResult, setTransitionResult] = useState<{ deactivated: number; targetYear: number } | null>(null)
 
   // Filter users based on search and filters
   const filteredUsers = users.filter(user => {
@@ -155,6 +162,30 @@ export default function UserManagement({
     window.URL.revokeObjectURL(url)
   }
 
+  const handleCommitteeTransition = async () => {
+    setIsTransitioning(true)
+    setTransitionResult(null)
+    try {
+      const response = await fetch('/api/admin/committee-transition', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      })
+      const data = await response.json()
+      if (data.success) {
+        setTransitionResult({ deactivated: data.deactivated, targetYear: data.targetYear })
+      } else {
+        alert(data.error || 'Committee transition failed')
+        setIsTransitionDialogOpen(false)
+      }
+    } catch (error) {
+      console.error('Committee transition error:', error)
+      alert('Committee transition failed. Please try again.')
+      setIsTransitionDialogOpen(false)
+    }
+    setIsTransitioning(false)
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -171,6 +202,16 @@ export default function UserManagement({
             </div>
           </div>
           <div className="flex gap-2">
+            {currentAdminRole === 'SUPER_ADMIN' && (
+              <Button
+                variant="outline"
+                onClick={() => { setTransitionResult(null); setIsTransitionDialogOpen(true) }}
+                className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30"
+              >
+                <RefreshCcw className="h-4 w-4 mr-2" />
+                New Committee Year
+              </Button>
+            )}
             <Button variant="outline" onClick={handleExportUsers} className="bg-white/20 backdrop-blur-sm border-white/30 text-white hover:bg-white/30">
               <Download className="h-4 w-4 mr-2" />
               Export
@@ -538,6 +579,66 @@ export default function UserManagement({
                   Cancel
                 </Button>
                 <Button>Save Changes</Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Committee Transition Dialog */}
+      <Dialog open={isTransitionDialogOpen} onOpenChange={setIsTransitionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <RefreshCcw className="h-5 w-5" />
+              New Committee Year
+            </DialogTitle>
+          </DialogHeader>
+          {transitionResult ? (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-green-50 border border-green-200">
+                <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-green-800">Committee transition complete</p>
+                  <p className="text-sm text-green-700 mt-1">
+                    {transitionResult.deactivated} admin account{transitionResult.deactivated !== 1 ? 's' : ''} from
+                    the {transitionResult.targetYear} committee have been deactivated.
+                  </p>
+                </div>
+              </div>
+              <Button className="w-full" onClick={() => setIsTransitionDialogOpen(false)}>
+                Done
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="flex items-start gap-3 p-4 rounded-lg bg-orange-50 border border-orange-200">
+                <AlertTriangle className="h-5 w-5 text-orange-600 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-medium text-orange-800">This action will deactivate previous year&apos;s committee</p>
+                  <p className="text-sm text-orange-700 mt-1">
+                    All non-Super Admin accounts from the {new Date().getFullYear() - 1} committee will be
+                    deactivated. Super Admin accounts are not affected.
+                  </p>
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsTransitionDialogOpen(false)} disabled={isTransitioning}>
+                  Cancel
+                </Button>
+                <Button onClick={handleCommitteeTransition} disabled={isTransitioning}>
+                  {isTransitioning ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Processing...
+                    </div>
+                  ) : (
+                    <>
+                      <RefreshCcw className="h-4 w-4 mr-2" />
+                      Confirm Transition
+                    </>
+                  )}
+                </Button>
               </div>
             </div>
           )}
