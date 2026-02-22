@@ -71,6 +71,8 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
       <!DOCTYPE html>
       <html>
         <head>
+          <meta name="color-scheme" content="light">
+          <meta name="supported-color-schemes" content="light">
           <style>
             body {
               font-family: Arial, sans-serif;
@@ -101,11 +103,17 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
               background: white;
               border-radius: 10px;
             }
-            .qr-code img {
-              max-width: 300px;
-              border: 2px solid #3b82f6;
+            .qr-wrapper {
+              display: inline-block;
+              background-color: #ffffff;
+              padding: 16px;
               border-radius: 10px;
-              padding: 10px;
+            }
+            .qr-image {
+              display: block;
+              max-width: 280px;
+              background-color: #ffffff;
+              filter: none;
             }
             .event-details {
               background: white;
@@ -125,18 +133,22 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
               color: #6b7280;
               font-size: 14px;
             }
+            @media (prefers-color-scheme: dark) {
+              .qr-wrapper { background-color: #ffffff !important; }
+              .qr-image { background-color: #ffffff !important; filter: none !important; }
+            }
           </style>
         </head>
         <body>
           <div class="container">
             <div class="header">
               <h1>Your Event Check-in QR Code</h1>
-              <p>Japan Tamil Manjapai</p>
+              <p>Jacksonville Tamil Mandram</p>
             </div>
             <div class="content">
               <p>Dear ${user.firstName} ${user.lastName},</p>
               <p>Thank you for RSVPing to our event! Please use the QR code below for check-in.</p>
-              
+
               <div class="event-details">
                 <h2 style="color: #3b82f6; margin-top: 0;">Event Details</h2>
                 <div class="detail-row">
@@ -155,7 +167,10 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
 
               <div class="qr-code">
                 <h3 style="color: #3b82f6;">Your Check-in QR Code</h3>
-                <img src="${rsvpResponse.qrCode}" alt="QR Code" />
+                <div class="qr-wrapper" style="display:inline-block;background-color:#ffffff;padding:16px;border-radius:10px;border:2px solid #3b82f6;">
+                  <img class="qr-image" src="${rsvpResponse.qrCode}" alt="QR Code"
+                    style="display:block;background-color:#ffffff;max-width:280px;filter:none;" />
+                </div>
                 <p style="color: #6b7280; margin-top: 20px;">
                   <strong>Please present this QR code at the event entrance</strong>
                 </p>
@@ -171,9 +186,9 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
               </div>
 
               <p style="margin-top: 30px;">We look forward to seeing you at the event!</p>
-              
+
               <div class="footer">
-                <p>Japan Tamil Manjapai<br/>
+                <p>Jacksonville Tamil Mandram<br/>
                 This is an automated email. Please do not reply.</p>
               </div>
             </div>

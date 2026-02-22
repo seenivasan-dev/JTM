@@ -5,15 +5,16 @@ import React from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Users, 
-  CheckCircle, 
-  Clock, 
+import {
+  Users,
+  CheckCircle,
+  Clock,
   XCircle,
   Download,
   CalendarDays,
   TrendingUp,
-  DollarSign
+  DollarSign,
+  UtensilsCrossed
 } from 'lucide-react'
 
 interface RSVPReportsProps {
@@ -33,6 +34,13 @@ interface RSVPReportsProps {
         options?: string[]
       }>
     }
+    foodConfig?: {
+      enabled: boolean
+      vegFood: boolean
+      nonVegFood: boolean
+      kidsFood: boolean
+      allowNoFood: boolean
+    } | null
   }
   rsvps: Array<{
     id: string
@@ -42,6 +50,10 @@ interface RSVPReportsProps {
     checkedIn: boolean
     checkedInAt?: string | null
     createdAt: string
+    vegCount?: number
+    nonVegCount?: number
+    kidsCount?: number
+    noFood?: boolean
     user: {
       id: string
       email: string
@@ -60,23 +72,33 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
     paymentPending: rsvps.filter(r => !r.paymentConfirmed).length,
     checkedIn: rsvps.filter(r => r.checkedIn).length,
     notCheckedIn: rsvps.filter(r => !r.checkedIn).length,
-    
+
     // Membership breakdown
     individual: rsvps.filter(r => r.user.membershipType === 'INDIVIDUAL').length,
     family: rsvps.filter(r => r.user.membershipType === 'FAMILY').length,
+    student: rsvps.filter(r => r.user.membershipType === 'STUDENT').length,
+    senior: rsvps.filter(r => r.user.membershipType === 'SENIOR').length,
     custom: rsvps.filter(r => r.user.membershipType === 'CUSTOM').length,
-    
+
     // Time-based stats
     rsvpsLast24h: rsvps.filter(r => {
       const diff = Date.now() - new Date(r.createdAt).getTime()
       return diff < 24 * 60 * 60 * 1000
     }).length,
-    
+
     rsvpsLast7d: rsvps.filter(r => {
       const diff = Date.now() - new Date(r.createdAt).getTime()
       return diff < 7 * 24 * 60 * 60 * 1000
     }).length,
   }
+
+  // Calculate food totals (only meaningful if event has food enabled)
+  const foodTotals = event.foodConfig?.enabled ? {
+    totalVeg: rsvps.reduce((s, r) => s + (r.vegCount ?? 0), 0),
+    totalNonVeg: rsvps.reduce((s, r) => s + (r.nonVegCount ?? 0), 0),
+    totalKids: rsvps.reduce((s, r) => s + (r.kidsCount ?? 0), 0),
+    totalNoFood: rsvps.filter(r => r.noFood).length,
+  } : null
 
   // Calculate capacity percentage
   const capacityPercentage = event.maxParticipants 
@@ -87,9 +109,17 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
   const exportDetailedReport = () => {
     // Build dynamic headers from RSVP form fields
     const dynamicFieldHeaders = event.rsvpForm?.fields?.map(f => f.label) || []
+    const foodHeaders = event.foodConfig?.enabled
+      ? [
+          ...(event.foodConfig.vegFood ? ['Veg Meals'] : []),
+          ...(event.foodConfig.nonVegFood ? ['Non-Veg Meals'] : []),
+          ...(event.foodConfig.kidsFood ? ['Kids Meals'] : []),
+          ...(event.foodConfig.allowNoFood ? ['No Food'] : []),
+        ]
+      : []
     const headers = [
       'Name', 'Email', 'Membership Type', 'RSVP Date', 'Payment Status',
-      'Payment Reference', ...dynamicFieldHeaders, 'Check-in Status', 'Check-in Time'
+      'Payment Reference', ...dynamicFieldHeaders, ...foodHeaders, 'Check-in Status', 'Check-in Time'
     ]
 
     // Build field ID to label map
@@ -107,13 +137,22 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
           return String(value)
         }) || []
 
+        const foodValues = event.foodConfig?.enabled
+          ? [
+              ...(event.foodConfig.vegFood ? [String(rsvp.vegCount ?? 0)] : []),
+              ...(event.foodConfig.nonVegFood ? [String(rsvp.nonVegCount ?? 0)] : []),
+              ...(event.foodConfig.kidsFood ? [String(rsvp.kidsCount ?? 0)] : []),
+              ...(event.foodConfig.allowNoFood ? [rsvp.noFood ? 'Yes' : 'No'] : []),
+            ]
+          : []
+
         return [
           `${rsvp.user.firstName} ${rsvp.user.lastName}`,
           rsvp.user.email,
           rsvp.user.membershipType || 'N/A',
-          new Date(rsvp.createdAt).toLocaleDateString('en-US', { 
-            year: 'numeric', 
-            month: 'short', 
+          new Date(rsvp.createdAt).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'short',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
@@ -121,8 +160,9 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
           rsvp.paymentConfirmed ? 'Approved' : 'Pending',
           rsvp.paymentReference || 'N/A',
           ...dynamicValues,
+          ...foodValues,
           rsvp.checkedIn ? 'Checked In' : 'Not Checked In',
-          rsvp.checkedInAt 
+          rsvp.checkedInAt
             ? new Date(rsvp.checkedInAt).toLocaleString('en-US', {
                 year: 'numeric',
                 month: 'short',
@@ -134,7 +174,7 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
         ]
       })
     ]
-    
+
     const csvContent = csvData.map(row => row.join(',')).join('\n')
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -165,6 +205,8 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
       ['Membership Breakdown'],
       ['Individual Members', stats.individual.toString()],
       ['Family Members', stats.family.toString()],
+      ['Student Members', stats.student.toString()],
+      ['Senior Members', stats.senior.toString()],
       ['Custom Members', stats.custom.toString()],
       [''],
       ['Recent Activity'],
@@ -172,10 +214,22 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
       ['RSVPs in Last 7 Days', stats.rsvpsLast7d.toString()],
     ]
     
+    if (foodTotals) {
+      summary.push(
+        [''],
+        ['Food Preferences'],
+        ...(event.foodConfig?.vegFood ? [['Veg Meals', foodTotals.totalVeg.toString()]] : []),
+        ...(event.foodConfig?.nonVegFood ? [['Non-Veg Meals', foodTotals.totalNonVeg.toString()]] : []),
+        ...(event.foodConfig?.kidsFood ? [['Kids Meals', foodTotals.totalKids.toString()]] : []),
+        ...(event.foodConfig?.allowNoFood ? [['Not Eating', foodTotals.totalNoFood.toString()]] : []),
+        ['Total Meals', (foodTotals.totalVeg + foodTotals.totalNonVeg + foodTotals.totalKids).toString()],
+      )
+    }
+
     if (event.maxParticipants) {
       summary.push([''], ['Capacity'], ['Max Capacity', event.maxParticipants.toString()], ['Current Occupancy', `${capacityPercentage}%`])
     }
-    
+
     const csvContent = summary.map(row => row.join(',')).join('\n')
     const blob = new Blob([csvContent], { type: 'text/csv' })
     const url = window.URL.createObjectURL(blob)
@@ -365,6 +419,50 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
         </CardContent>
       </Card>
 
+      {/* Food Preference Summary */}
+      {foodTotals && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <UtensilsCrossed className="h-5 w-5" />
+              Food Preferences
+            </CardTitle>
+            <CardDescription>Meal counts based on RSVP food selections</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {event.foodConfig?.vegFood && (
+                <div className="border rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-green-600">{foodTotals.totalVeg}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Veg Meals</p>
+                </div>
+              )}
+              {event.foodConfig?.nonVegFood && (
+                <div className="border rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-orange-600">{foodTotals.totalNonVeg}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Non-Veg Meals</p>
+                </div>
+              )}
+              {event.foodConfig?.kidsFood && (
+                <div className="border rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-blue-600">{foodTotals.totalKids}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Kids Meals</p>
+                </div>
+              )}
+              {event.foodConfig?.allowNoFood && (
+                <div className="border rounded-lg p-4 text-center">
+                  <p className="text-2xl font-bold text-gray-600">{foodTotals.totalNoFood}</p>
+                  <p className="text-sm text-muted-foreground mt-1">Not Eating</p>
+                </div>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground mt-4">
+              Total meals: {foodTotals.totalVeg + foodTotals.totalNonVeg + foodTotals.totalKids}
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Membership Breakdown */}
       <Card>
         <CardHeader>
@@ -390,6 +488,22 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
                 <span className="text-sm text-muted-foreground">members</span>
               </div>
               <span className="font-semibold">{stats.family}</span>
+            </div>
+
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">Student</Badge>
+                <span className="text-sm text-muted-foreground">members</span>
+              </div>
+              <span className="font-semibold">{stats.student}</span>
+            </div>
+
+            <div className="flex items-center justify-between border-b pb-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline">Senior</Badge>
+                <span className="text-sm text-muted-foreground">members</span>
+              </div>
+              <span className="font-semibold">{stats.senior}</span>
             </div>
 
             <div className="flex items-center justify-between">

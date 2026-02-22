@@ -55,9 +55,10 @@ export default async function AdminUsersPage() {
   }))
 
   return (
-    <UserManagement 
+    <UserManagement
       initialUsers={transformedUsers}
       totalCount={users.length}
+      currentAdminRole={admin.role}
     />
   )
 }

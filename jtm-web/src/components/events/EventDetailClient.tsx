@@ -48,6 +48,13 @@ interface Event {
       options?: string[]
     }>
   } | null
+  foodConfig?: {
+    enabled: boolean
+    vegFood: boolean
+    nonVegFood: boolean
+    kidsFood: boolean
+    allowNoFood: boolean
+  } | null
   currentAttendees: number
   rsvpResponses: Array<{
     id: string
@@ -83,6 +90,10 @@ interface UserRsvp {
   qrCode?: string | null
   checkedIn: boolean
   createdAt: string
+  vegCount?: number
+  nonVegCount?: number
+  kidsCount?: number
+  noFood?: boolean
 }
 
 interface EventDetailClientProps {
@@ -97,6 +108,12 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
   const [rsvpData, setRsvpData] = useState<Record<string, string | number | boolean>>(
     userRsvp?.responses || {}
   )
+  const [foodData, setFoodData] = useState({
+    vegCount: userRsvp?.vegCount ?? 0,
+    nonVegCount: userRsvp?.nonVegCount ?? 0,
+    kidsCount: userRsvp?.kidsCount ?? 0,
+    noFood: userRsvp?.noFood ?? false,
+  })
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -144,6 +161,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           eventId: event.id,
           userEmail: user.email,
           responses: rsvpData,
+          ...(event.foodConfig?.enabled ? foodData : {}),
         }),
       })
 
@@ -534,6 +552,76 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                     {renderRSVPField(field)}
                   </div>
                 ))}
+
+                {/* Food Preference Section */}
+                {event.foodConfig?.enabled && (
+                  <div className="rounded-lg border p-4 space-y-4 bg-muted/30">
+                    <div className="flex items-center gap-2 font-medium">
+                      <span>🍽️</span>
+                      <span>Food Preference</span>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Let us know how many meals you need in each category.
+                    </p>
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      {event.foodConfig.vegFood && (
+                        <div className="space-y-1">
+                          <Label htmlFor="vegCount">🥦 Veg Meals (Adults)</Label>
+                          <Input
+                            id="vegCount"
+                            type="number"
+                            min={0}
+                            value={foodData.vegCount}
+                            onChange={(e) => setFoodData(prev => ({ ...prev, vegCount: Math.max(0, parseInt(e.target.value) || 0) }))}
+                            disabled={foodData.noFood}
+                          />
+                        </div>
+                      )}
+                      {event.foodConfig.nonVegFood && (
+                        <div className="space-y-1">
+                          <Label htmlFor="nonVegCount">🍗 Non-Veg Meals (Adults)</Label>
+                          <Input
+                            id="nonVegCount"
+                            type="number"
+                            min={0}
+                            value={foodData.nonVegCount}
+                            onChange={(e) => setFoodData(prev => ({ ...prev, nonVegCount: Math.max(0, parseInt(e.target.value) || 0) }))}
+                            disabled={foodData.noFood}
+                          />
+                        </div>
+                      )}
+                      {event.foodConfig.kidsFood && (
+                        <div className="space-y-1">
+                          <Label htmlFor="kidsCount">🧒 Kids Meals</Label>
+                          <Input
+                            id="kidsCount"
+                            type="number"
+                            min={0}
+                            value={foodData.kidsCount}
+                            onChange={(e) => setFoodData(prev => ({ ...prev, kidsCount: Math.max(0, parseInt(e.target.value) || 0) }))}
+                            disabled={foodData.noFood}
+                          />
+                        </div>
+                      )}
+                    </div>
+                    {event.foodConfig.allowNoFood && (
+                      <div className="flex items-center space-x-2 pt-1">
+                        <Checkbox
+                          id="noFood"
+                          checked={foodData.noFood}
+                          onCheckedChange={(checked: boolean) =>
+                            setFoodData(prev => ({
+                              ...prev,
+                              noFood: checked,
+                              ...(checked ? { vegCount: 0, nonVegCount: 0, kidsCount: 0 } : {}),
+                            }))
+                          }
+                        />
+                        <Label htmlFor="noFood">I don&apos;t want food at this event</Label>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg">
                   {loading ? (

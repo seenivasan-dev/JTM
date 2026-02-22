@@ -68,18 +68,25 @@ async function sendSingleEmail(attendeeId: string, forceRetry = false) {
     <!DOCTYPE html>
     <html>
       <head>
+        <meta name="color-scheme" content="light">
+        <meta name="supported-color-schemes" content="light">
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
           .header { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
           .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
           .qr-code { text-align: center; margin: 30px 0; padding: 20px; background: white; border-radius: 10px; }
-          .qr-code img { max-width: 300px; border: 2px solid #3b82f6; border-radius: 10px; padding: 10px; }
+          .qr-wrapper { display: inline-block; background-color: #ffffff; padding: 16px; border-radius: 10px; border: 2px solid #3b82f6; }
+          .qr-image { display: block; max-width: 280px; background-color: #ffffff; filter: none; }
           .coupons { background: #fef3c7; border: 3px solid #f59e0b; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
           .coupons-number { font-size: 48px; font-weight: bold; color: #f59e0b; }
           .event-only { background: #f0fdf4; border: 3px solid #16a34a; border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center; }
           .event-details { background: white; padding: 20px; border-radius: 10px; margin: 20px 0; }
           .detail-row { margin: 10px 0; padding: 10px; border-left: 3px solid #3b82f6; background: #f3f4f6; }
+          @media (prefers-color-scheme: dark) {
+            .qr-wrapper { background-color: #ffffff !important; }
+            .qr-image { background-color: #ffffff !important; filter: none !important; }
+          }
         </style>
       </head>
       <body>
@@ -139,7 +146,10 @@ async function sendSingleEmail(attendeeId: string, forceRetry = false) {
 
             <div class="qr-code">
               <h3 style="color: #3b82f6;">Your Check-in QR Code</h3>
-              <img src="cid:qrcode" alt="QR Code" style="max-width: 300px; border: 2px solid #3b82f6; border-radius: 10px; padding: 10px;" />
+              <div class="qr-wrapper" style="display:inline-block;background-color:#ffffff;padding:16px;border-radius:10px;border:2px solid #3b82f6;">
+                <img class="qr-image" src="cid:qrcode" alt="QR Code"
+                  style="display:block;background-color:#ffffff;max-width:280px;filter:none;" />
+              </div>
               <p style="color: #6b7280; margin-top: 20px;">
                 <strong>Present this at the entrance</strong>
               </p>

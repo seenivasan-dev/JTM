@@ -94,7 +94,7 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
   useEffect(() => {
     if (!scanning || !hasPermission) return
 
-    const interval = setInterval(scanQRCode, 500)
+    const interval = setInterval(scanQRCode, 250)
     return () => clearInterval(interval)
   }, [scanning, hasPermission, scanQRCode])
 
@@ -272,9 +272,11 @@ export default function QRScannerClient({ event }: QRScannerClientProps) {
                   audio={false}
                   screenshotFormat="image/jpeg"
                   videoConstraints={{
-                    width: 640,
-                    height: 480,
-                    facingMode: "environment"
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 },
+                    facingMode: { ideal: "environment" },
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    advanced: [{ focusMode: "continuous" }] as any
                   }}
                   className="w-full rounded-lg"
                   onUserMediaError={(error) => {

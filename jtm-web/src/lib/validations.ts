@@ -7,7 +7,7 @@ export const memberRegistrationSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   email: z.string().email('Invalid email address'),
   mobileNumber: z.string().min(10, 'Mobile number must be at least 10 digits').transform(val => val.replace(/\D/g, '')), // Strip non-digits
-  membershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'CUSTOM']),
+  membershipType: z.enum(['INDIVIDUAL', 'FAMILY', 'STUDENT', 'SENIOR', 'CUSTOM']),
   address: z.object({
     street: z.string().min(1, 'Street address is required'),
     city: z.string().min(1, 'City is required'),
@@ -61,6 +61,13 @@ export const eventCreationSchema = z.object({
       required: z.boolean().default(false),
       options: z.array(z.string()).optional(),
     }))
+  }).optional(),
+  foodConfig: z.object({
+    enabled: z.boolean().default(false),
+    vegFood: z.boolean().default(false),
+    nonVegFood: z.boolean().default(false),
+    kidsFood: z.boolean().default(false),
+    allowNoFood: z.boolean().default(false),
   }).optional(),
 })
 

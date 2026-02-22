@@ -52,21 +52,38 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    // Calculate total food coupons needed (each person + their guests)
-    const totalFoodCoupons = allRSVPs.reduce((sum, rsvp) => {
-      const numberOfGuests = (rsvp.responses as any)?.numberOfGuests || 0
-      return sum + 1 + numberOfGuests // 1 for person + guests
-    }, 0)
-
-    // Calculate food coupons given
-    const foodCouponsGiven = allRSVPs.reduce((sum, rsvp) => {
+    // Calculate food totals from structured fields (new) with fallback to legacy numberOfGuests
+    const foodStats = allRSVPs.reduce((acc, rsvp) => {
+      const hasStructuredFood = rsvp.vegCount > 0 || rsvp.nonVegCount > 0 || rsvp.kidsCount > 0 || rsvp.noFood
       const responses = rsvp.responses as any
-      if (rsvp.checkedIn && responses?.foodTokenGiven) {
-        const numberOfGuests = responses?.numberOfGuests || 0
-        return sum + 1 + numberOfGuests
+
+      if (hasStructuredFood || rsvp.noFood) {
+        // New structured food data
+        acc.totalVeg += rsvp.vegCount
+        acc.totalNonVeg += rsvp.nonVegCount
+        acc.totalKids += rsvp.kidsCount
+        if (rsvp.noFood) acc.totalNoFood += 1
+
+        if (rsvp.checkedIn && responses?.foodTokenGiven) {
+          acc.vegGiven += rsvp.vegCount
+          acc.nonVegGiven += rsvp.nonVegCount
+          acc.kidsGiven += rsvp.kidsCount
+        }
+      } else {
+        // Legacy: count 1 per RSVP + guests
+        const guests = responses?.numberOfGuests || 0
+        acc.totalVeg += 1 + guests
+        if (rsvp.checkedIn && responses?.foodTokenGiven) {
+          acc.vegGiven += 1 + guests
+        }
       }
-      return sum
-    }, 0)
+
+      return acc
+    }, { totalVeg: 0, totalNonVeg: 0, totalKids: 0, totalNoFood: 0, vegGiven: 0, nonVegGiven: 0, kidsGiven: 0 })
+
+    // Combined coupon totals for backward compatibility
+    const totalFoodCoupons = foodStats.totalVeg + foodStats.totalNonVeg + foodStats.totalKids
+    const foodCouponsGiven = foodStats.vegGiven + foodStats.nonVegGiven + foodStats.kidsGiven
 
     const pending = totalRSVPs - checkedInCount
     const percentageComplete = totalRSVPs > 0 
@@ -108,7 +125,16 @@ export async function GET(request: NextRequest) {
         pending: pending,
         percentageComplete: percentageComplete,
         totalFoodCoupons: totalFoodCoupons,
-        foodCouponsGiven: foodCouponsGiven
+        foodCouponsGiven: foodCouponsGiven,
+        food: {
+          totalVeg: foodStats.totalVeg,
+          totalNonVeg: foodStats.totalNonVeg,
+          totalKids: foodStats.totalKids,
+          totalNoFood: foodStats.totalNoFood,
+          vegGiven: foodStats.vegGiven,
+          nonVegGiven: foodStats.nonVegGiven,
+          kidsGiven: foodStats.kidsGiven,
+        }
       },
       recentCheckIns: formattedCheckIns
     })
