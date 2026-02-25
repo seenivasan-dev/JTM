@@ -116,7 +116,7 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
   return (
     <div className="space-y-8">
       {/* Tamil Cultural Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-600 via-orange-600 to-blue-600 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-8 shadow-xl">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="relative z-10">
           <div className="flex items-center justify-between flex-wrap gap-4">

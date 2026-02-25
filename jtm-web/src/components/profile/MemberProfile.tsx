@@ -115,7 +115,7 @@ export default function MemberProfile({ user }: MemberProfileProps) {
   return (
     <div className="space-y-8">
       {/* Tamil Cultural Profile Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-8 shadow-xl">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="relative z-10">
           <div className="flex items-start justify-between flex-wrap gap-4">

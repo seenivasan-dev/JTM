@@ -76,13 +76,13 @@ export default function ResetPasswordForm() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
         <Card className="w-full max-w-md shadow-2xl border-none">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-full flex items-center justify-center">
+            <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-cyan-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
-            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
+            <CardTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
               Password Reset Successful!
             </CardTitle>
             <CardDescription className="text-base mt-2">
@@ -90,9 +90,9 @@ export default function ResetPasswordForm() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <Alert className="border-emerald-200 bg-emerald-50 dark:bg-emerald-950 dark:border-emerald-800">
-              <CheckCircle className="h-4 w-4 text-emerald-600" />
-              <AlertDescription className="text-emerald-800 dark:text-emerald-200">
+            <Alert className="border-cyan-200 bg-cyan-50 dark:bg-cyan-950 dark:border-cyan-800">
+              <CheckCircle className="h-4 w-4 text-cyan-600" />
+              <AlertDescription className="text-cyan-800 dark:text-cyan-200">
                 You can now log in with your new password.
               </AlertDescription>
             </Alert>
@@ -103,13 +103,13 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 via-blue-50 to-emerald-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-4">
       <Card className="w-full max-w-md shadow-2xl border-none">
         <CardHeader className="text-center">
-          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-orange-600 to-blue-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto mb-4 w-16 h-16 bg-gradient-to-br from-cyan-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-xl">
             <Lock className="w-8 h-8 text-white" />
           </div>
-          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Reset Password
           </CardTitle>
           <CardDescription className="text-base mt-2">
@@ -126,7 +126,7 @@ export default function ResetPasswordForm() {
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="password">New Password</Label>
+              <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2"><div className="p-1 bg-cyan-100 rounded-md"><Lock className="h-3.5 w-3.5 text-cyan-700" /></div>New Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -152,7 +152,7 @@ export default function ResetPasswordForm() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
+              <Label htmlFor="confirmPassword" className="text-sm font-semibold flex items-center gap-2"><div className="p-1 bg-indigo-100 rounded-md"><Lock className="h-3.5 w-3.5 text-indigo-700" /></div>Confirm Password</Label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <Input
@@ -179,7 +179,7 @@ export default function ResetPasswordForm() {
           <CardFooter className="flex flex-col space-y-3">
             <Button 
               type="submit" 
-              className="w-full bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 hover:from-orange-700 hover:via-blue-700 hover:to-emerald-700 text-white hover:opacity-95"
+              className="w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white hover:opacity-95"
               disabled={isLoading || !token}
             >
               {isLoading ? 'Resetting...' : 'Reset Password'}

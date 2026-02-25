@@ -41,7 +41,7 @@ export function generateWelcomeEmail(params: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🙏 Welcome to JTM Community</h1>
   </div>
   
@@ -144,7 +144,7 @@ export function generateRSVPConfirmationEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">✅ RSVP Submitted Successfully</h1>
   </div>
   
@@ -231,7 +231,7 @@ export function generateRSVPApprovedEmail(params: {
   </style>
 </head>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Payment Approved!</h1>
   </div>
 
@@ -326,7 +326,7 @@ export function generateEventReminderEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">⏰ Event Reminder</h1>
   </div>
   
@@ -406,7 +406,7 @@ export function generateRenewalRequestEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🔄 Renewal Request Received</h1>
   </div>
   
@@ -483,7 +483,7 @@ export function generateRenewalApprovedEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Renewal Approved!</h1>
   </div>
   
@@ -558,7 +558,7 @@ export function generateRenewalRejectedEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">⚠️ Action Required</h1>
   </div>
   
@@ -632,7 +632,7 @@ export function generateRenewalReminderEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🔔 Renewal Reminder</h1>
   </div>
   
@@ -729,7 +729,7 @@ export function generateAdminRenewalNotificationEmail(params: {
 <!DOCTYPE html>
 <html>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 24px;">🔔 New Renewal Request</h1>
   </div>
   
@@ -806,7 +806,7 @@ export function generatePasswordResetEmail(params: {
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 </head>
 <body style="${baseStyles}">
-  <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">🔐 Password Reset Request</h1>
   </div>
   
