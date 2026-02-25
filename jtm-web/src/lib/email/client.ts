@@ -36,6 +36,13 @@ export interface EmailOptions {
   }
   replyTo?: string
   tags?: string[]
+  attachments?: Array<{
+    filename: string
+    content: Buffer | string
+    encoding?: string
+    cid?: string
+    contentType?: string
+  }>
 }
 
 export interface EmailResult {
@@ -60,6 +67,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
       html: options.html,
       text: options.text,
       replyTo: options.replyTo,
+      attachments: options.attachments,
     }
 
     const transporter = getTransporter()

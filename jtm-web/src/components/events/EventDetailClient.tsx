@@ -98,7 +98,7 @@ interface UserRsvp {
 
 interface EventDetailClientProps {
   event: Event
-  user: User
+  user: User | null
   userRsvp: UserRsvp | null
 }
 
@@ -159,7 +159,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
         },
         body: JSON.stringify({
           eventId: event.id,
-          userEmail: user.email,
+          userEmail: user?.email,
           responses: rsvpData,
           ...(event.foodConfig?.enabled ? foodData : {}),
         }),
@@ -332,7 +332,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           </Link>
         </Button>
 
-        {user.isAdmin && (
+        {user?.isAdmin && (
           <div className="flex gap-2">
             <Button variant="outline" asChild>
               <Link href={`/events/scanner?eventId=${event.id}`}>
@@ -509,8 +509,28 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
         </div>
       </div>
 
-      {/* RSVP Section - Only show to non-admin users */}
-      {event.rsvpRequired && !user.isAdmin && (
+      {/* RSVP Section - Login prompt for non-logged-in visitors */}
+      {event.rsvpRequired && !user && (
+        <Card>
+          <CardContent className="pt-6">
+            <div className="text-center py-6 space-y-4">
+              <QrCode className="h-12 w-12 text-muted-foreground mx-auto" />
+              <div>
+                <p className="text-lg font-semibold">RSVP Required</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Sign in to your JTM account to RSVP for this event.
+                </p>
+              </div>
+              <Button asChild className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white">
+                <Link href="/auth/login">Sign In to RSVP</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* RSVP Section - Only show to non-admin logged-in members */}
+      {event.rsvpRequired && user && !user.isAdmin && (
         <Card>
           <CardHeader>
             <CardTitle>RSVP</CardTitle>
@@ -643,7 +663,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
       )}
 
       {/* Admin: RSVP Responses */}
-      {user.isAdmin && event.rsvpResponses.length > 0 && (
+      {user?.isAdmin && event.rsvpResponses.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle>RSVP Responses ({event.rsvpResponses.length})</CardTitle>

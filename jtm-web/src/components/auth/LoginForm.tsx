@@ -65,11 +65,11 @@ export function LoginForm() {
     <Card className="w-full max-w-md mx-auto border-0 shadow-none lg:elevated-card lg:border-t-4 lg:border-t-primary lg:backdrop-blur-sm lg:bg-white/90 dark:bg-gray-900/90">
       {/* Header — hidden on mobile (page gradient banner handles branding) */}
       <CardHeader className="hidden lg:flex space-y-3 text-center pb-8 flex-col items-center">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-xl mb-2">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center shadow-xl mb-2">
           <LogIn className="h-8 w-8 text-white" />
         </div>
         <CardTitle className="text-3xl font-bold">
-          <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
             Sign In
           </span>
         </CardTitle>
@@ -86,8 +86,8 @@ export function LoginForm() {
           )}
           <div className="space-y-2">
             <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-cyan-100 rounded-md">
-                <Mail className="h-3.5 w-3.5 text-cyan-700" />
+              <div className="p-1 bg-blue-100 rounded-md">
+                <Mail className="h-3.5 w-3.5 text-blue-700" />
               </div>
               Email Address
             </Label>
@@ -98,13 +98,13 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-11 border-2 focus:border-cyan-500 transition-colors"
+              className="h-11 border-2 focus:border-blue-500 transition-colors"
             />
           </div>
           <div className="space-y-2">
             <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-indigo-100 rounded-md">
-                <Lock className="h-3.5 w-3.5 text-indigo-700" />
+              <div className="p-1 bg-blue-100 rounded-md">
+                <Lock className="h-3.5 w-3.5 text-blue-700" />
               </div>
               Password
             </Label>
@@ -116,7 +116,7 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-11 border-2 focus:border-indigo-500 transition-colors pr-10"
+                className="h-11 border-2 focus:border-blue-500 transition-colors pr-10"
               />
               <button
                 type="button"
@@ -141,7 +141,7 @@ export function LoginForm() {
         <CardFooter className="flex flex-col space-y-4 pt-2">
           <Button 
             type="submit" 
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all" 
+            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all"
             disabled={isLoading}
           >
             {isLoading ? (
