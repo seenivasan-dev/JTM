@@ -12,4 +12,5 @@ export {
   generateRenewalReminderEmail,
   generateAdminRenewalNotificationEmail,
   generatePasswordResetEmail,
+  generateNotificationBlastEmail,
 } from './templates'

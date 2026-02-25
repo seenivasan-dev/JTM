@@ -1,17 +1,17 @@
 'use client'
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from 'react'
+import React, { useState, useRef } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
-import { 
-  Bell, 
-  Send, 
-  Users, 
-  Calendar, 
+import {
+  Bell,
+  Send,
+  Users,
+  Calendar,
   Mail,
   MessageSquare,
   AlertTriangle,
@@ -20,7 +20,8 @@ import {
   Filter,
   Search,
   Plus,
-  Settings
+  ImagePlus,
+  X
 } from 'lucide-react'
 import {
   Select,
@@ -36,8 +37,8 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from '@/components/ui/dialog'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { format } from 'date-fns'
 
 interface Notification {
@@ -95,6 +96,11 @@ export default function NotificationManagement() {
   const [filterType, setFilterType] = useState<string>('all')
   const [filterStatus, setFilterStatus] = useState<string>('all')
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [sending, setSending] = useState(false)
+  const [sendResult, setSendResult] = useState<{ type: 'success' | 'error'; message: string } | null>(null)
+  const [flyerFile, setFlyerFile] = useState<File | null>(null)
+  const flyerInputRef = useRef<HTMLInputElement>(null)
+
   const [newNotification, setNewNotification] = useState({
     title: '',
     message: '',
@@ -104,13 +110,126 @@ export default function NotificationManagement() {
     scheduledFor: ''
   })
 
-  // Filter notifications
+  const handleFlyerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] || null
+    setFlyerFile(file)
+  }
+
+  const clearFlyer = () => {
+    setFlyerFile(null)
+    if (flyerInputRef.current) flyerInputRef.current.value = ''
+  }
+
+  const handleSendNotification = async (notificationId: string, notif?: Partial<Notification>) => {
+    // Find the notification data to send
+    const target = notif || notifications.find(n => n.id === notificationId)
+    if (!target) return
+
+    setSending(true)
+    setSendResult(null)
+    try {
+      const fd = new FormData()
+      fd.append('title', target.title || newNotification.title)
+      fd.append('message', target.message || newNotification.message)
+      fd.append('recipients', target.recipients || newNotification.recipients)
+      if (flyerFile) fd.append('flyer', flyerFile)
+
+      const response = await fetch('/api/admin/send-notification', {
+        method: 'POST',
+        body: fd,
+      })
+
+      const result = await response.json()
+      if (response.ok) {
+        setSendResult({ type: 'success', message: result.message })
+        setNotifications(prev => prev.map(n =>
+          n.id === notificationId
+            ? { ...n, status: 'sent' as const, sentAt: new Date().toISOString() }
+            : n
+        ))
+      } else {
+        setSendResult({ type: 'error', message: result.error || 'Failed to send notification' })
+      }
+    } catch {
+      setSendResult({ type: 'error', message: 'Network error. Please try again.' })
+    } finally {
+      setSending(false)
+    }
+  }
+
+  const handleCreateNotification = async (sendImmediately: boolean) => {
+    if (!newNotification.title.trim() || !newNotification.message.trim()) return
+
+    const newId = Date.now().toString()
+
+    if (sendImmediately) {
+      setSending(true)
+      setSendResult(null)
+      try {
+        const fd = new FormData()
+        fd.append('title', newNotification.title)
+        fd.append('message', newNotification.message)
+        fd.append('recipients', newNotification.recipients)
+        if (flyerFile) fd.append('flyer', flyerFile)
+
+        const response = await fetch('/api/admin/send-notification', {
+          method: 'POST',
+          body: fd,
+        })
+
+        const result = await response.json()
+        if (response.ok) {
+          setSendResult({ type: 'success', message: result.message })
+          setNotifications(prev => [
+            {
+              id: newId,
+              ...newNotification,
+              status: 'sent' as const,
+              sentAt: new Date().toISOString(),
+            },
+            ...prev,
+          ])
+          setIsCreateDialogOpen(false)
+          resetForm()
+        } else {
+          setSendResult({ type: 'error', message: result.error || 'Failed to send' })
+        }
+      } catch {
+        setSendResult({ type: 'error', message: 'Network error. Please try again.' })
+      } finally {
+        setSending(false)
+      }
+    } else {
+      // Save as draft (local state only — no DB model for notifications yet)
+      const notification: Notification = {
+        id: newId,
+        ...newNotification,
+        status: newNotification.scheduledFor ? 'scheduled' : 'draft'
+      }
+      setNotifications(prev => [notification, ...prev])
+      setIsCreateDialogOpen(false)
+      resetForm()
+    }
+  }
+
+  const resetForm = () => {
+    setNewNotification({
+      title: '',
+      message: '',
+      type: 'announcement',
+      priority: 'medium',
+      recipients: 'all',
+      scheduledFor: ''
+    })
+    setFlyerFile(null)
+    if (flyerInputRef.current) flyerInputRef.current.value = ''
+  }
+
   const filteredNotifications = notifications.filter(notification => {
     const matchesSearch = notification.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          notification.message.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesType = filterType === 'all' || notification.type === filterType
     const matchesStatus = filterStatus === 'all' || notification.status === filterStatus
-    
     return matchesSearch && matchesType && matchesStatus
   })
 
@@ -150,39 +269,6 @@ export default function NotificationManagement() {
       case 'scheduled': return <Clock className="h-4 w-4 text-blue-600" />
       default: return <Mail className="h-4 w-4" />
     }
-  }
-
-  const handleCreateNotification = () => {
-    const notification: Notification = {
-      id: Date.now().toString(),
-      ...newNotification,
-      status: newNotification.scheduledFor ? 'scheduled' : 'draft'
-    }
-    
-    setNotifications([notification, ...notifications])
-    setNewNotification({
-      title: '',
-      message: '',
-      type: 'announcement',
-      priority: 'medium',
-      recipients: 'all',
-      scheduledFor: ''
-    })
-    setIsCreateDialogOpen(false)
-  }
-
-  const handleSendNotification = (id: string) => {
-    setNotifications(notifications.map(notification => 
-      notification.id === id 
-        ? { 
-            ...notification, 
-            status: 'sent' as const, 
-            sentAt: new Date().toISOString(),
-            openRate: Math.floor(Math.random() * 30) + 50,
-            clickRate: Math.floor(Math.random() * 20) + 20
-          }
-        : notification
-    ))
   }
 
   const stats = {
@@ -295,13 +381,71 @@ export default function NotificationManagement() {
                     />
                   </div>
                 </div>
+                {/* Flyer Upload */}
+                <div>
+                  <label className="text-sm font-medium">Event Flyer (Optional)</label>
+                  <div className="mt-1">
+                    {flyerFile ? (
+                      <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <ImagePlus className="h-4 w-4 text-green-600 flex-shrink-0" />
+                        <span className="text-sm text-green-800 flex-1 truncate">{flyerFile.name}</span>
+                        <button type="button" onClick={clearFlyer} className="text-green-600 hover:text-red-600">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <label
+                        htmlFor="flyer-upload"
+                        className="flex items-center gap-2 px-4 py-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors"
+                      >
+                        <ImagePlus className="h-4 w-4 text-gray-500" />
+                        <span className="text-sm text-gray-600">Click to upload flyer image (JPG, PNG, WebP)</span>
+                        <input
+                          id="flyer-upload"
+                          ref={flyerInputRef}
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          className="hidden"
+                          onChange={handleFlyerChange}
+                        />
+                      </label>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">Image will be embedded directly in the email body</p>
+                  </div>
+                </div>
+                {sendResult && (
+                  <Alert variant={sendResult.type === 'error' ? 'destructive' : 'default'}>
+                    <AlertDescription>{sendResult.message}</AlertDescription>
+                  </Alert>
+                )}
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                <Button variant="outline" onClick={() => { setIsCreateDialogOpen(false); resetForm(); setSendResult(null) }}>
                   Cancel
                 </Button>
-                <Button onClick={handleCreateNotification}>
+                <Button
+                  variant="outline"
+                  onClick={() => handleCreateNotification(false)}
+                  disabled={sending || !newNotification.title.trim() || !newNotification.message.trim()}
+                >
                   {newNotification.scheduledFor ? 'Schedule' : 'Save Draft'}
+                </Button>
+                <Button
+                  onClick={() => handleCreateNotification(true)}
+                  disabled={sending || !newNotification.title.trim() || !newNotification.message.trim()}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white"
+                >
+                  {sending ? (
+                    <div className="flex items-center gap-2">
+                      <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                      Sending...
+                    </div>
+                  ) : (
+                    <>
+                      <Send className="h-4 w-4 mr-2" />
+                      Send Now
+                    </>
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -394,6 +538,13 @@ export default function NotificationManagement() {
         </Select>
       </div>
 
+      {/* Send result alert */}
+      {sendResult && !isCreateDialogOpen && (
+        <Alert variant={sendResult.type === 'error' ? 'destructive' : 'default'} className="border-green-300 bg-green-50">
+          <AlertDescription>{sendResult.message}</AlertDescription>
+        </Alert>
+      )}
+
       {/* Notifications List */}
       <div className="space-y-4">
         {filteredNotifications.map((notification) => (
@@ -445,12 +596,22 @@ export default function NotificationManagement() {
                     </div>
                   )}
                   {notification.status === 'draft' && (
-                    <Button 
+                    <Button
                       size="sm"
+                      disabled={sending}
                       onClick={() => handleSendNotification(notification.id)}
                     >
-                      <Send className="h-4 w-4 mr-2" />
-                      Send Now
+                      {sending ? (
+                        <div className="flex items-center gap-2">
+                          <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                          Sending...
+                        </div>
+                      ) : (
+                        <>
+                          <Send className="h-4 w-4 mr-2" />
+                          Send Now
+                        </>
+                      )}
                     </Button>
                   )}
                 </div>

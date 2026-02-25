@@ -143,7 +143,7 @@ export default function ChangePasswordPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cyan-600 mx-auto"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
           <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
@@ -151,11 +151,11 @@ export default function ChangePasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-indigo-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         {/* Header */}
         <div className="text-center">
-          <div className="mx-auto h-16 w-16 bg-gradient-to-br from-cyan-600 to-indigo-600 rounded-full flex items-center justify-center">
+          <div className="mx-auto h-16 w-16 bg-gradient-to-r from-blue-600 to-blue-700 rounded-full flex items-center justify-center">
             <Lock className="h-8 w-8 text-white" />
           </div>
           <h2 className="mt-6 text-3xl font-extrabold text-gray-900">
@@ -189,7 +189,7 @@ export default function ChangePasswordPage() {
                 onChange={handleChange}
                 className={`appearance-none rounded-lg relative block w-full px-3 py-2 pr-10 border ${
                   errors.currentPassword ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent sm:text-sm`}
+                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm`}
                 placeholder="Enter your current password"
               />
               <button
@@ -223,7 +223,7 @@ export default function ChangePasswordPage() {
                 onChange={handleChange}
                 className={`appearance-none rounded-lg relative block w-full px-3 py-2 pr-10 border ${
                   errors.newPassword ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent sm:text-sm`}
+                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm`}
                 placeholder="Enter your new password"
               />
               <button
@@ -269,7 +269,7 @@ export default function ChangePasswordPage() {
                 onChange={handleChange}
                 className={`appearance-none rounded-lg relative block w-full px-3 py-2 pr-10 border ${
                   errors.confirmPassword ? 'border-red-300' : 'border-gray-300'
-                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent sm:text-sm`}
+                } placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent sm:text-sm`}
                 placeholder="Confirm your new password"
               />
               <button
@@ -303,7 +303,7 @@ export default function ChangePasswordPage() {
               className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white ${
                 loading || !Object.values(passwordStrength).every(Boolean)
                   ? 'bg-gray-400 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
+                  : 'bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500'
               }`}
             >
               {loading ? (

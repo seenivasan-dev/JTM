@@ -5,7 +5,7 @@ export default function RegisterPage() {
   return (
     <div className="min-h-screen dark:bg-gray-900">
       {/* Mobile gradient header */}
-      <div className="lg:hidden relative bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 px-5 pt-10 pb-7">
+      <div className="lg:hidden relative bg-gradient-to-r from-blue-600 to-blue-700 px-5 pt-10 pb-7">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none"></div>
         <div className="relative z-10 flex items-center gap-4">
           <Link href="/" className="flex items-center gap-4">
@@ -21,11 +21,11 @@ export default function RegisterPage() {
       </div>
 
       {/* Content area */}
-      <div className="bg-gradient-to-br from-slate-50 via-white to-indigo-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 lg:min-h-screen lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-8">
+      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 lg:min-h-screen lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-8">
         <div className="w-full lg:max-w-6xl lg:grid lg:grid-cols-2 lg:shadow-2xl lg:rounded-2xl overflow-hidden">
 
           {/* Left Side — desktop branding panel */}
-          <div className="hidden lg:flex flex-col relative bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 p-10">
+          <div className="hidden lg:flex flex-col relative bg-gradient-to-r from-blue-600 to-blue-700 p-10">
             <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
             <div className="relative z-10 flex flex-col h-full">
               <Link href="/" className="flex items-center space-x-3 mb-12 group">
@@ -78,7 +78,7 @@ export default function RegisterPage() {
           </div>
 
           {/* Right Side — form */}
-          <div className="flex items-start justify-center bg-white dark:bg-gray-900 px-5 py-8 lg:p-12 lg:items-center">
+          <div className="flex items-start justify-center bg-gray-50 dark:bg-gray-900 px-5 py-8 lg:p-12 lg:items-center">
             <div className="w-full">
               <RegistrationForm />
             </div>

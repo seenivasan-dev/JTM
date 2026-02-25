@@ -880,3 +880,101 @@ JTM Community Team
 
   return { subject, html, text }
 }
+
+/**
+ * Admin notification blast email template
+ * Supports optional flyer image embedded via CID attachment
+ */
+export function generateNotificationBlastEmail(params: {
+  firstName: string
+  title: string
+  message: string
+  hasFlyerImage?: boolean
+}): { subject: string; html: string; text: string } {
+  const { firstName, title, message, hasFlyerImage = false } = params
+
+  const subject = `[JTM] ${title}`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
+  <meta name="supported-color-schemes" content="light">
+  <title>${title}</title>
+  <style>
+    body { margin: 0; padding: 0; background-color: #f8fafc; }
+    .wrapper { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 32px 24px; text-align: center; }
+    .header-title { color: #ffffff; font-size: 22px; font-weight: 700; margin: 0 0 6px; font-family: sans-serif; }
+    .header-sub { color: rgba(255,255,255,0.8); font-size: 14px; margin: 0; font-family: sans-serif; }
+    .body { padding: 32px 24px; }
+    .greeting { font-size: 16px; color: #374151; margin-bottom: 16px; font-family: sans-serif; }
+    .message-box { background-color: #f0f4ff; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .message-text { font-size: 15px; color: #374151; line-height: 1.7; white-space: pre-wrap; font-family: sans-serif; margin: 0; }
+    .flyer-section { text-align: center; margin: 28px 0; }
+    .flyer-label { font-size: 13px; color: #6b7280; margin-bottom: 12px; font-family: sans-serif; }
+    .flyer-wrapper { background-color: #ffffff; display: inline-block; padding: 8px; border-radius: 8px; border: 1px solid #e5e7eb; }
+    .flyer-img { display: block; max-width: 500px; width: 100%; height: auto; border-radius: 4px; }
+    .cta { text-align: center; margin: 28px 0; }
+    .cta-button { background-color: #2563eb; color: #ffffff; padding: 14px 32px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: 600; font-size: 15px; font-family: sans-serif; }
+    .footer { background-color: #f8fafc; border-top: 1px solid #e5e7eb; padding: 20px 24px; text-align: center; }
+    .footer-text { font-size: 12px; color: #9ca3af; font-family: sans-serif; margin: 4px 0; }
+    @media (prefers-color-scheme: dark) {
+      .flyer-wrapper { background-color: #ffffff !important; }
+      .flyer-img { background-color: #ffffff !important; filter: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="header">
+      <p class="header-sub">Jacksonville Tamil Mandram</p>
+      <h1 class="header-title">${title}</h1>
+    </div>
+    <div class="body">
+      <p class="greeting">Dear ${firstName},</p>
+      <div class="message-box">
+        <p class="message-text">${message.replace(/</g, '&lt;').replace(/>/g, '&gt;')}</p>
+      </div>
+      ${hasFlyerImage ? `
+      <div class="flyer-section">
+        <p class="flyer-label">Event Flyer</p>
+        <div class="flyer-wrapper">
+          <img class="flyer-img" src="cid:event-flyer" alt="Event Flyer"
+            style="display:block;max-width:500px;width:100%;height:auto;background-color:#ffffff;filter:none;" />
+        </div>
+      </div>` : ''}
+      <div class="cta">
+        <a href="${process.env.NEXTAUTH_URL || 'https://jaxtamilmandram.org'}/events" class="cta-button">
+          View Upcoming Events
+        </a>
+      </div>
+    </div>
+    <div class="footer">
+      <p class="footer-text">&copy; ${new Date().getFullYear()} Jacksonville Tamil Mandram</p>
+      <p class="footer-text">Jacksonville, Florida &middot; <a href="mailto:jtmec2025@gmail.com" style="color:#6b7280">jtmec2025@gmail.com</a></p>
+      <p class="footer-text">You are receiving this because you are a JTM member.</p>
+    </div>
+  </div>
+</body>
+</html>
+  `
+
+  const text = `
+${title}
+Jacksonville Tamil Mandram
+
+Dear ${firstName},
+
+${message}
+
+View our events: ${process.env.NEXTAUTH_URL || 'https://jaxtamilmandram.org'}/events
+
+(c) ${new Date().getFullYear()} Jacksonville Tamil Mandram
+  `.trim()
+
+  return { subject, html, text }
+}

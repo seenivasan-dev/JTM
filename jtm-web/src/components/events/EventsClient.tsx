@@ -55,7 +55,7 @@ interface User {
 
 interface EventsClientProps {
   initialEvents: Event[]
-  user: User
+  user: User | null
 }
 
 export default function EventsClient({ initialEvents, user }: EventsClientProps) {
@@ -129,7 +129,7 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
                 Join us in celebrating Tamil culture and traditions
               </p>
             </div>
-            {user.isAdmin && (
+            {user?.isAdmin && (
               <Button asChild className="bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white drop-shadow-md border-white/30">
                 <Link href="/events/create">
                   <Plus className="h-4 w-4 mr-2" />
