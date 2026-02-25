@@ -85,7 +85,7 @@ export async function sendQRCodeEmail(rsvpResponseId: string): Promise<EmailResu
               padding: 20px;
             }
             .header {
-              background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+              background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%);
               color: white;
               padding: 30px;
               text-align: center;

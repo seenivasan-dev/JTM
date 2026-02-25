@@ -146,13 +146,14 @@ export default function RegistrationForm() {
   };
 
   return (
-    <Card className="w-full max-w-2xl elevated-card border-t-4 border-t-primary backdrop-blur-sm bg-white/90 dark:bg-gray-900/90">
-      <CardHeader className="space-y-3 text-center pb-8">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-orange-600 via-blue-600 to-emerald-600 flex items-center justify-center shadow-xl mb-2">
+    <Card className="w-full max-w-2xl border-0 shadow-none lg:elevated-card lg:border-t-4 lg:border-t-primary lg:backdrop-blur-sm lg:bg-white/90 dark:bg-gray-900/90">
+      {/* Header — hidden on mobile (page gradient banner handles branding) */}
+      <CardHeader className="hidden lg:flex space-y-3 text-center pb-8 flex-col items-center">
+        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-xl mb-2">
           <UserPlus className="h-8 w-8 text-white" />
         </div>
         <CardTitle className="text-3xl font-bold">
-          <span className="bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
             Join Our Community
           </span>
         </CardTitle>
@@ -160,7 +161,7 @@ export default function RegistrationForm() {
           Register for membership. Your application will be reviewed by our admin team.
         </CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="pt-2 lg:pt-0">
           {error && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{error}</AlertDescription>
@@ -510,7 +511,7 @@ export default function RegistrationForm() {
               <div className="flex flex-col space-y-4 pt-6">
                 <Button 
                   type="submit" 
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all" 
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? (

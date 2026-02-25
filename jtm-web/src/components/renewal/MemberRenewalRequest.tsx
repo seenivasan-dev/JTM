@@ -144,11 +144,11 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
   // If user has pending renewal, show status
   if (pendingRenewal) {
     return (
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-50 via-blue-50 to-orange-50 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-50 via-blue-50 to-indigo-50 p-8 shadow-xl">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="relative">
           <div className="flex items-center gap-3 mb-6">
-            <div className="p-3 rounded-xl bg-gradient-to-br from-emerald-500 to-blue-500 shadow-lg">
+            <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-600 to-indigo-600 shadow-lg">
               <RefreshCcw className="h-6 w-6 text-white" />
             </div>
             <div>
@@ -211,7 +211,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
   return (
     <div className="space-y-8">
       {/* Tamil Cultural Header */}
-      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 p-8 shadow-xl">
+      <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 p-8 shadow-xl">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
         <div className="relative flex items-center gap-4">
           <div className="p-4 rounded-xl bg-white/20 backdrop-blur-sm shadow-lg">
@@ -532,7 +532,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                 <Button 
                   type="submit" 
                   disabled={isSubmitting}
-                  className="h-12 px-8 text-base font-semibold bg-gradient-to-r from-orange-600 via-blue-600 to-emerald-600 hover:from-orange-700 hover:via-blue-700 hover:to-emerald-700 text-white hover:shadow-xl transition-all duration-300 disabled:opacity-50"
+                  className="h-12 px-8 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white hover:shadow-xl transition-all duration-300 disabled:opacity-50"
                 >
                   {isSubmitting ? (
                     <span className="flex items-center gap-2">

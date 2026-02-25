@@ -623,7 +623,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                   </div>
                 )}
 
-                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg">
+                <Button type="submit" disabled={loading} className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg">
                   {loading ? (
                     <div className="flex items-center gap-2">
                       <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />

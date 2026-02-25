@@ -136,13 +136,18 @@ export default async function Home() {
               <Link href="#home" className="px-3 py-2 text-sm font-semibold text-white bg-white/20 backdrop-blur-sm rounded-lg">
                 Home
               </Link>
-              {['Magazines', 'ByLaws', 'Events', 'Membership'].map((item) => (
+              {[
+                { label: 'Magazines', href: '#magazines' },
+                { label: 'ByLaws', href: '/bylaws' },
+                { label: 'Events', href: '#events' },
+                { label: 'Membership', href: '#membership' },
+              ].map((item) => (
                 <Link
-                  key={item}
-                  href={`#${item.toLowerCase().replace(' ', '-')}`}
+                  key={item.label}
+                  href={item.href}
                   className="px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-all"
                 >
-                  {item}
+                  {item.label}
                 </Link>
               ))}
               <div className="relative group">

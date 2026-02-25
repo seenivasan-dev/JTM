@@ -73,7 +73,7 @@ async function sendSingleEmail(attendeeId: string, forceRetry = false) {
         <style>
           body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
           .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-          .header { background: linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+          .header { background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
           .content { background: #f9fafb; padding: 30px; border-radius: 0 0 10px 10px; }
           .qr-code { text-align: center; margin: 30px 0; padding: 20px; background: white; border-radius: 10px; }
           .qr-wrapper { display: inline-block; background-color: #ffffff; padding: 16px; border-radius: 10px; border: 2px solid #3b82f6; }
