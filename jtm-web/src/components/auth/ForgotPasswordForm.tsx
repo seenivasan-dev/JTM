@@ -98,10 +98,7 @@ export default function ForgotPasswordForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-blue-100 rounded-md">
-                <Mail className="h-3.5 w-3.5 text-blue-700" />
-              </div>
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email Address
             </Label>
             <div className="relative">
@@ -113,7 +110,7 @@ export default function ForgotPasswordForm() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10 h-11 border-2 focus:border-blue-500"
+                className="pl-10 h-11 border-gray-300 bg-white focus-visible:ring-blue-500"
                 disabled={isLoading}
               />
             </div>

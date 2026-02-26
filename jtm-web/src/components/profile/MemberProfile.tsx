@@ -30,6 +30,9 @@ import {
   Calendar
 } from 'lucide-react'
 
+const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500'
+const saveBtnCls = 'bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white'
+
 // Validation schemas
 const profileSchema = z.object({
   firstName: z.string().min(2, 'First name must be at least 2 characters'),
@@ -273,25 +276,25 @@ function PersonalInfoCard({ user, isEditing }: { user: User, isEditing: boolean 
       <CardContent>
         {isEditing ? (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input {...form.register('firstName')} />
+            <div className="space-y-1.5">
+              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name</Label>
+              <Input className={inputCls} {...form.register('firstName')} />
               {form.formState.errors.firstName && (
                 <p className="text-red-500 text-sm">{form.formState.errors.firstName.message}</p>
               )}
             </div>
-            
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input {...form.register('lastName')} />
+
+            <div className="space-y-1.5">
+              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</Label>
+              <Input className={inputCls} {...form.register('lastName')} />
               {form.formState.errors.lastName && (
                 <p className="text-red-500 text-sm">{form.formState.errors.lastName.message}</p>
               )}
             </div>
-            
-            <div>
-              <Label htmlFor="mobileNumber">Mobile Number</Label>
-              <Input {...form.register('mobileNumber')} />
+
+            <div className="space-y-1.5">
+              <Label htmlFor="mobileNumber" className="text-sm font-medium text-gray-700">Mobile Number</Label>
+              <Input className={inputCls} {...form.register('mobileNumber')} />
               {form.formState.errors.mobileNumber && (
                 <p className="text-red-500 text-sm">{form.formState.errors.mobileNumber.message}</p>
               )}
@@ -303,7 +306,7 @@ function PersonalInfoCard({ user, isEditing }: { user: User, isEditing: boolean 
               </Alert>
             )}
 
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" className={saveBtnCls} disabled={isLoading}>
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? 'Saving...' : 'Save Changes'}
             </Button>
@@ -380,42 +383,42 @@ function AddressCard({ user, isEditing }: { user: User, isEditing: boolean }) {
       <CardContent>
         {isEditing ? (
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-            <div>
-              <Label htmlFor="street">Street Address</Label>
-              <Input {...form.register('street')} />
+            <div className="space-y-1.5">
+              <Label htmlFor="street" className="text-sm font-medium text-gray-700">Street Address</Label>
+              <Input className={inputCls} {...form.register('street')} />
               {form.formState.errors.street && (
                 <p className="text-red-500 text-sm">{form.formState.errors.street.message}</p>
               )}
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="city">City</Label>
-                <Input {...form.register('city')} />
+              <div className="space-y-1.5">
+                <Label htmlFor="city" className="text-sm font-medium text-gray-700">City</Label>
+                <Input className={inputCls} {...form.register('city')} />
                 {form.formState.errors.city && (
                   <p className="text-red-500 text-sm">{form.formState.errors.city.message}</p>
                 )}
               </div>
-              <div>
-                <Label htmlFor="state">State</Label>
-                <Input {...form.register('state')} />
+              <div className="space-y-1.5">
+                <Label htmlFor="state" className="text-sm font-medium text-gray-700">State</Label>
+                <Input className={inputCls} {...form.register('state')} />
                 {form.formState.errors.state && (
                   <p className="text-red-500 text-sm">{form.formState.errors.state.message}</p>
                 )}
               </div>
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="zipCode">ZIP Code</Label>
-                <Input {...form.register('zipCode')} />
+              <div className="space-y-1.5">
+                <Label htmlFor="zipCode" className="text-sm font-medium text-gray-700">ZIP Code</Label>
+                <Input className={inputCls} {...form.register('zipCode')} />
                 {form.formState.errors.zipCode && (
                   <p className="text-red-500 text-sm">{form.formState.errors.zipCode.message}</p>
                 )}
               </div>
-              <div>
-                <Label htmlFor="country">Country</Label>
-                <Input {...form.register('country')} />
+              <div className="space-y-1.5">
+                <Label htmlFor="country" className="text-sm font-medium text-gray-700">Country</Label>
+                <Input className={inputCls} {...form.register('country')} />
                 {form.formState.errors.country && (
                   <p className="text-red-500 text-sm">{form.formState.errors.country.message}</p>
                 )}
@@ -428,7 +431,7 @@ function AddressCard({ user, isEditing }: { user: User, isEditing: boolean }) {
               </Alert>
             )}
 
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" className={saveBtnCls} disabled={isLoading}>
               <Save className="h-4 w-4 mr-2" />
               {isLoading ? 'Saving...' : 'Save Address'}
             </Button>
@@ -460,7 +463,7 @@ function FamilyMembersCard({ familyMembers, onAddMember, onEditMember }: any) {
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Family Members</CardTitle>
-          <Button onClick={onAddMember}>
+          <Button onClick={onAddMember} className={saveBtnCls}>
             <Plus className="h-4 w-4 mr-2" />
             Add Member
           </Button>
@@ -470,7 +473,7 @@ function FamilyMembersCard({ familyMembers, onAddMember, onEditMember }: any) {
         {familyMembers.length > 0 ? (
           <div className="space-y-4">
             {familyMembers.map((member: any) => (
-              <div key={member.id} className="flex items-center justify-between p-4 border rounded-lg">
+              <div key={member.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-xl bg-gray-50">
                 <div>
                   <h4 className="font-medium">{member.firstName} {member.lastName}</h4>
                   <p className="text-sm text-muted-foreground">
@@ -501,7 +504,7 @@ function SecurityCard({ user, onChangePassword }: any) {
         <CardTitle>Security Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="flex items-center justify-between p-4 border rounded-lg">
+        <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
           <div>
             <h4 className="font-medium">Password</h4>
             <p className="text-sm text-muted-foreground">
@@ -635,25 +638,25 @@ function PasswordChangeDialog({ open, onOpenChange, userId }: any) {
         </DialogHeader>
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div>
-            <Label htmlFor="currentPassword">Current Password</Label>
-            <Input type="password" {...form.register('currentPassword')} />
+          <div className="space-y-1.5">
+            <Label htmlFor="currentPassword" className="text-sm font-medium text-gray-700">Current Password</Label>
+            <Input className={inputCls} type="password" {...form.register('currentPassword')} />
             {form.formState.errors.currentPassword && (
               <p className="text-red-500 text-sm">{form.formState.errors.currentPassword.message}</p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="newPassword">New Password</Label>
-            <Input type="password" {...form.register('newPassword')} />
+          <div className="space-y-1.5">
+            <Label htmlFor="newPassword" className="text-sm font-medium text-gray-700">New Password</Label>
+            <Input className={inputCls} type="password" {...form.register('newPassword')} />
             {form.formState.errors.newPassword && (
               <p className="text-red-500 text-sm">{form.formState.errors.newPassword.message}</p>
             )}
           </div>
 
-          <div>
-            <Label htmlFor="confirmPassword">Confirm New Password</Label>
-            <Input type="password" {...form.register('confirmPassword')} />
+          <div className="space-y-1.5">
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">Confirm New Password</Label>
+            <Input className={inputCls} type="password" {...form.register('confirmPassword')} />
             {form.formState.errors.confirmPassword && (
               <p className="text-red-500 text-sm">{form.formState.errors.confirmPassword.message}</p>
             )}
@@ -669,7 +672,7 @@ function PasswordChangeDialog({ open, onOpenChange, userId }: any) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" className={saveBtnCls} disabled={isLoading}>
               {isLoading ? 'Changing...' : 'Change Password'}
             </Button>
           </DialogFooter>
@@ -741,16 +744,16 @@ function FamilyMemberDialog({ open, onOpenChange, member, userId }: any) {
 
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="firstName">First Name</Label>
-              <Input {...form.register('firstName')} />
+            <div className="space-y-1.5">
+              <Label htmlFor="firstName" className="text-sm font-medium text-gray-700">First Name</Label>
+              <Input className={inputCls} {...form.register('firstName')} />
               {form.formState.errors.firstName && (
                 <p className="text-red-500 text-sm">{String(form.formState.errors.firstName.message)}</p>
               )}
             </div>
-            <div>
-              <Label htmlFor="lastName">Last Name</Label>
-              <Input {...form.register('lastName')} />
+            <div className="space-y-1.5">
+              <Label htmlFor="lastName" className="text-sm font-medium text-gray-700">Last Name</Label>
+              <Input className={inputCls} {...form.register('lastName')} />
               {form.formState.errors.lastName && (
                 <p className="text-red-500 text-sm">{String(form.formState.errors.lastName.message)}</p>
               )}
@@ -758,33 +761,34 @@ function FamilyMemberDialog({ open, onOpenChange, member, userId }: any) {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="age">Age</Label>
-              <Input 
-                type="number" 
-                {...form.register('age', { valueAsNumber: true })} 
+            <div className="space-y-1.5">
+              <Label htmlFor="age" className="text-sm font-medium text-gray-700">Age</Label>
+              <Input
+                className={inputCls}
+                type="number"
+                {...form.register('age', { valueAsNumber: true })}
               />
               {form.formState.errors.age && (
                 <p className="text-red-500 text-sm">{String(form.formState.errors.age.message)}</p>
               )}
             </div>
-            <div>
-              <Label htmlFor="relationship">Relationship</Label>
-              <Input {...form.register('relationship')} />
+            <div className="space-y-1.5">
+              <Label htmlFor="relationship" className="text-sm font-medium text-gray-700">Relationship</Label>
+              <Input className={inputCls} {...form.register('relationship')} />
               {form.formState.errors.relationship && (
                 <p className="text-red-500 text-sm">{String(form.formState.errors.relationship.message)}</p>
               )}
             </div>
           </div>
 
-          <div>
-            <Label htmlFor="contactNumber">Contact Number (Optional)</Label>
-            <Input {...form.register('contactNumber')} />
+          <div className="space-y-1.5">
+            <Label htmlFor="contactNumber" className="text-sm font-medium text-gray-700">Contact Number (Optional)</Label>
+            <Input className={inputCls} {...form.register('contactNumber')} />
           </div>
 
-          <div>
-            <Label htmlFor="email">Email (Optional)</Label>
-            <Input type="email" {...form.register('email')} />
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">Email (Optional)</Label>
+            <Input className={inputCls} type="email" {...form.register('email')} />
             {form.formState.errors.email && (
               <p className="text-red-500 text-sm">{String(form.formState.errors.email.message)}</p>
             )}
@@ -800,7 +804,7 @@ function FamilyMemberDialog({ open, onOpenChange, member, userId }: any) {
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" className={saveBtnCls} disabled={isLoading}>
               {isLoading ? 'Saving...' : (isEditing ? 'Update' : 'Add')} Member
             </Button>
           </DialogFooter>

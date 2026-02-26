@@ -123,10 +123,7 @@ export default function ResetPasswordForm() {
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-blue-100 rounded-md">
-                <Lock className="h-3.5 w-3.5 text-blue-700" />
-              </div>
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
               New Password
             </Label>
             <div className="relative">
@@ -138,7 +135,7 @@ export default function ResetPasswordForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 pr-10 h-11 border-2 focus:border-blue-500"
+                className="pl-10 pr-10 h-11 border-gray-300 bg-white focus-visible:ring-blue-500"
                 disabled={isLoading || !token}
                 minLength={8}
               />
@@ -154,10 +151,7 @@ export default function ResetPasswordForm() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="confirmPassword" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-blue-100 rounded-md">
-                <Lock className="h-3.5 w-3.5 text-blue-700" />
-              </div>
+            <Label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
               Confirm Password
             </Label>
             <div className="relative">
@@ -169,7 +163,7 @@ export default function ResetPasswordForm() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
-                className="pl-10 pr-10 h-11 border-2 focus:border-blue-500"
+                className="pl-10 pr-10 h-11 border-gray-300 bg-white focus-visible:ring-blue-500"
                 disabled={isLoading || !token}
                 minLength={8}
               />
