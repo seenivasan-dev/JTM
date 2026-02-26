@@ -29,6 +29,9 @@ import {
 import Link from 'next/link'
 import Image from 'next/image'
 
+const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500'
+const selectCls = 'h-11 border-gray-300 bg-white'
+
 interface Event {
   id: string
   title: string
@@ -249,6 +252,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
       case 'text':
         return (
           <Input
+            className={inputCls}
             value={stringValue}
             onChange={(e) => updateRSVPField(field.id, e.target.value)}
             placeholder={`Enter ${field.label.toLowerCase()}`}
@@ -259,6 +263,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
       case 'number':
         return (
           <Input
+            className={inputCls}
             type="number"
             value={stringValue}
             onChange={(e) => updateRSVPField(field.id, e.target.value)}
@@ -274,7 +279,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
             onValueChange={(newValue) => updateRSVPField(field.id, newValue)}
             required={field.required}
           >
-            <SelectTrigger>
+            <SelectTrigger className={selectCls}>
               <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
             </SelectTrigger>
             <SelectContent>
@@ -588,6 +593,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                         <div className="space-y-1">
                           <Label htmlFor="vegCount">🥦 Veg Meals (Adults)</Label>
                           <Input
+                            className={inputCls}
                             id="vegCount"
                             type="number"
                             min={0}
@@ -601,6 +607,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                         <div className="space-y-1">
                           <Label htmlFor="nonVegCount">🍗 Non-Veg Meals (Adults)</Label>
                           <Input
+                            className={inputCls}
                             id="nonVegCount"
                             type="number"
                             min={0}
@@ -614,6 +621,7 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                         <div className="space-y-1">
                           <Label htmlFor="kidsCount">🧒 Kids Meals</Label>
                           <Input
+                            className={inputCls}
                             id="kidsCount"
                             type="number"
                             min={0}

@@ -10,7 +10,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LogIn, Mail, Lock, Sparkles, Eye, EyeOff } from 'lucide-react'
+import { LogIn, Sparkles, Eye, EyeOff } from 'lucide-react'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -85,10 +85,7 @@ export function LoginForm() {
             </Alert>
           )}
           <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-blue-100 rounded-md">
-                <Mail className="h-3.5 w-3.5 text-blue-700" />
-              </div>
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
               Email Address
             </Label>
             <Input
@@ -98,14 +95,11 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-11 border-2 focus:border-blue-500 transition-colors"
+              className="h-11 border-gray-300 bg-white focus-visible:ring-blue-500"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-semibold flex items-center gap-2">
-              <div className="p-1 bg-blue-100 rounded-md">
-                <Lock className="h-3.5 w-3.5 text-blue-700" />
-              </div>
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
               Password
             </Label>
             <div className="relative">
@@ -116,7 +110,7 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-11 border-2 focus:border-blue-500 transition-colors pr-10"
+                className="h-11 border-gray-300 bg-white focus-visible:ring-blue-500 pr-10"
               />
               <button
                 type="button"

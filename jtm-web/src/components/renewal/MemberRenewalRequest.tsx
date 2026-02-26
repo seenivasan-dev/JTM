@@ -16,6 +16,9 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, Plus, CreditCard, Users, Calendar, Sparkles, RefreshCcw } from 'lucide-react'
 
+const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500'
+const selectCls = 'h-11 border-gray-300 bg-white'
+
 // Validation schema
 const familyMemberSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
@@ -300,7 +303,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
         <CardContent className="pt-6">
           {error && (
             <Alert variant="destructive" className="mb-6 border-2 border-red-300">
-              <AlertDescription className="font-semibold">{error}</AlertDescription>
+              <AlertDescription className="text-sm font-medium text-gray-700">{error}</AlertDescription>
             </Alert>
           )}
 
@@ -324,39 +327,39 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                   name="newMembershipType"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-semibold">Membership Type</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">Membership Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
-                          <SelectTrigger className="h-12 border-2 hover:border-primary transition-colors">
+                          <SelectTrigger className={selectCls}>
                             <SelectValue placeholder="Select membership type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="INDIVIDUAL" className="py-3">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">Individual</span>
+                              <span className="text-sm font-medium text-gray-700">Individual</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="FAMILY" className="py-3">
                             <div className="flex items-center gap-2">
                               <Users className="h-4 w-4" />
-                              <span className="font-semibold">Family</span>
+                              <span className="text-sm font-medium text-gray-700">Family</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="STUDENT" className="py-3">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">Student</span>
+                              <span className="text-sm font-medium text-gray-700">Student</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="SENIOR" className="py-3">
                             <div className="flex items-center gap-2">
-                              <span className="font-semibold">Senior</span>
+                              <span className="text-sm font-medium text-gray-700">Senior</span>
                             </div>
                           </SelectItem>
                           <SelectItem value="CUSTOM" className="py-3">
                             <div className="flex items-center gap-2">
                               <Sparkles className="h-4 w-4" />
-                              <span className="font-semibold">Custom</span>
+                              <span className="text-sm font-medium text-gray-700">Custom</span>
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -371,11 +374,11 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                   name="paymentReference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-base font-semibold">Payment Reference Number</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">Payment Reference Number</FormLabel>
                       <FormControl>
-                        <Input 
+                        <Input
                           placeholder="Enter payment confirmation number"
-                          className="h-12 border-2 hover:border-secondary transition-colors"
+                          className={inputCls}
                           {...field}
                         />
                       </FormControl>
@@ -435,9 +438,9 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.firstName`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">First Name</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="John" className="border-2 hover:border-accent transition-colors" {...field} />
+                                      <Input placeholder="John" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -448,9 +451,9 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.lastName`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">Last Name</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="Doe" className="border-2 hover:border-accent transition-colors" {...field} />
+                                      <Input placeholder="Doe" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -463,12 +466,12 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.age`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">Age</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Age</FormLabel>
                                     <FormControl>
                                       <Input 
                                         type="number" 
                                         placeholder="25" 
-                                        className="border-2 hover:border-accent transition-colors"
+                                        className={inputCls}
                                         {...field}
                                         onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                                       />
@@ -482,9 +485,9 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.relationship`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">Relationship</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Relationship</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="Spouse, Child, etc." className="border-2 hover:border-accent transition-colors" {...field} />
+                                      <Input placeholder="Spouse, Child, etc." className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -497,9 +500,9 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.contactNumber`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">Contact Number (Optional)</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Contact Number (Optional)</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="+1 (555) 123-4567" className="border-2 hover:border-accent transition-colors" {...field} />
+                                      <Input placeholder="+1 (555) 123-4567" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -510,9 +513,9 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                 name={`familyMembers.${index}.email`}
                                 render={({ field }) => (
                                   <FormItem>
-                                    <FormLabel className="font-semibold">Email (Optional)</FormLabel>
+                                    <FormLabel className="text-sm font-medium text-gray-700">Email (Optional)</FormLabel>
                                     <FormControl>
-                                      <Input type="email" placeholder="jane.doe@example.com" className="border-2 hover:border-accent transition-colors" {...field} />
+                                      <Input type="email" placeholder="jane.doe@example.com" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
