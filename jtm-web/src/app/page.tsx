@@ -1,21 +1,16 @@
 // JTM Web - Modern Landing Page
-import { getServerSession } from 'next-auth/next'
-import { authOptions } from '@/lib/auth'
-import { redirect } from 'next/navigation'
-import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { SponsorsSlider } from '@/components/landing/SponsorsSlider'
-import { 
-  Calendar, 
-  Users, 
-  Heart, 
-  Globe, 
+import { PublicNav } from '@/components/layout/PublicNav'
+import {
+  Calendar,
+  Users,
+  Heart,
+  Globe,
   Trophy,
-  ChevronDown,
-  Menu,
   ArrowRight,
   Star,
   Award,
@@ -57,7 +52,7 @@ const sponsors = [
   { src: '/images/sponsers/Platinum-Mastercraft.jpg', name: 'Mastercraft', level: 'Platinum' },
   { src: '/images/sponsers/Platinum-Peaky-Blinds.jpg', name: 'Peaky Blinds', level: 'Platinum' },
   { src: '/images/sponsers/Platinum-Sridhar.jpg', name: 'Sridhar', level: 'Platinum' },
-  
+
   // Gold Sponsors
   { src: '/images/sponsers/Gold-Desi-Pantry.png', name: 'Desi Pantry', level: 'Gold' },
   { src: '/images/sponsers/Gold-Devi.jpg', name: 'Devi', level: 'Gold' },
@@ -67,124 +62,27 @@ const sponsors = [
   { src: '/images/sponsers/Gold-Kolapasi.jpg', name: 'Kolapasi', level: 'Gold' },
   { src: '/images/sponsers/Gold-Krish.jpg', name: 'Krish', level: 'Gold' },
   { src: '/images/sponsers/Gold-Sathiyan.jpg', name: 'Sathiyan', level: 'Gold' },
-  
+
   // Silver Sponsors
   { src: '/images/sponsers/Silver-Manju-FreshMeats.jpg', name: 'Manju Fresh Meats', level: 'Silver' },
-  
+
   // Bronze Sponsors
   { src: '/images/sponsers/Bronze Sponsor - 1.jpg', name: 'Bronze Sponsor 1', level: 'Bronze' },
   { src: '/images/sponsers/Bronze Sponsor - 2.jpg', name: 'Bronze Sponsor 2', level: 'Bronze' },
   { src: '/images/sponsers/Bronze Sponsor - 3.jpg', name: 'Bronze Sponsor 3', level: 'Bronze' },
   { src: '/images/sponsers/Bronze Sponsor - 4.jpg', name: 'Bronze Sponsor 4', level: 'Bronze' },
   { src: '/images/sponsers/Bronze Sponsor - 5.jpg', name: 'Bronze Sponsor 5', level: 'Bronze' },
-  
+
   // Event Sponsors
   { src: '/images/sponsers/Event-AshleyHomes.jpg', name: 'Ashley Homes', level: 'Event' },
   { src: '/images/sponsers/Event-Sponsor-ICIHomes.jpeg', name: 'ICI Homes', level: 'Event' },
   { src: '/images/sponsers/Event-Sponsor-Madurai-Kitchen.jpeg', name: 'Madurai Kitchen', level: 'Event' },
 ]
 
-export default async function Home() {
-  const session = await getServerSession(authOptions)
-
-  if (session?.user?.email) {
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    })
-
-    if (user) {
-      const admin = await prisma.admin.findUnique({
-        where: { email: session.user.email },
-      })
-
-      if (admin) {
-        redirect('/admin')
-      } else {
-        redirect('/dashboard')
-      }
-    }
-  }
-
+export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
-      {/* Professional Navigation Bar */}
-      <nav className="fixed top-0 w-full bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 shadow-xl z-50">
-        <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none"></div>
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <Link href="/" className="flex items-center gap-4 group">
-              <div className="relative h-14 w-14 rounded-xl overflow-hidden shadow-xl group-hover:scale-105 transition-transform ring-2 ring-white/30">
-                <Image
-                  src="/images/JTMLogo.jpg"
-                  alt="Jacksonville Tamil Mandram"
-                  fill
-                  className="object-cover"
-                  priority
-                />
-              </div>
-              <div className="hidden md:block">
-                <h1 className="text-xl font-bold text-white drop-shadow">
-                  Jacksonville Tamil Mandram
-                </h1>
-                <p className="text-sm text-white/70">Connecting Communities Since 2001</p>
-              </div>
-            </Link>
-
-            {/* Desktop Menu */}
-            <div className="hidden xl:flex items-center gap-1">
-              <Link href="#home" className="px-3 py-2 text-sm font-semibold text-white bg-white/20 backdrop-blur-sm rounded-lg">
-                Home
-              </Link>
-              {[
-                { label: 'Magazines', href: '#magazines' },
-                { label: 'ByLaws', href: '/bylaws' },
-                { label: 'Events', href: '#events' },
-                { label: 'Membership', href: '/auth/register' },
-              ].map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className="px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-all"
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <div className="relative group">
-                <button className="px-3 py-2 text-sm font-medium text-white/80 hover:text-white hover:bg-white/15 rounded-lg transition-all flex items-center gap-1">
-                  More <ChevronDown className="h-3 w-3" />
-                </button>
-                <div className="absolute top-full right-0 mt-1 hidden group-hover:block bg-white shadow-2xl rounded-xl py-2 min-w-[200px] border border-gray-100">
-                  <Link href="#magazines" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Magazines</Link>
-                  <Link href="#resources" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Resources</Link>
-                  <Link href="#sponsors" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Sponsors</Link>
-                  <Link href="#tamil-classes" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Tamil Classes</Link>
-                  <Link href="#gallery" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Gallery</Link>
-                  <Link href="#history" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">History</Link>
-                  <Link href="#faq" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">FAQ</Link>
-                  <Link href="#contact" className="block px-4 py-2 text-sm text-gray-700 hover:bg-blue-50">Contact Us</Link>
-                </div>
-              </div>
-            </div>
-
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
-              <Link href="/auth/login" className="hidden md:inline-flex">
-                <Button variant="ghost" className="text-white/90 hover:text-white hover:bg-white/15">Sign In</Button>
-              </Link>
-              <Link href="/auth/register">
-                <Button className="bg-white/20 backdrop-blur-sm border border-white/30 text-white hover:bg-white/30 shadow-lg transition-all">
-                  <Users className="mr-2 h-4 w-4" />
-                  Join Now
-                </Button>
-              </Link>
-              <button className="xl:hidden p-2 hover:bg-white/15 rounded-lg">
-                <Menu className="h-6 w-6 text-white" />
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+      <PublicNav />
 
       {/* Hero Banner Section */}
       <section className="relative pt-20 bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex justify-center">
@@ -214,12 +112,12 @@ export default async function Home() {
             backgroundSize: '100px 100px, 150px 150px, 80px 80px'
           }}></div>
         </div>
-        
+
         {/* Floating orbs */}
         <div className="absolute top-20 left-10 w-72 h-72 bg-blue-300 rounded-full opacity-10 blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-300 rounded-full opacity-10 blur-3xl"></div>
         <div className="absolute top-1/2 left-1/2 w-64 h-64 bg-purple-300 rounded-full opacity-10 blur-3xl"></div>
-        
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-6xl mx-auto">
             {/* Header with decorative elements */}
@@ -231,11 +129,11 @@ export default async function Home() {
                   <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
-              
+
               <div className="inline-block mb-4 px-6 py-2 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-full border-2 border-blue-300 shadow-lg">
                 <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent font-bold text-sm tracking-wider">LEADERSHIP 2025</span>
               </div>
-              
+
               <h2 className="text-4xl md:text-6xl font-bold mb-4">
                 <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   Executive Committee
@@ -250,7 +148,7 @@ export default async function Home() {
                 Meet our dedicated leadership team working tirelessly to serve the Tamil community
               </p>
             </div>
-            
+
             {/* EC Team Photo Container */}
             <div className="relative max-w-5xl mx-auto">
               {/* Decorative corner elements */}
@@ -258,7 +156,7 @@ export default async function Home() {
               <div className="absolute -top-4 -right-4 w-20 h-20 border-t-4 border-r-4 border-indigo-500 rounded-tr-3xl opacity-60"></div>
               <div className="absolute -bottom-4 -left-4 w-20 h-20 border-b-4 border-l-4 border-indigo-500 rounded-bl-3xl opacity-60"></div>
               <div className="absolute -bottom-4 -right-4 w-20 h-20 border-b-4 border-r-4 border-purple-500 rounded-br-3xl opacity-60"></div>
-              
+
               {/* Photo frame with glassmorphism */}
               <div className="relative bg-white/60 backdrop-blur-md p-4 rounded-3xl shadow-2xl border-2 border-white">
                 <div className="relative rounded-2xl overflow-hidden shadow-xl ring-4 ring-blue-200/50">
@@ -272,11 +170,11 @@ export default async function Home() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Bottom info bar */}
                 <div className="mt-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl p-4 border-2 border-blue-200 shadow-inner">
                   <p className="text-gray-700 text-center leading-relaxed">
-                    Our Executive Committee works tirelessly to serve the Tamil community, organize cultural events, 
+                    Our Executive Committee works tirelessly to serve the Tamil community, organize cultural events,
                     and preserve our rich heritage for future generations.
                   </p>
                 </div>
@@ -298,7 +196,7 @@ export default async function Home() {
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">Culture & Heritage</span>
             </h3>
             <p className="text-lg md:text-xl text-gray-700 mb-10 max-w-3xl mx-auto leading-relaxed">
-              Join Jacksonville's premier Tamil cultural organization. Experience authentic festivals, 
+              Join Jacksonville's premier Tamil cultural organization. Experience authentic festivals,
               connect with community members, and preserve our rich heritage for future generations.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -343,9 +241,9 @@ export default async function Home() {
               About <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Jacksonville Tamil Mandram</span>
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              Jacksonville Tamil Mandram (JTM) is a vibrant non-profit organization dedicated to preserving and promoting 
-              Tamil culture, language, and traditions in Northeast Florida. Since 2010, we have been bringing together 
-              Tamil-speaking families to celebrate our rich heritage through cultural events, educational programs, and 
+              Jacksonville Tamil Mandram (JTM) is a vibrant non-profit organization dedicated to preserving and promoting
+              Tamil culture, language, and traditions in Northeast Florida. Since 2010, we have been bringing together
+              Tamil-speaking families to celebrate our rich heritage through cultural events, educational programs, and
               community gatherings.
             </p>
           </div>
@@ -860,7 +758,7 @@ export default async function Home() {
                 </div>
               </div>
               <p className="text-gray-400 mb-4 max-w-md leading-relaxed">
-                A non-profit organization dedicated to preserving Tamil culture and heritage 
+                A non-profit organization dedicated to preserving Tamil culture and heritage
                 while fostering unity among Tamil families in Jacksonville, Florida.
               </p>
               <div className="flex gap-3">
@@ -894,7 +792,7 @@ export default async function Home() {
                   <Mail className="h-5 w-5 text-blue-400 flex-shrink-0" />
                   <span>jtmec2025@gmail.com</span>
                 </li>
-                
+
               </ul>
             </div>
           </div>

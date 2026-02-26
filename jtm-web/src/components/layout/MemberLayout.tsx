@@ -16,6 +16,7 @@ import {
   X,
   Sparkles,
   ChevronDown,
+  Scale,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -49,6 +50,7 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
     { name: 'Home', href: '/', icon: Home, current: pathname === '/' },
     { name: 'Dashboard', href: '/member', icon: LayoutDashboard, current: pathname === '/member' },
     { name: 'Events', href: '/events', icon: Calendar, current: pathname.startsWith('/events') },
+    { name: 'ByLaws', href: '/bylaws', icon: Scale, current: pathname === '/bylaws' },
     { name: 'Profile', href: '/profile', icon: User, current: pathname === '/profile' },
     { name: 'Renewal', href: '/renewal', icon: RefreshCcw, current: pathname === '/renewal' },
   ]
@@ -172,6 +174,12 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
                     <Link href="/events" className="cursor-pointer">
                       <Calendar className="mr-2 h-4 w-4" />
                       Events
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/bylaws" className="cursor-pointer">
+                      <Scale className="mr-2 h-4 w-4" />
+                      ByLaws
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>

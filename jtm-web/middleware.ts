@@ -13,8 +13,12 @@ export async function middleware(request: NextRequest) {
 
   // Public routes that don't require authentication
   const publicRoutes = [
+    '/',
+    '/bylaws',
     '/auth/login',
     '/auth/register',
+    '/auth/forgot-password',
+    '/auth/reset-password',
     '/auth/error',
   ]
 
@@ -22,7 +26,7 @@ export async function middleware(request: NextRequest) {
   const passwordChangeRoute = '/auth/change-password'
 
   // Check if current path is public
-  const isPublicRoute = publicRoutes.some(route => pathname.startsWith(route))
+  const isPublicRoute = publicRoutes.some(route => pathname === route || pathname.startsWith(route + '?'))
 
   // If no token and trying to access protected route, redirect to login
   if (!token && !isPublicRoute) {
