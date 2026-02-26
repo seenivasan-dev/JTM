@@ -1,6 +1,7 @@
 // JTM Web - By-Laws Page
 import Link from 'next/link'
 import { ArrowLeft, Scale, MapPin, Target, Users, Vote, FileText, Calendar, Activity, School, Layers, Shield, BookOpen } from 'lucide-react'
+import { PublicNav } from '@/components/layout/PublicNav'
 
 const sections = [
   { id: 'definitions', label: 'Definitions' },
@@ -72,7 +73,8 @@ function SectionCard({ id, icon: Icon, title, children }: {
 
 export default function BylawsPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+    <div className="min-h-screen pt-20 bg-gradient-to-br from-slate-50 via-white to-indigo-50">
+      <PublicNav />
 
       {/* Gradient Hero Header */}
       <div className="relative bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 overflow-hidden">
@@ -116,7 +118,7 @@ export default function BylawsPage() {
         <div className="flex gap-8 items-start">
 
           {/* Sticky Table of Contents — desktop only */}
-          <aside className="hidden xl:block w-56 flex-shrink-0 sticky top-6">
+          <aside className="hidden xl:block w-56 flex-shrink-0 sticky top-24">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
               <div className="px-4 py-3 bg-gradient-to-r from-cyan-50 to-indigo-50 border-b border-indigo-100">
                 <p className="text-xs font-bold text-indigo-700 uppercase tracking-wider">Contents</p>

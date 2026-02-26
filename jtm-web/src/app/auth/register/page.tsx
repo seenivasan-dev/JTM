@@ -1,24 +1,11 @@
 import RegistrationForm from '@/components/auth/RegistrationForm';
 import Link from 'next/link'
+import { PublicNav } from '@/components/layout/PublicNav'
 
 export default function RegisterPage() {
   return (
-    <div className="min-h-screen dark:bg-gray-900">
-      {/* Mobile gradient header */}
-      <div className="lg:hidden relative bg-gradient-to-r from-blue-600 to-blue-700 px-5 pt-10 pb-7">
-        <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none"></div>
-        <div className="relative z-10 flex items-center gap-4">
-          <Link href="/" className="flex items-center gap-4">
-            <div className="h-12 w-12 rounded-2xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center flex-shrink-0 shadow-lg">
-              <span className="text-white font-bold text-base">JTM</span>
-            </div>
-            <div>
-              <h1 className="text-white font-bold text-lg leading-tight">Jacksonville Tamil Mandram</h1>
-              <p className="text-white/75 text-sm mt-0.5">Create your membership account</p>
-            </div>
-          </Link>
-        </div>
-      </div>
+    <div className="min-h-screen pt-20 dark:bg-gray-900">
+      <PublicNav />
 
       {/* Content area */}
       <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 lg:min-h-screen lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-8">
