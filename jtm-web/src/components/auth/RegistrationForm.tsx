@@ -7,13 +7,26 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm, useFieldArray } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { Trash2, Plus, UserPlus, Sparkles } from 'lucide-react';
+import {
+  Trash2,
+  Plus,
+  UserPlus,
+  Sparkles,
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  CreditCard,
+  Users,
+  CheckCircle2,
+  Home,
+} from 'lucide-react';
 
 const familyMemberSchema = z.object({
   firstName: z.string().min(2, 'First name is required'),
@@ -44,8 +57,32 @@ const registrationSchema = z.object({
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
 
-const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500';
-const selectCls = 'h-11 border-gray-300 bg-white';
+const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl';
+const selectCls = 'h-11 border-gray-200 bg-white rounded-xl';
+
+function SectionHeader({
+  icon,
+  title,
+  subtitle,
+  color = 'from-cyan-500 to-blue-600',
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle?: string;
+  color?: string;
+}) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <div className={`p-2.5 rounded-xl bg-gradient-to-br ${color} shadow-md shrink-0`}>
+        {icon}
+      </div>
+      <div>
+        <h3 className="font-bold text-gray-900">{title}</h3>
+        {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+      </div>
+    </div>
+  );
+}
 
 export default function RegistrationForm() {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -99,7 +136,7 @@ export default function RegistrationForm() {
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Registration failed');
-      setSuccess(result.message || 'Registration successful! Your account is pending admin approval. You will receive an email once activated.');
+      setSuccess(result.message || 'Registration successful! Your account is pending admin approval.');
       setTimeout(() => router.push('/auth/login'), 8000);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Registration failed');
@@ -109,219 +146,292 @@ export default function RegistrationForm() {
   };
 
   const addFamilyMember = () => {
-    append({ firstName: '', lastName: '', age: '' as any, contactNumber: '', email: '', relationship: '' });
+    append({ firstName: '', lastName: '', age: '' as unknown as number, contactNumber: '', email: '', relationship: '' });
   };
 
+  // Success state
+  if (success) {
+    return (
+      <div ref={successAlertRef} className="text-center py-8 px-4">
+        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mx-auto mb-4 shadow-xl">
+          <CheckCircle2 className="h-10 w-10 text-white" />
+        </div>
+        <h2 className="text-2xl font-bold text-gray-900 mb-2">Registration Submitted!</h2>
+        <p className="text-gray-600 mb-4 max-w-sm mx-auto">
+          Your application is under review. You will receive an email with login instructions once an administrator activates your account.
+        </p>
+        <Badge className="bg-emerald-100 text-emerald-800 text-sm px-4 py-1.5">
+          Redirecting to login page...
+        </Badge>
+      </div>
+    );
+  }
+
   return (
-    <Card className="w-full max-w-2xl border-0 shadow-none lg:elevated-card lg:border-t-4 lg:border-t-primary lg:backdrop-blur-sm lg:bg-white/90 dark:bg-gray-900/90">
-      <CardHeader className="hidden lg:flex space-y-3 text-center pb-8 flex-col items-center">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-cyan-600 via-blue-600 to-indigo-600 flex items-center justify-center shadow-xl mb-2">
+    <div className="w-full max-w-2xl mx-auto space-y-1">
+      {/* Mobile-only header — hidden since page hero now provides branding */}
+      <div className="hidden text-center mb-4">
+        <div className="inline-flex p-3 rounded-2xl bg-gradient-to-br from-cyan-600 to-indigo-600 shadow-lg mb-3">
           <UserPlus className="h-8 w-8 text-white" />
         </div>
-        <CardTitle className="text-3xl font-bold">
-          <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Join Our Community
-          </span>
-        </CardTitle>
-        <CardDescription className="text-base">
-          Register for membership. Your application will be reviewed by our admin team.
-        </CardDescription>
-      </CardHeader>
+        <h2 className="text-2xl font-bold text-gray-900">Join Our Community</h2>
+        <p className="text-gray-500 text-sm mt-1">Register for JTM membership</p>
+      </div>
 
-      <CardContent className="pt-2 lg:pt-0">
-        {error && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-        {success && (
-          <Alert ref={successAlertRef} className="mb-6 bg-green-50 border-green-200">
-            <AlertDescription className="text-green-800">
-              <div className="space-y-2">
-                <p className="font-semibold text-lg">{success}</p>
-                <p className="text-sm">You will receive an email with login instructions once an administrator activates your account.</p>
-                <p className="text-sm font-medium mt-3">Redirecting to login page in a few seconds...</p>
-              </div>
-            </AlertDescription>
-          </Alert>
-        )}
+      {error && (
+        <Alert variant="destructive" className="mb-4 rounded-xl">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        {!success && (
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
 
-              {/* Personal Information */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Personal Information</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <FormField control={form.control} name="firstName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                      <FormControl><Input className={inputCls} placeholder="John" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="lastName" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                      <FormControl><Input className={inputCls} placeholder="Doe" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
-
-                <FormField control={form.control} name="email" render={({ field }) => (
+          {/* ── Section 1: Personal Information ── */}
+          <Card className="border-2 border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-cyan-50 to-blue-50 pb-3 pt-4 px-5">
+              <SectionHeader
+                icon={<User className="h-5 w-5 text-white" />}
+                title="Personal Information"
+                subtitle="Your name and contact details"
+                color="from-cyan-500 to-blue-600"
+              />
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-4 space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField control={form.control} name="firstName" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Email</FormLabel>
-                    <FormControl><Input className={inputCls} type="email" placeholder="john.doe@example.com" {...field} /></FormControl>
+                    <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="Ravi" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
+                <FormField control={form.control} name="lastName" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="Kumar" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+              </div>
 
+              <FormField control={form.control} name="email" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <Mail className="h-3.5 w-3.5 text-gray-400" /> Email Address
+                  </FormLabel>
+                  <FormControl><Input className={inputCls} type="email" placeholder="ravi.kumar@example.com" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField control={form.control} name="mobileNumber" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Mobile Number</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="+1 (555) 123-4567" {...field} /></FormControl>
+                    <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                      <Phone className="h-3.5 w-3.5 text-gray-400" /> Mobile Number
+                    </FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="+1 (904) 555-0100" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
 
                 <FormField control={form.control} name="membershipType" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Membership Type</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                      <Sparkles className="h-3.5 w-3.5 text-gray-400" /> Membership Type
+                    </FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
-                        <SelectTrigger className={selectCls}>
-                          <SelectValue placeholder="Select membership type" />
-                        </SelectTrigger>
+                        <SelectTrigger className={selectCls}><SelectValue placeholder="Select type" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="INDIVIDUAL">Individual</SelectItem>
-                        <SelectItem value="FAMILY">Family</SelectItem>
-                        <SelectItem value="CUSTOM">Custom</SelectItem>
+                        <SelectItem value="INDIVIDUAL">
+                          <span className="flex items-center gap-2"><User className="h-4 w-4" /> Individual</span>
+                        </SelectItem>
+                        <SelectItem value="FAMILY">
+                          <span className="flex items-center gap-2"><Users className="h-4 w-4" /> Family</span>
+                        </SelectItem>
+                        <SelectItem value="CUSTOM">
+                          <span className="flex items-center gap-2"><Sparkles className="h-4 w-4" /> Custom</span>
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
                   </FormItem>
                 )} />
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Address Information */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Address Information</h3>
-                <FormField control={form.control} name="address.street" render={({ field }) => (
+          {/* ── Section 2: Address ── */}
+          <Card className="border-2 border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-violet-50 to-indigo-50 pb-3 pt-4 px-5">
+              <SectionHeader
+                icon={<Home className="h-5 w-5 text-white" />}
+                title="Home Address"
+                subtitle="Your address in Jacksonville area"
+                color="from-violet-500 to-indigo-600"
+              />
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-4 space-y-4">
+              <FormField control={form.control} name="address.street" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-gray-400" /> Street Address
+                  </FormLabel>
+                  <FormControl><Input className={inputCls} placeholder="123 Baymeadows Rd" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+              <div className="grid grid-cols-3 gap-3">
+                <FormField control={form.control} name="address.city" render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Street Address</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="123 Main Street" {...field} /></FormControl>
+                    <FormLabel className="text-sm font-medium text-gray-700">City</FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="Jacksonville" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                  <FormField control={form.control} name="address.city" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">City</FormLabel>
-                      <FormControl><Input className={inputCls} placeholder="Jacksonville" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="address.state" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">State</FormLabel>
-                      <FormControl><Input className={inputCls} placeholder="FL" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                  <FormField control={form.control} name="address.zipCode" render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">ZIP Code</FormLabel>
-                      <FormControl><Input className={inputCls} placeholder="32258" {...field} /></FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )} />
-                </div>
+                <FormField control={form.control} name="address.state" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">State</FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="FL" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
+                <FormField control={form.control} name="address.zipCode" render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-gray-700">ZIP</FormLabel>
+                    <FormControl><Input className={inputCls} placeholder="32258" {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )} />
               </div>
+            </CardContent>
+          </Card>
 
-              {/* Payment Information */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Payment Information</h3>
-                <p className="text-sm text-gray-500">
-                  Please provide your payment details. This information will be reviewed during the approval process.
-                </p>
-                <FormField control={form.control} name="initialPaymentMethod" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Payment Method (Optional)</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger className={selectCls}>
-                          <SelectValue placeholder="Select payment method" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="CASH">Cash</SelectItem>
-                        <SelectItem value="CHECK">Check</SelectItem>
-                        <SelectItem value="ZELLE">Zelle</SelectItem>
-                        <SelectItem value="VENMO">Venmo</SelectItem>
-                        <SelectItem value="PAYPAL">PayPal</SelectItem>
-                        <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
-                        <SelectItem value="OTHER">Other</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-                <FormField control={form.control} name="initialPaymentConfirmation" render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium text-gray-700">Payment Confirmation/Reference (Optional)</FormLabel>
+          {/* ── Section 3: Payment ── */}
+          <Card className="border-2 border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-emerald-50 to-teal-50 pb-3 pt-4 px-5">
+              <SectionHeader
+                icon={<CreditCard className="h-5 w-5 text-white" />}
+                title="Membership Payment"
+                subtitle="Optional — submit with or without payment details"
+                color="from-emerald-500 to-teal-600"
+              />
+            </CardHeader>
+            <CardContent className="px-5 pb-5 pt-4 space-y-4">
+              {/* Zelle Instructions */}
+              <Alert className="border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl">
+                <CreditCard className="h-4 w-4 text-blue-600" />
+                <AlertTitle className="text-blue-800 font-semibold text-sm">How to Pay Membership Fee</AlertTitle>
+                <AlertDescription className="text-blue-700 text-sm">
+                  Send payment via <strong>Zelle</strong> to{' '}
+                  <strong className="font-mono">payment@jaxtamilmandram.org</strong>
+                  {' '}then enter your Zelle confirmation number below.
+                </AlertDescription>
+              </Alert>
+
+              <FormField control={form.control} name="initialPaymentMethod" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Payment Method (Optional)</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <Input className={inputCls} placeholder="Check number, transaction ID, or confirmation code" {...field} value={field.value || ''} />
+                      <SelectTrigger className={selectCls}><SelectValue placeholder="Select payment method" /></SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )} />
-              </div>
+                    <SelectContent>
+                      <SelectItem value="ZELLE">Zelle (Recommended)</SelectItem>
+                      <SelectItem value="CASH">Cash</SelectItem>
+                      <SelectItem value="CHECK">Check</SelectItem>
+                      <SelectItem value="VENMO">Venmo</SelectItem>
+                      <SelectItem value="PAYPAL">PayPal</SelectItem>
+                      <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )} />
 
-              {/* Family Members */}
-              {membershipType === 'FAMILY' && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Family Members</h3>
-                    <Button type="button" variant="outline" size="sm" onClick={addFamilyMember}>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Family Member
-                    </Button>
+              <FormField control={form.control} name="initialPaymentConfirmation" render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-gray-700">Zelle Confirmation Number (Optional)</FormLabel>
+                  <FormControl>
+                    <Input className={inputCls} placeholder="e.g. ZE-XXXXXXXXX" {...field} value={field.value || ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )} />
+            </CardContent>
+          </Card>
+
+          {/* ── Section 4: Family Members (if FAMILY) ── */}
+          {membershipType === 'FAMILY' && (
+            <Card className="border-2 border-gray-100 shadow-sm rounded-2xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-amber-50 pb-3 pt-4 px-5">
+                <div className="flex items-center justify-between">
+                  <SectionHeader
+                    icon={<Users className="h-5 w-5 text-white" />}
+                    title="Family Members"
+                    subtitle="Add all family members included in this membership"
+                    color="from-orange-500 to-amber-600"
+                  />
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={addFamilyMember}
+                    className="bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white border-0 shadow-sm shrink-0"
+                  >
+                    <Plus className="h-4 w-4 mr-1" /> Add
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="px-5 pb-5 pt-2 space-y-4">
+                {fields.length === 0 && (
+                  <div className="text-center py-6 text-gray-400 text-sm">
+                    No family members added yet. Click &quot;Add&quot; to include family members.
                   </div>
-                  {fields.map((field, index) => (
-                    <Card key={field.id} className="p-4 border-gray-200">
-                      <div className="flex items-center justify-between mb-4">
-                        <Badge variant="secondary">Family Member {index + 1}</Badge>
-                        <Button type="button" variant="outline" size="sm" onClick={() => remove(index)}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                )}
+                {fields.map((field, index) => (
+                  <Card key={field.id} className="border-2 border-orange-100 shadow-sm rounded-xl overflow-hidden">
+                    <div className="flex items-center justify-between px-4 py-2.5 bg-gradient-to-r from-orange-50 to-amber-50">
+                      <div className="flex items-center gap-2">
+                        <div className="h-6 w-6 rounded-full bg-gradient-to-br from-orange-500 to-amber-600 flex items-center justify-center text-white font-bold text-xs">
+                          {index + 1}
+                        </div>
+                        <span className="text-sm font-semibold text-orange-800">Family Member {index + 1}</span>
                       </div>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Button type="button" variant="ghost" size="sm" onClick={() => remove(index)} className="hover:bg-red-100 hover:text-red-600 h-7 w-7 p-0">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="px-4 pb-4 pt-3 space-y-3">
+                      <div className="grid grid-cols-2 gap-3">
                         <FormField control={form.control} name={`familyMembers.${index}.firstName`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                            <FormControl><Input className={inputCls} placeholder="Jane" {...field} /></FormControl>
+                            <FormLabel className="text-xs font-medium text-gray-600">First Name</FormLabel>
+                            <FormControl><Input className={inputCls} placeholder="First name" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
                         <FormField control={form.control} name={`familyMembers.${index}.lastName`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                            <FormControl><Input className={inputCls} placeholder="Doe" {...field} /></FormControl>
+                            <FormLabel className="text-xs font-medium text-gray-600">Last Name</FormLabel>
+                            <FormControl><Input className={inputCls} placeholder="Last name" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <FormField control={form.control} name={`familyMembers.${index}.age`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Age</FormLabel>
+                            <FormLabel className="text-xs font-medium text-gray-600">Age</FormLabel>
                             <FormControl>
                               <Input
                                 className={inputCls}
                                 type="text"
                                 inputMode="numeric"
-                                placeholder="25"
+                                placeholder="Age"
                                 {...field}
                                 value={field.value === 0 ? '' : field.value}
                                 onChange={(e) => {
@@ -337,60 +447,64 @@ export default function RegistrationForm() {
                         )} />
                         <FormField control={form.control} name={`familyMembers.${index}.relationship`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Relationship</FormLabel>
-                            <FormControl><Input className={inputCls} placeholder="Spouse, Child, etc." {...field} /></FormControl>
+                            <FormLabel className="text-xs font-medium text-gray-600">Relationship</FormLabel>
+                            <FormControl><Input className={inputCls} placeholder="Spouse / Child" {...field} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
                         <FormField control={form.control} name={`familyMembers.${index}.contactNumber`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Contact Number (Optional)</FormLabel>
-                            <FormControl><Input className={inputCls} placeholder="+1 (555) 123-4567" {...field} value={field.value || ''} /></FormControl>
+                            <FormLabel className="text-xs font-medium text-gray-600">Phone (Optional)</FormLabel>
+                            <FormControl><Input className={inputCls} placeholder="+1 (904)..." {...field} value={field.value || ''} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
                         <FormField control={form.control} name={`familyMembers.${index}.email`} render={({ field }) => (
                           <FormItem>
-                            <FormLabel className="text-sm font-medium text-gray-700">Email (Optional)</FormLabel>
-                            <FormControl><Input className={inputCls} type="email" placeholder="jane.doe@example.com" {...field} value={field.value || ''} /></FormControl>
+                            <FormLabel className="text-xs font-medium text-gray-600">Email (Optional)</FormLabel>
+                            <FormControl><Input className={inputCls} type="email" placeholder="email@example.com" {...field} value={field.value || ''} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />
                       </div>
-                    </Card>
-                  ))}
-                </div>
-              )}
+                    </div>
+                  </Card>
+                ))}
+              </CardContent>
+            </Card>
+          )}
 
-              <div className="flex flex-col space-y-4 pt-6">
-                <Button
-                  type="submit"
-                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all"
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="flex items-center gap-2">
-                      <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                      Registering...
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-2">
-                      <Sparkles className="h-5 w-5" />
-                      Complete Registration
-                    </span>
-                  )}
-                </Button>
-                <div className="text-center text-sm text-muted-foreground">
-                  Already have an account?{' '}
-                  <Link href="/auth/login" className="text-primary hover:text-secondary transition-colors font-semibold">
-                    Sign in here
-                  </Link>
-                </div>
-              </div>
-            </form>
-          </Form>
-        )}
-      </CardContent>
-    </Card>
+          {/* ── Submit ── */}
+          <div className="space-y-3 pt-2 pb-4">
+            <Button
+              type="submit"
+              className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl"
+              disabled={isSubmitting}
+            >
+              {isSubmitting ? (
+                <span className="flex items-center gap-2">
+                  <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Submitting Application...
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Submit Membership Application
+                </span>
+              )}
+            </Button>
+            <p className="text-center text-sm text-gray-500">
+              Already a member?{' '}
+              <Link href="/auth/login" className="text-cyan-700 font-semibold hover:text-cyan-600 transition-colors">
+                Sign in here
+              </Link>
+            </p>
+          </div>
+
+        </form>
+      </Form>
+    </div>
   );
 }

@@ -10,7 +10,9 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import { LogIn, Sparkles, Eye, EyeOff } from 'lucide-react'
+import { LogIn, Sparkles, Eye, EyeOff, Mail, Lock } from 'lucide-react'
+
+const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')
@@ -38,11 +40,11 @@ export function LoginForm() {
       } else {
         // Force session refresh to get latest user data
         await update()
-        
+
         // Fetch session to check mustChangePassword and renewal flags
         const response = await fetch('/api/auth/session')
         const sessionData = await response.json()
-        
+
         if (sessionData?.user?.mustChangePassword) {
           // Redirect to password change page
           router.push('/auth/change-password')
@@ -62,31 +64,34 @@ export function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto border-0 shadow-none lg:elevated-card lg:border-t-4 lg:border-t-primary lg:backdrop-blur-sm lg:bg-white/90 dark:bg-gray-900/90">
-      {/* Header — compact on mobile, full on desktop */}
-      <CardHeader className="flex flex-col items-center space-y-3 text-center pb-6 lg:pb-8">
-        <div className="hidden lg:flex mx-auto h-16 w-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 items-center justify-center shadow-xl mb-2">
-          <LogIn className="h-8 w-8 text-white" />
+    <Card className="w-full max-w-md mx-auto border-2 border-gray-100 shadow-xl rounded-2xl bg-white overflow-hidden">
+      {/* Header — hidden on mobile (page hero provides branding), visible on desktop */}
+      <CardHeader className="hidden lg:flex flex-col items-center space-y-3 text-center pb-5 pt-6 bg-gradient-to-r from-cyan-50 to-indigo-50">
+        <div className="flex mx-auto h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 items-center justify-center shadow-lg">
+          <LogIn className="h-7 w-7 text-white" />
         </div>
-        <CardTitle className="text-xl lg:text-3xl font-bold">
-          <span className="lg:bg-gradient-to-r lg:from-blue-600 lg:to-blue-700 lg:bg-clip-text lg:text-transparent">
-            Sign In
-          </span>
-        </CardTitle>
-        <CardDescription className="text-sm lg:text-base text-gray-600 dark:text-gray-300">
-          Access your JTM Community account
-        </CardDescription>
+        <div>
+          <CardTitle className="text-2xl font-bold bg-gradient-to-r from-cyan-600 to-indigo-600 bg-clip-text text-transparent">
+            Welcome Back
+          </CardTitle>
+          <CardDescription className="text-sm text-gray-500 mt-0.5">
+            Sign in to your JTM member account
+          </CardDescription>
+        </div>
       </CardHeader>
+
       <form onSubmit={handleSubmit}>
-        <CardContent className="space-y-5 pt-2 lg:pt-0">
+        <CardContent className="space-y-4 pt-5 px-6">
           {error && (
-            <Alert variant="destructive" className="border-destructive/50 bg-destructive/10">
+            <Alert variant="destructive" className="border-destructive/50 bg-destructive/10 rounded-xl">
               <AlertDescription className="text-sm">{error}</AlertDescription>
             </Alert>
           )}
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-              Email Address
+
+          {/* Email */}
+          <div className="space-y-1.5">
+            <Label htmlFor="email" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <Mail className="h-3.5 w-3.5 text-gray-400" /> Email Address
             </Label>
             <Input
               id="email"
@@ -95,12 +100,14 @@ export function LoginForm() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="h-11 border-gray-300 bg-white focus-visible:ring-blue-500"
+              className={inputCls}
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-              Password
+
+          {/* Password */}
+          <div className="space-y-1.5">
+            <Label htmlFor="password" className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-gray-400" /> Password
             </Label>
             <div className="relative">
               <Input
@@ -110,7 +117,7 @@ export function LoginForm() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="h-11 border-gray-300 bg-white focus-visible:ring-blue-500 pr-10"
+                className={`${inputCls} pr-10`}
               />
               <button
                 type="button"
@@ -122,20 +129,21 @@ export function LoginForm() {
               </button>
             </div>
           </div>
-          
+
           <div className="flex items-center justify-end">
-            <Link 
-              href="/auth/forgot-password" 
-              className="text-sm text-primary hover:text-secondary transition-colors font-medium"
+            <Link
+              href="/auth/forgot-password"
+              className="text-sm text-cyan-700 hover:text-cyan-600 transition-colors font-medium"
             >
               Forgot password?
             </Link>
           </div>
         </CardContent>
-        <CardFooter className="flex flex-col space-y-4 pt-2">
-          <Button 
-            type="submit" 
-            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white shadow-lg hover:shadow-xl transition-all"
+
+        <CardFooter className="flex flex-col space-y-4 pt-2 px-6 pb-6">
+          <Button
+            type="submit"
+            className="w-full h-12 text-base font-semibold bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transition-all rounded-xl"
             disabled={isLoading}
           >
             {isLoading ? (
@@ -150,22 +158,22 @@ export function LoginForm() {
               </span>
             )}
           </Button>
-          
+
           <div className="relative w-full">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-border"></div>
+              <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="bg-white dark:bg-gray-900 px-4 text-gray-600 dark:text-gray-300 font-medium">
+              <span className="bg-white px-4 text-gray-500 font-medium">
                 New to JTM?
               </span>
             </div>
           </div>
-          
-          <Button 
+
+          <Button
             type="button"
             variant="outline"
-            className="w-full h-12 text-base font-semibold border-2 border-primary text-primary hover:bg-primary hover:text-white transition-all"
+            className="w-full h-12 text-base font-semibold border-2 border-cyan-600 text-cyan-700 hover:bg-cyan-50 hover:text-cyan-800 transition-all rounded-xl"
             asChild
           >
             <Link href="/auth/register">

@@ -1,26 +1,28 @@
 import ForgotPasswordForm from '@/components/auth/ForgotPasswordForm'
 import Link from 'next/link'
+import Image from 'next/image'
 import { PublicNav } from '@/components/layout/PublicNav'
+import { PublicBottomNav } from '@/components/layout/PublicBottomNav'
 
 export default function ForgotPasswordPage() {
   return (
-    <div className="min-h-screen pt-20 dark:bg-gray-900">
+    <div className="min-h-screen pt-20 bg-white dark:bg-gray-900">
       <PublicNav />
 
       {/* Content area */}
-      <div className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 lg:min-h-screen lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-8">
+      <div className="bg-white dark:bg-gray-900 lg:min-h-screen lg:flex lg:items-center lg:justify-center lg:px-4 lg:py-8">
         <div className="w-full lg:max-w-6xl lg:grid lg:grid-cols-2 lg:shadow-2xl lg:rounded-2xl overflow-hidden">
 
           {/* Left Side — desktop branding panel */}
-          <div className="hidden lg:flex flex-col relative bg-gradient-to-r from-blue-600 to-blue-700 p-10">
+          <div className="hidden lg:flex flex-col relative bg-gradient-to-br from-cyan-600 via-blue-700 to-indigo-700 p-10">
             <div className="absolute inset-0 bg-kolam-pattern opacity-10"></div>
             <div className="relative z-10 flex flex-col h-full">
               <Link href="/" className="flex items-center space-x-3 mb-12 group">
                 <div className="relative">
-                  <div className="h-16 w-16 rounded-3xl bg-white/20 backdrop-blur-sm border border-white/30 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-300">
-                    <span className="text-white font-bold text-2xl">JTM</span>
+                  <div className="relative h-16 w-16 rounded-2xl overflow-hidden ring-2 ring-white/30 shadow-2xl group-hover:scale-105 transition-transform">
+                    <Image src="/images/JTMLogo.jpg" alt="JTM" fill className="object-cover" />
                   </div>
-                  <div className="absolute -top-2 -right-2 h-5 w-5 bg-emerald-400 rounded-full animate-pulse"></div>
+                  <div className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-emerald-400 rounded-full animate-pulse border-2 border-white/30"></div>
                 </div>
                 <div>
                   <h1 className="text-2xl font-bold text-white drop-shadow">Jacksonville Tamil Mandram</h1>
@@ -64,15 +66,22 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* Right Side — form */}
-          <div className="flex flex-col bg-gray-50 dark:bg-gray-900">
-            {/* Mobile-only branding header */}
-            <div className="lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white text-center">
-              <div className="text-3xl font-bold mb-1">கடவுச்சொல்</div>
-              <h1 className="text-xl font-semibold">Jacksonville Tamil Mandram</h1>
-              <p className="text-blue-100 text-sm mt-1">Reset your password</p>
+          <div className="flex flex-col bg-white dark:bg-gray-900">
+            {/* Mobile-only branded hero */}
+            <div className="lg:hidden bg-gradient-to-b from-cyan-600 via-blue-700 to-indigo-700 px-6 pt-10 pb-16 text-white text-center relative overflow-hidden rounded-b-[2.5rem]">
+              <div className="absolute inset-0 bg-kolam-pattern opacity-10" />
+              <div className="relative z-10">
+                <div className="relative h-20 w-20 rounded-2xl overflow-hidden ring-4 ring-white/30 shadow-2xl mx-auto mb-4">
+                  <Image src="/images/JTMLogo.jpg" alt="Jacksonville Tamil Mandram" fill className="object-cover" />
+                </div>
+                <h2 className="text-4xl font-bold mb-1 drop-shadow-lg">கடவுச்சொல்</h2>
+                <p className="text-lg font-semibold text-white/90">Jacksonville Tamil Mandram</p>
+                <p className="text-sm text-cyan-100 mt-0.5">Reset your password</p>
+              </div>
             </div>
+
             {/* Form */}
-            <div className="flex-1 flex items-center justify-center px-5 py-8 lg:p-12">
+            <div className="flex-1 flex items-center justify-center px-5 py-8 pb-24 lg:p-12 lg:pb-12">
               <div className="w-full">
                 <ForgotPasswordForm />
               </div>
@@ -81,6 +90,8 @@ export default function ForgotPasswordPage() {
 
         </div>
       </div>
+
+      <PublicBottomNav />
     </div>
   )
 }
