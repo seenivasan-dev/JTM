@@ -63,17 +63,17 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-md mx-auto border-0 shadow-none lg:elevated-card lg:border-t-4 lg:border-t-primary lg:backdrop-blur-sm lg:bg-white/90 dark:bg-gray-900/90">
-      {/* Header — hidden on mobile (page gradient banner handles branding) */}
-      <CardHeader className="hidden lg:flex space-y-3 text-center pb-8 flex-col items-center">
-        <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 flex items-center justify-center shadow-xl mb-2">
+      {/* Header — compact on mobile, full on desktop */}
+      <CardHeader className="flex flex-col items-center space-y-3 text-center pb-6 lg:pb-8">
+        <div className="hidden lg:flex mx-auto h-16 w-16 rounded-2xl bg-gradient-to-r from-blue-600 to-blue-700 items-center justify-center shadow-xl mb-2">
           <LogIn className="h-8 w-8 text-white" />
         </div>
-        <CardTitle className="text-3xl font-bold">
-          <span className="bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+        <CardTitle className="text-xl lg:text-3xl font-bold">
+          <span className="lg:bg-gradient-to-r lg:from-blue-600 lg:to-blue-700 lg:bg-clip-text lg:text-transparent">
             Sign In
           </span>
         </CardTitle>
-        <CardDescription className="text-base text-gray-600 dark:text-gray-300">
+        <CardDescription className="text-sm lg:text-base text-gray-600 dark:text-gray-300">
           Access your JTM Community account
         </CardDescription>
       </CardHeader>

@@ -53,6 +53,8 @@ interface EventFormData {
     fields: RSVPField[]
   }
   foodConfig: FoodConfig
+  paymentRequired: boolean
+  qrCheckinEnabled: boolean
 }
 
 export default function CreateEventForm() {
@@ -76,7 +78,9 @@ export default function CreateEventForm() {
       nonVegFood: false,
       kidsFood: false,
       allowNoFood: false,
-    }
+    },
+    paymentRequired: false,
+    qrCheckinEnabled: false,
   })
 
   const updateFormData = (field: keyof EventFormData, value: string | boolean | { fields: RSVPField[] } | FoodConfig) => {
@@ -189,6 +193,10 @@ export default function CreateEventForm() {
 
       // Always include foodConfig (API will store it; UI hides food section if enabled=false)
       eventData.foodConfig = formData.foodConfig
+
+      // Always include paymentRequired and qrCheckinEnabled
+      eventData.paymentRequired = formData.paymentRequired
+      eventData.qrCheckinEnabled = formData.qrCheckinEnabled
 
       const response = await fetch('/api/events', {
         method: 'POST',
@@ -341,6 +349,26 @@ export default function CreateEventForm() {
                   placeholder="Leave empty for unlimited"
                   min="1"
                 />
+              </div>
+
+              <div className="pt-2 space-y-3 border-t border-muted">
+                <p className="text-sm font-medium text-muted-foreground">RSVP Confirmation Settings</p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="paymentRequired"
+                    checked={formData.paymentRequired}
+                    onCheckedChange={(checked: boolean) => updateFormData('paymentRequired', checked)}
+                  />
+                  <Label htmlFor="paymentRequired">Payment required — members must pay before spot is confirmed</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="qrCheckinEnabled"
+                    checked={formData.qrCheckinEnabled}
+                    onCheckedChange={(checked: boolean) => updateFormData('qrCheckinEnabled', checked)}
+                  />
+                  <Label htmlFor="qrCheckinEnabled">QR code check-in — generate QR codes for confirmed attendees</Label>
+                </div>
               </div>
             </div>
           )}

@@ -11,7 +11,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay'
 import { 
   Calendar, 
@@ -58,6 +58,8 @@ interface Event {
     kidsFood: boolean
     allowNoFood: boolean
   } | null
+  paymentRequired: boolean
+  qrCheckinEnabled: boolean
   currentAttendees: number
   rsvpResponses: Array<{
     id: string
@@ -202,6 +204,32 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
     } catch (error) {
       console.error('Error deleting event:', error)
       alert('Failed to delete event. Please try again.')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleCancelRSVP = async () => {
+    if (!confirm('Are you sure you want to cancel your RSVP? This cannot be undone.')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch(
+        `/api/events/rsvp?eventId=${event.id}&userEmail=${encodeURIComponent(user?.email || '')}`,
+        { method: 'DELETE' }
+      )
+
+      if (response.ok) {
+        router.refresh()
+      } else {
+        const error = await response.json()
+        alert(error.error || 'Failed to cancel RSVP')
+      }
+    } catch (error) {
+      console.error('Error cancelling RSVP:', error)
+      alert('Failed to cancel RSVP. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -489,23 +517,22 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
             </Card>
           )}
 
-          {/* QR Code Pending */}
-          {userRsvp && !userRsvp.paymentConfirmed && (userRsvp as any).paymentReference && (
+          {/* RSVP Status Card */}
+          {userRsvp && !userRsvp.paymentConfirmed && (
             <Card>
               <CardHeader>
                 <CardTitle className="text-lg flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-orange-500" />
-                  Payment Under Review
+                  {event.paymentRequired ? 'Payment Under Review' : 'RSVP Submitted'}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    Your payment is being verified. You will receive your QR code via email once approved.
-                    <div className="mt-2 text-sm font-medium">
-                      Payment Reference: {(userRsvp as any).paymentReference}
-                    </div>
+                    {event.paymentRequired
+                      ? 'Your payment is being verified. You will receive confirmation once approved.'
+                      : 'Your RSVP has been received. Admin will confirm your spot shortly.'}
                   </AlertDescription>
                 </Alert>
               </CardContent>
@@ -568,6 +595,18 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
               </Alert>
             ) : (
               <form onSubmit={handleRSVPSubmit} className="space-y-6">
+                {/* Zelle payment callout — shown when event requires payment */}
+                {event.paymentRequired && (
+                  <Alert className="border-blue-200 bg-blue-50">
+                    <AlertCircle className="h-4 w-4 text-blue-600" />
+                    <AlertTitle className="text-blue-800 font-semibold">How to Pay</AlertTitle>
+                    <AlertDescription className="text-blue-700">
+                      Send payment via <strong>Zelle</strong> to{' '}
+                      <strong className="font-mono">payment@jaxtamilmandram.org</strong>
+                      {' '}and enter your Zelle confirmation number in the field below.
+                    </AlertDescription>
+                  </Alert>
+                )}
                 {event.rsvpForm?.fields.map((field) => (
                   <div key={field.id} className="space-y-2">
                     <Label>
@@ -664,6 +703,18 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
                     </>
                   )}
                 </Button>
+
+                {userRsvp && !userRsvp.checkedIn && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full text-red-600 border-red-200 hover:bg-red-50"
+                    onClick={handleCancelRSVP}
+                    disabled={loading}
+                  >
+                    Cancel RSVP
+                  </Button>
+                )}
               </form>
             )}
           </CardContent>
@@ -678,67 +729,81 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {event.rsvpResponses.map((response) => (
-                <div key={response.id} className="border rounded-lg p-4">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="font-medium">
-                      {response.user.firstName} {response.user.lastName}
-                    </div>
-                    <div className="flex gap-2">
-                      {response.checkedIn && (
-                        <Badge variant="default">Checked In</Badge>
-                      )}
-                      {response.paymentConfirmed ? (
-                        <Badge variant="secondary">Payment Confirmed</Badge>
-                      ) : (
-                        <Badge variant="outline">Payment Pending</Badge>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-sm text-muted-foreground">
-                    {response.user.email}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    RSVP&apos;d on {formatDate(response.createdAt)}
-                  </div>
-                  
-                  {/* Payment Reference */}
-                  {(response as any).paymentReference && (
-                    <div className="mt-2 text-sm">
-                      <strong>Payment Reference:</strong> {(response as any).paymentReference}
-                    </div>
-                  )}
+              {event.rsvpResponses.map((response) => {
+                const approveLabel = (() => {
+                  if (event.paymentRequired && event.qrCheckinEnabled) return 'Approve Payment & Send QR'
+                  if (!event.paymentRequired && event.qrCheckinEnabled) return 'Confirm & Send QR'
+                  if (event.paymentRequired && !event.qrCheckinEnabled) return 'Approve Payment'
+                  return 'Confirm RSVP'
+                })()
 
-                  {/* Admin Actions */}
-                  {!response.paymentConfirmed && (response as any).paymentReference && (
-                    <div className="mt-3 flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handlePaymentAction(response.id, 'approve_payment')}
-                        className="bg-green-600 hover:bg-green-700"
-                      >
-                        Approve Payment & Send QR
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => handlePaymentAction(response.id, 'reject_payment')}
-                      >
-                        Reject Payment
-                      </Button>
-                    </div>
-                  )}
+                const statusBadge = (() => {
+                  if (response.paymentConfirmed) return <Badge variant="secondary">Confirmed</Badge>
+                  if (event.paymentRequired) return <Badge variant="outline">Payment Pending</Badge>
+                  return <Badge variant="outline">Awaiting Confirmation</Badge>
+                })()
 
-                  {response.responses && Object.keys(response.responses).length > 0 && (
-                    <div className="mt-2 text-sm">
-                      <strong>Responses:</strong>
-                      <pre className="text-xs bg-gray-50 p-2 rounded mt-1">
-                        {JSON.stringify(response.responses, null, 2)}
-                      </pre>
+                const rsvpFields = (event as any).rsvpForm?.fields || []
+                const resolvedResponses = rsvpFields.length > 0
+                  ? rsvpFields.map((field: any) => ({
+                      label: field.label,
+                      value: String((response.responses as any)?.[field.id] ?? '—'),
+                    }))
+                  : Object.entries(response.responses || {}).map(([k, v]) => ({ label: k, value: String(v) }))
+
+                return (
+                  <div key={response.id} className="border rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="font-medium">
+                        {response.user.firstName} {response.user.lastName}
+                      </div>
+                      <div className="flex gap-2">
+                        {response.checkedIn && (
+                          <Badge variant="default">Checked In</Badge>
+                        )}
+                        {statusBadge}
+                      </div>
                     </div>
-                  )}
-                </div>
-              ))}
+                    <div className="text-sm text-muted-foreground">
+                      {response.user.email}
+                    </div>
+                    <div className="text-xs text-muted-foreground">
+                      RSVP&apos;d on {formatDate(response.createdAt)}
+                    </div>
+
+                    {/* Admin Actions */}
+                    {!response.paymentConfirmed && (
+                      <div className="mt-3 flex gap-2">
+                        <Button
+                          size="sm"
+                          onClick={() => handlePaymentAction(response.id, 'approve_payment')}
+                          className="bg-green-600 hover:bg-green-700"
+                        >
+                          {approveLabel}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handlePaymentAction(response.id, 'reject_payment')}
+                        >
+                          Reject
+                        </Button>
+                      </div>
+                    )}
+
+                    {resolvedResponses.length > 0 && (
+                      <div className="mt-3 space-y-1">
+                        {resolvedResponses.map((r: { label: string; value: string }, i: number) => (
+                          <div key={i} className="text-sm">
+                            <span className="font-medium">{r.label}:</span>{' '}
+                            <span className="text-muted-foreground">{r.value}</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
             </div>
           </CardContent>
         </Card>

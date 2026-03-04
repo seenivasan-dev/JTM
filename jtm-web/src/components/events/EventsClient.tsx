@@ -4,10 +4,11 @@ import React, { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import {
+  Calendar,
+  MapPin,
+  Users,
   Clock,
   Plus,
   Eye,
@@ -60,6 +61,7 @@ interface EventsClientProps {
 
 export default function EventsClient({ initialEvents, user }: EventsClientProps) {
   const [events] = useState<Event[]>(initialEvents)
+  const [filter, setFilter] = useState<'all' | 'upcoming' | 'past'>('all')
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -113,6 +115,16 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
     return { status: 'upcoming', label: 'Upcoming', color: 'bg-blue-500' }
   }
 
+  const upcomingCount = events.filter(e => getEventStatus(e).status !== 'past').length
+  const pastCount = events.filter(e => getEventStatus(e).status === 'past').length
+
+  const filteredEvents = events.filter(event => {
+    if (filter === 'all') return true
+    const status = getEventStatus(event)
+    if (filter === 'past') return status.status === 'past'
+    return status.status !== 'past'
+  })
+
   return (
     <div className="space-y-8">
       {/* Tamil Cultural Header */}
@@ -141,18 +153,37 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
         </div>
       </div>
 
+      {/* Filter Tabs */}
+      <Tabs value={filter} onValueChange={(v) => setFilter(v as 'all' | 'upcoming' | 'past')}>
+        <TabsList className="w-full sm:w-auto">
+          <TabsTrigger value="all" className="flex-1 sm:flex-none">
+            All <span className="ml-1.5 text-xs opacity-70">({events.length})</span>
+          </TabsTrigger>
+          <TabsTrigger value="upcoming" className="flex-1 sm:flex-none">
+            Upcoming <span className="ml-1.5 text-xs opacity-70">({upcomingCount})</span>
+          </TabsTrigger>
+          <TabsTrigger value="past" className="flex-1 sm:flex-none">
+            Past <span className="ml-1.5 text-xs opacity-70">({pastCount})</span>
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
       {/* Events Grid */}
-      {events.length === 0 ? (
+      {filteredEvents.length === 0 ? (
         <div className="text-center py-16">
           <div className="p-6 bg-gradient-to-br from-primary/5 to-secondary/5 rounded-full w-24 h-24 mx-auto mb-6 flex items-center justify-center">
             <CalendarDays className="h-12 w-12 text-primary" />
           </div>
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events Available</h3>
-          <p className="text-gray-600">Check back later for upcoming community events and celebrations.</p>
+          <h3 className="text-xl font-semibold text-gray-900 mb-2">No Events Found</h3>
+          <p className="text-gray-600">
+            {filter === 'upcoming' ? 'No upcoming events at the moment. Check back soon!'
+              : filter === 'past' ? 'No past events to show.'
+              : 'Check back later for upcoming community events and celebrations.'}
+          </p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {events.map((event) => {
+          {filteredEvents.map((event) => {
             const eventStatus = getEventStatus(event)
             
             return (
@@ -288,7 +319,7 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
                   )}
 
                   {/* Action Button */}
-                  <Button asChild className="w-full bg-gradient-to-r from-orange-600 to-blue-600 hover:from-orange-700 hover:to-blue-700 text-white shadow-lg group-hover:shadow-xl transition-all">
+                  <Button asChild className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white shadow-lg group-hover:shadow-xl transition-all">
                     <Link href={`/events/${event.id}`}>
                       <Eye className="h-4 w-4 mr-2" />
                       View Details

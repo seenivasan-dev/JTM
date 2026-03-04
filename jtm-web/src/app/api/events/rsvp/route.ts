@@ -49,6 +49,17 @@ export async function POST(request: NextRequest) {
     // Determine if this event has food enabled
     const foodEnabled = (event.foodConfig as any)?.enabled === true
 
+    // Server-side validation of required custom RSVP fields
+    const rsvpFields = (event.rsvpForm as any)?.fields || []
+    for (const field of rsvpFields) {
+      if (field.required && !responses[field.id] && responses[field.id] !== false) {
+        return NextResponse.json(
+          { success: false, error: `"${field.label}" is required` },
+          { status: 400 }
+        )
+      }
+    }
+
     // Sanitise food counts — zero out if food is not enabled for this event
     const foodData = foodEnabled
       ? {
@@ -120,16 +131,17 @@ export async function POST(request: NextRequest) {
         const emailTemplate = generateRSVPConfirmationEmail({
           firstName: user.firstName,
           eventTitle: event.title,
-          eventDate: event.date.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
+          eventDate: event.date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
             day: 'numeric',
             hour: '2-digit',
             minute: '2-digit'
           }),
           eventLocation: event.location,
           paymentReference: paymentReference || 'N/A',
+          paymentRequired: event.paymentRequired,
         })
 
         await sendEmail({
@@ -211,6 +223,92 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching RSVP:', error)
+    return NextResponse.json(
+      { success: false, error: 'Internal server error' },
+      { status: 500 }
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url)
+    const eventId = searchParams.get('eventId')
+    const userEmail = searchParams.get('userEmail')
+
+    if (!eventId || !userEmail) {
+      return NextResponse.json(
+        { success: false, error: 'Missing eventId or userEmail' },
+        { status: 400 }
+      )
+    }
+
+    // Find the user
+    const user = await prisma.user.findUnique({
+      where: { email: userEmail },
+    })
+
+    if (!user) {
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      )
+    }
+
+    // Find the RSVP
+    const rsvp = await prisma.rSVPResponse.findUnique({
+      where: {
+        eventId_userId: {
+          eventId,
+          userId: user.id,
+        },
+      },
+      include: {
+        event: {
+          select: {
+            title: true,
+            date: true,
+            location: true,
+            rsvpDeadline: true,
+          },
+        },
+      },
+    })
+
+    if (!rsvp) {
+      return NextResponse.json(
+        { success: false, error: 'RSVP not found' },
+        { status: 404 }
+      )
+    }
+
+    // Cannot cancel if already checked in
+    if (rsvp.checkedIn) {
+      return NextResponse.json(
+        { success: false, error: 'Cannot cancel RSVP after check-in' },
+        { status: 400 }
+      )
+    }
+
+    // Cannot cancel if RSVP deadline has passed
+    if (rsvp.event.rsvpDeadline && new Date() > rsvp.event.rsvpDeadline) {
+      return NextResponse.json(
+        { success: false, error: 'RSVP deadline has passed' },
+        { status: 400 }
+      )
+    }
+
+    // Delete the RSVP
+    await prisma.rSVPResponse.delete({
+      where: { id: rsvp.id },
+    })
+
+    return NextResponse.json({
+      success: true,
+      message: 'RSVP cancelled successfully',
+    })
+  } catch (error) {
+    console.error('RSVP cancellation error:', error)
     return NextResponse.json(
       { success: false, error: 'Internal server error' },
       { status: 500 }

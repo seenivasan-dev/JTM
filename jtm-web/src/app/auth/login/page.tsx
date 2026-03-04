@@ -65,9 +65,18 @@ export default function LoginPage() {
           </div>
 
           {/* Right Side — form */}
-          <div className="flex items-center justify-center bg-gray-50 dark:bg-gray-900 px-5 py-8 lg:p-12">
-            <div className="w-full">
-              <LoginForm />
+          <div className="flex flex-col bg-gray-50 dark:bg-gray-900">
+            {/* Mobile-only branding header */}
+            <div className="lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-8 text-white text-center">
+              <div className="text-3xl font-bold mb-1">வணக்கம்</div>
+              <h1 className="text-xl font-semibold">Jacksonville Tamil Mandram</h1>
+              <p className="text-blue-100 text-sm mt-1">Member Portal</p>
+            </div>
+            {/* Form */}
+            <div className="flex-1 flex items-center justify-center px-5 py-8 lg:p-12">
+              <div className="w-full">
+                <LoginForm />
+              </div>
             </div>
           </div>
 

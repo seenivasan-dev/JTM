@@ -60,6 +60,8 @@ export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
     title: event.title,
     date: event.date.toISOString(),
     location: event.location,
+    paymentRequired: event.paymentRequired,
+    qrCheckinEnabled: event.qrCheckinEnabled,
     rsvpForm: event.rsvpForm as {
       fields: Array<{
         id: string

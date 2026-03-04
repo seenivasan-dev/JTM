@@ -51,6 +51,9 @@ export async function GET(
       rsvpDeadline: event.rsvpDeadline,
       maxParticipants: event.maxParticipants,
       rsvpForm: event.rsvpForm,
+      foodConfig: event.foodConfig,
+      paymentRequired: event.paymentRequired,
+      qrCheckinEnabled: event.qrCheckinEnabled,
       currentAttendees: event._count.rsvpResponses,
       rsvpResponses: event.rsvpResponses.map(response => ({
         id: response.id,
@@ -98,6 +101,9 @@ export async function PUT(
         maxParticipants: body.maxParticipants,
         flyer: body.flyer,
         rsvpForm: body.rsvpForm,
+        foodConfig: body.foodConfig ?? null,
+        paymentRequired: body.paymentRequired ?? false,
+        qrCheckinEnabled: body.qrCheckinEnabled ?? false,
       },
     })
 
