@@ -9,7 +9,7 @@ import MemberDashboard from '@/components/member/MemberDashboard'
 
 export default async function MemberPage() {
   const session = await getServerSession(authOptions)
-  
+
   if (!session?.user?.email) {
     redirect('/auth/login')
   }
@@ -33,10 +33,24 @@ export default async function MemberPage() {
     redirect('/renewal')
   }
 
-  // Get recent events
+  // Get upcoming events with user's RSVP status
+  const now = new Date()
   const eventsData = await prisma.event.findMany({
-    take: 5,
-    orderBy: { date: 'desc' },
+    where: { date: { gte: now } },
+    take: 6,
+    orderBy: { date: 'asc' },
+    include: {
+      _count: { select: { rsvpResponses: true } },
+      rsvpResponses: {
+        where: { userId: userData.id },
+        select: {
+          id: true,
+          paymentConfirmed: true,
+          checkedIn: true,
+          qrCode: true,
+        },
+      },
+    },
   })
 
   // Serialize the user data for client component
@@ -53,20 +67,32 @@ export default async function MemberPage() {
     address: userData.address,
   }
 
-  // Serialize events data
-  const recentEvents = eventsData.map(event => ({
-    id: event.id,
-    title: event.title,
-    description: event.description,
-    date: event.date.toISOString(),
-    location: event.location,
-    rsvpRequired: event.rsvpRequired,
-  }))
+  // Serialize events with RSVP status
+  const upcomingEvents = eventsData.map(event => {
+    const userRsvp = event.rsvpResponses[0] || null
+    return {
+      id: event.id,
+      title: event.title,
+      description: event.description,
+      date: event.date.toISOString(),
+      location: event.location,
+      rsvpRequired: event.rsvpRequired,
+      paymentRequired: event.paymentRequired,
+      currentAttendees: event._count.rsvpResponses,
+      maxParticipants: event.maxParticipants,
+      userRsvp: userRsvp ? {
+        id: userRsvp.id,
+        paymentConfirmed: userRsvp.paymentConfirmed,
+        checkedIn: userRsvp.checkedIn,
+        hasQr: !!userRsvp.qrCode,
+      } : null,
+    }
+  })
 
   return (
     <MemberLayout user={user}>
       <Suspense fallback={<div>Loading dashboard...</div>}>
-        <MemberDashboard user={user} recentEvents={recentEvents} />
+        <MemberDashboard user={user} upcomingEvents={upcomingEvents} />
       </Suspense>
     </MemberLayout>
   )

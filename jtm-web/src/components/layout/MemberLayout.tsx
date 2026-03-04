@@ -247,11 +247,90 @@ export default function MemberLayout({ children, user }: MemberLayoutProps) {
       </nav>
 
       {/* Page Content — padded below fixed nav */}
-      <main className="pt-20 min-h-screen">
+      <main className="pt-20 min-h-screen pb-16 lg:pb-0">
         <div className="px-4 sm:px-6 py-6 max-w-7xl mx-auto">
           {children}
         </div>
       </main>
+
+      {/* ─── Mobile Bottom Nav — Spotify Style ─── */}
+      <nav className="fixed bottom-0 left-0 right-0 lg:hidden z-50">
+        {/* Frosted glass layer */}
+        <div className="bg-white/90 backdrop-blur-md border-t border-gray-200/80 shadow-[0_-4px_20px_rgba(0,0,0,0.08)]">
+          <div className="flex items-center justify-around h-16 px-2 max-w-lg mx-auto">
+            {/* Dashboard */}
+            <BottomNavItem
+              href="/member"
+              icon={<LayoutDashboard className="h-5 w-5" />}
+              label="Home"
+              active={pathname === '/member'}
+            />
+            {/* Events */}
+            <BottomNavItem
+              href="/events"
+              icon={<Calendar className="h-5 w-5" />}
+              label="Events"
+              active={pathname.startsWith('/events')}
+            />
+            {/* Profile */}
+            <BottomNavItem
+              href="/profile"
+              icon={<User className="h-5 w-5" />}
+              label="Profile"
+              active={pathname === '/profile'}
+            />
+            {/* Renewal */}
+            <BottomNavItem
+              href="/renewal"
+              icon={<RefreshCcw className="h-5 w-5" />}
+              label="Renew"
+              active={pathname === '/renewal'}
+              badge={user && !user.isActive}
+            />
+          </div>
+        </div>
+      </nav>
     </div>
+  )
+}
+
+function BottomNavItem({
+  href,
+  icon,
+  label,
+  active,
+  badge,
+}: {
+  href: string
+  icon: React.ReactNode
+  label: string
+  active: boolean
+  badge?: boolean | null
+}) {
+  return (
+    <Link href={href} className="relative flex flex-col items-center justify-center gap-0.5 px-4 py-2 min-w-0 group">
+      {badge && (
+        <span className="absolute top-1 right-1.5 h-2 w-2 rounded-full bg-red-500 border-2 border-white" />
+      )}
+      <span
+        className={`transition-all duration-200 ${
+          active
+            ? 'text-cyan-600 scale-110'
+            : 'text-gray-400 group-hover:text-gray-600 group-hover:scale-105'
+        }`}
+      >
+        {icon}
+      </span>
+      <span
+        className={`text-[10px] font-semibold leading-none transition-colors ${
+          active ? 'text-cyan-600' : 'text-gray-400 group-hover:text-gray-600'
+        }`}
+      >
+        {label}
+      </span>
+      {active && (
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2 h-0.5 w-6 rounded-full bg-cyan-600" />
+      )}
+    </Link>
   )
 }

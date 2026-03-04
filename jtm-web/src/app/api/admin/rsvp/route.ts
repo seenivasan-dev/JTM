@@ -119,12 +119,20 @@ export async function POST(request: NextRequest) {
             qrCodeUrl: qrCodeImageURL,
           })
 
+          const base64QR = qrCodeImageURL?.split(',')[1]
+
           await sendEmail({
             to: rsvp.user.email,
             subject: emailTemplate.subject,
             html: emailTemplate.html,
             text: emailTemplate.text,
             tags: ['rsvp', 'approved', 'qr-code', rsvp.eventId],
+            attachments: base64QR ? [{
+              filename: 'qrcode.png',
+              content: base64QR,
+              encoding: 'base64',
+              cid: 'qrcode',
+            }] : [],
           })
 
           console.log(`✅ RSVP approval email with QR code sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
