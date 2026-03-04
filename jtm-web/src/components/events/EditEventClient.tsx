@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge'
 import { Textarea } from '@/components/ui/textarea'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { 
+import {
   ArrowLeft,
   Save,
   Calendar,
@@ -20,7 +20,8 @@ import {
   Users,
   Plus,
   Trash2,
-  GripVertical
+  GripVertical,
+  UtensilsCrossed
 } from 'lucide-react'
 import Link from 'next/link'
 
@@ -45,6 +46,15 @@ interface Event {
   rsvpForm?: {
     fields: RSVPField[]
   } | null
+  foodConfig?: {
+    enabled: boolean
+    vegFood: boolean
+    nonVegFood: boolean
+    kidsFood: boolean
+    allowNoFood: boolean
+  } | null
+  paymentRequired: boolean
+  qrCheckinEnabled: boolean
   currentAttendees: number
   createdAt: string
   updatedAt: string
@@ -68,13 +78,32 @@ export default function EditEventClient({ event }: EditEventClientProps) {
     maxParticipants: event.maxParticipants?.toString() || '',
     rsvpForm: {
       fields: event.rsvpForm?.fields || []
-    }
+    },
+    foodConfig: {
+      enabled: event.foodConfig?.enabled ?? false,
+      vegFood: event.foodConfig?.vegFood ?? false,
+      nonVegFood: event.foodConfig?.nonVegFood ?? false,
+      kidsFood: event.foodConfig?.kidsFood ?? false,
+      allowNoFood: event.foodConfig?.allowNoFood ?? false,
+    },
+    paymentRequired: event.paymentRequired ?? false,
+    qrCheckinEnabled: event.qrCheckinEnabled ?? false,
   })
 
   const updateFormData = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }))
+  }
+
+  const updateFoodConfig = (field: string, value: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      foodConfig: {
+        ...prev.foodConfig,
+        [field]: value
+      }
     }))
   }
 
@@ -162,6 +191,11 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       if (formData.rsvpRequired && formData.rsvpForm.fields.length > 0) {
         eventData.rsvpForm = formData.rsvpForm
       }
+
+      // Always include foodConfig, paymentRequired, and qrCheckinEnabled
+      eventData.foodConfig = formData.foodConfig
+      eventData.paymentRequired = formData.paymentRequired
+      eventData.qrCheckinEnabled = formData.qrCheckinEnabled
 
       const response = await fetch(`/api/events/${event.id}`, {
         method: 'PUT',
@@ -323,6 +357,26 @@ export default function EditEventClient({ event }: EditEventClientProps) {
                   />
                 </div>
               </div>
+
+              <div className="pt-2 space-y-3 border-t border-muted">
+                <p className="text-sm font-medium text-muted-foreground">RSVP Confirmation Settings</p>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="paymentRequired"
+                    checked={formData.paymentRequired}
+                    onCheckedChange={(checked: boolean) => updateFormData('paymentRequired', checked)}
+                  />
+                  <Label htmlFor="paymentRequired">Payment required — members must pay before spot is confirmed</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="qrCheckinEnabled"
+                    checked={formData.qrCheckinEnabled}
+                    onCheckedChange={(checked: boolean) => updateFormData('qrCheckinEnabled', checked)}
+                  />
+                  <Label htmlFor="qrCheckinEnabled">QR code check-in — generate QR codes for confirmed attendees</Label>
+                </div>
+              </div>
             </div>
           )}
         </CardContent>
@@ -450,6 +504,69 @@ export default function EditEventClient({ event }: EditEventClientProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Food Configuration */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <UtensilsCrossed className="h-5 w-5" />
+            Food at this Event?
+          </CardTitle>
+          <CardDescription>
+            Enable food so members can specify their meal preferences when they RSVP
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center space-x-2">
+            <Checkbox
+              id="foodEnabled"
+              checked={formData.foodConfig.enabled}
+              onCheckedChange={(checked: boolean) => updateFoodConfig('enabled', checked)}
+            />
+            <Label htmlFor="foodEnabled">This event has food</Label>
+          </div>
+
+          {formData.foodConfig.enabled && (
+            <div className="pl-6 space-y-3 border-l-2 border-muted">
+              <p className="text-sm text-muted-foreground">Select which food categories to offer:</p>
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="vegFood"
+                    checked={formData.foodConfig.vegFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('vegFood', checked)}
+                  />
+                  <Label htmlFor="vegFood">🥦 Veg (Adults)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="nonVegFood"
+                    checked={formData.foodConfig.nonVegFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('nonVegFood', checked)}
+                  />
+                  <Label htmlFor="nonVegFood">🍗 Non-Veg (Adults)</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="kidsFood"
+                    checked={formData.foodConfig.kidsFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('kidsFood', checked)}
+                  />
+                  <Label htmlFor="kidsFood">🧒 Kids Meals</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="allowNoFood"
+                    checked={formData.foodConfig.allowNoFood}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('allowNoFood', checked)}
+                  />
+                  <Label htmlFor="allowNoFood">🚫 Allow &quot;No Food&quot; option</Label>
+                </div>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       {/* Submit Button */}
       <div className="flex justify-end gap-4">

@@ -78,6 +78,8 @@ model Event {
   maxParticipants Int?
   rsvpForm        Json?           // Dynamic form configuration
   foodConfig      Json?           // { enabled, vegFood, nonVegFood, kidsFood, allowNoFood }
+  paymentRequired  Boolean         @default(false) // Members must submit payment before RSVP is confirmed
+  qrCheckinEnabled Boolean         @default(false) // Admin can generate QR codes for confirmed attendees
   rsvpResponses   RSVPResponse[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

@@ -135,10 +135,25 @@ export function generateRSVPConfirmationEmail(params: {
   eventDate: string
   eventLocation: string
   paymentReference: string
+  paymentRequired?: boolean
 }): { subject: string; html: string; text: string } {
-  const { firstName, eventTitle, eventDate, eventLocation, paymentReference } = params
+  const { firstName, eventTitle, eventDate, eventLocation, paymentReference, paymentRequired = true } = params
 
   const subject = `RSVP Submitted - ${eventTitle}`
+
+  const nextStepsHtml = paymentRequired
+    ? `<div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #92400e; font-size: 16px;">⏳ What's Next?</h4>
+      <p style="margin-bottom: 0; color: #78350f;">An admin will review and approve your payment. Once approved, you'll receive an email with your event QR code. Please present this QR code at the event for check-in.</p>
+    </div>`
+    : `<div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #92400e; font-size: 16px;">⏳ What's Next?</h4>
+      <p style="margin-bottom: 0; color: #78350f;">An admin will review your RSVP and confirm your spot. You will receive a confirmation email shortly.</p>
+    </div>`
+
+  const paymentRowHtml = paymentRequired
+    ? `<p style="margin: 10px 0;"><strong>Payment Reference:</strong> <code style="background-color: #dcfce7; padding: 4px 8px; border-radius: 4px;">${paymentReference}</code></p>`
+    : ''
 
   const html = `
 <!DOCTYPE html>
@@ -147,36 +162,37 @@ export function generateRSVPConfirmationEmail(params: {
   <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
     <h1 style="color: white; margin: 0; font-size: 28px;">✅ RSVP Submitted Successfully</h1>
   </div>
-  
+
   <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
     <p style="font-size: 16px;">Hello <strong>${firstName}</strong>,</p>
-    
+
     <p>Thank you for your RSVP! We have received your registration for the following event:</p>
-    
+
     <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 25px 0;">
       <h3 style="margin-top: 0; color: #065f46; font-size: 18px;">📅 Event Details</h3>
       <p style="margin: 10px 0;"><strong>Event:</strong> ${eventTitle}</p>
       <p style="margin: 10px 0;"><strong>Date:</strong> ${eventDate}</p>
       <p style="margin: 10px 0;"><strong>Location:</strong> ${eventLocation}</p>
-      <p style="margin: 10px 0;"><strong>Payment Reference:</strong> <code style="background-color: #dcfce7; padding: 4px 8px; border-radius: 4px;">${paymentReference}</code></p>
+      ${paymentRowHtml}
     </div>
-    
-    <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
-      <h4 style="margin-top: 0; color: #92400e; font-size: 16px;">⏳ What's Next?</h4>
-      <p style="margin-bottom: 0; color: #78350f;">An admin will review and approve your payment. Once approved, you'll receive an email with your event QR code. Please present this QR code at the event for check-in.</p>
-    </div>
-    
+
+    ${nextStepsHtml}
+
     <p>We look forward to seeing you at the event!</p>
-    
+
     <p style="margin-top: 30px;">Best regards,<br><strong>JTM Community Team</strong></p>
   </div>
-  
+
   <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
     <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
   </div>
 </body>
 </html>
   `
+
+  const nextStepsText = paymentRequired
+    ? `What's Next?\nAn admin will review and approve your payment. Once approved, you'll receive an email with your event QR code.`
+    : `What's Next?\nAn admin will review your RSVP and confirm your spot. You will receive a confirmation email shortly.`
 
   const text = `
 RSVP Submitted Successfully
@@ -188,10 +204,9 @@ Thank you for your RSVP! We have received your registration for:
 Event: ${eventTitle}
 Date: ${eventDate}
 Location: ${eventLocation}
-Payment Reference: ${paymentReference}
+${paymentRequired ? `Payment Reference: ${paymentReference}` : ''}
 
-What's Next?
-An admin will review and approve your payment. Once approved, you'll receive an email with your event QR code.
+${nextStepsText}
 
 We look forward to seeing you at the event!
 
@@ -974,6 +989,166 @@ ${message}
 View our events: ${process.env.NEXTAUTH_URL || 'https://jaxtamilmandram.org'}/events
 
 (c) ${new Date().getFullYear()} Jacksonville Tamil Mandram
+  `.trim()
+
+  return { subject, html, text }
+}
+
+/**
+ * RSVP Confirmed (No QR) Email Template — for events where qrCheckinEnabled = false
+ */
+export function generateRSVPConfirmedNoQREmail(params: {
+  firstName: string
+  eventTitle: string
+  eventDate: string
+  eventLocation: string
+}): { subject: string; html: string; text: string } {
+  const { firstName, eventTitle, eventDate, eventLocation } = params
+
+  const subject = `✅ RSVP Confirmed - ${eventTitle}`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<body style="${baseStyles}">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 28px;">🎉 RSVP Confirmed!</h1>
+  </div>
+
+  <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+    <p style="font-size: 16px;">Hello <strong>${firstName}</strong>,</p>
+
+    <p>Your RSVP has been confirmed for the following event:</p>
+
+    <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #10b981; margin: 25px 0;">
+      <h3 style="margin-top: 0; color: #065f46; font-size: 18px;">📅 Event Details</h3>
+      <p style="margin: 10px 0;"><strong>Event:</strong> ${eventTitle}</p>
+      <p style="margin: 10px 0;"><strong>Date:</strong> ${eventDate}</p>
+      <p style="margin: 10px 0;"><strong>Location:</strong> ${eventLocation}</p>
+      <p style="margin: 10px 0; color: #059669; font-size: 16px;"><strong>Status: CONFIRMED ✅</strong></p>
+    </div>
+
+    <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #1e40af; font-size: 16px;">📌 Reminders</h4>
+      <ul style="color: #1e40af; margin-bottom: 0;">
+        <li>Arrive a few minutes early</li>
+        <li>Contact us if you need to make any changes</li>
+      </ul>
+    </div>
+
+    <p>We look forward to seeing you at the event!</p>
+
+    <p style="margin-top: 30px;">Best regards,<br><strong>JTM Community Team</strong></p>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
+  </div>
+</body>
+</html>
+  `
+
+  const text = `
+RSVP Confirmed!
+
+Hello ${firstName},
+
+Your RSVP has been confirmed.
+
+Event: ${eventTitle}
+Date: ${eventDate}
+Location: ${eventLocation}
+Status: CONFIRMED
+
+Reminders:
+- Arrive a few minutes early
+- Contact us if you need to make any changes
+
+We look forward to seeing you at the event!
+
+Best regards,
+JTM Community Team
+  `.trim()
+
+  return { subject, html, text }
+}
+
+/**
+ * RSVP Rejected Email Template
+ */
+export function generateRSVPRejectedEmail(params: {
+  firstName: string
+  eventTitle: string
+  eventDate: string
+  eventLocation: string
+}): { subject: string; html: string; text: string } {
+  const { firstName, eventTitle, eventDate, eventLocation } = params
+
+  const subject = `RSVP Update - ${eventTitle}`
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<body style="${baseStyles}">
+  <div style="background: linear-gradient(135deg, #0891b2 0%, #2563eb 60%, #4f46e5 100%); padding: 30px; border-radius: 10px 10px 0 0; text-align: center;">
+    <h1 style="color: white; margin: 0; font-size: 28px;">⚠️ RSVP Update</h1>
+  </div>
+
+  <div style="background-color: #ffffff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 10px 10px;">
+    <p style="font-size: 16px;">Hello <strong>${firstName}</strong>,</p>
+
+    <p>We have an update regarding your RSVP for the following event:</p>
+
+    <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6; margin: 25px 0;">
+      <h3 style="margin-top: 0; color: #1e40af; font-size: 18px;">📅 Event Details</h3>
+      <p style="margin: 10px 0;"><strong>Event:</strong> ${eventTitle}</p>
+      <p style="margin: 10px 0;"><strong>Date:</strong> ${eventDate}</p>
+      <p style="margin: 10px 0;"><strong>Location:</strong> ${eventLocation}</p>
+    </div>
+
+    <div style="background-color: #fee2e2; padding: 20px; border-radius: 8px; border-left: 4px solid #dc2626; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #991b1b; font-size: 16px;">❌ RSVP Not Approved</h4>
+      <p style="margin-bottom: 0; color: #991b1b;">Unfortunately, your RSVP for this event was not approved. This may be due to an issue with your payment reference or capacity constraints.</p>
+    </div>
+
+    <div style="background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 25px 0;">
+      <h4 style="margin-top: 0; color: #92400e; font-size: 16px;">🔍 Next Steps</h4>
+      <p style="margin-bottom: 0; color: #78350f;">If you believe this is an error or need assistance, please contact our admin team at <a href="mailto:jtmec2025@gmail.com" style="color: #b45309;">jtmec2025@gmail.com</a>. We're happy to help.</p>
+    </div>
+
+    <p>We appreciate your interest and hope to see you at future events!</p>
+
+    <p style="margin-top: 30px;">Best regards,<br><strong>JTM Community Team</strong></p>
+  </div>
+
+  <div style="text-align: center; margin-top: 20px; padding: 20px; color: #6b7280; font-size: 12px;">
+    <p>© ${new Date().getFullYear()} JTM Community. All rights reserved.</p>
+  </div>
+</body>
+</html>
+  `
+
+  const text = `
+RSVP Update
+
+Hello ${firstName},
+
+We have an update regarding your RSVP for:
+
+Event: ${eventTitle}
+Date: ${eventDate}
+Location: ${eventLocation}
+
+RSVP Not Approved:
+Unfortunately, your RSVP for this event was not approved. This may be due to an issue with your payment reference or capacity constraints.
+
+Next Steps:
+If you believe this is an error or need assistance, please contact our admin team at jtmec2025@gmail.com.
+
+We appreciate your interest and hope to see you at future events!
+
+Best regards,
+JTM Community Team
   `.trim()
 
   return { subject, html, text }

@@ -48,6 +48,8 @@ export async function GET(request: NextRequest) {
       maxParticipants: event.maxParticipants,
       rsvpForm: event.rsvpForm,
       foodConfig: event.foodConfig,
+      paymentRequired: event.paymentRequired,
+      qrCheckinEnabled: event.qrCheckinEnabled,
       currentAttendees: event._count.rsvpResponses,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt

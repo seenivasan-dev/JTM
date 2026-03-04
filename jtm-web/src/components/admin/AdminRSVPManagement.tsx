@@ -69,6 +69,8 @@ interface Event {
   title: string
   date: string
   location: string
+  paymentRequired: boolean
+  qrCheckinEnabled: boolean
   rsvpForm?: {
     fields: Array<{
       id: string
@@ -554,7 +556,11 @@ function RSVPList({
                     <div className="flex flex-col gap-2">
                     <div className="flex gap-2">
                       <Badge variant={rsvp.paymentConfirmed ? "default" : "secondary"}>
-                        {rsvp.paymentConfirmed ? "Payment Approved" : "Payment Pending"}
+                        {rsvp.paymentConfirmed
+                          ? 'Confirmed'
+                          : event.paymentRequired
+                            ? 'Payment Pending'
+                            : 'Awaiting Confirmation'}
                       </Badge>
                       {rsvp.checkedIn && (
                         <Badge variant="outline" className="bg-green-50">
@@ -582,7 +588,9 @@ function RSVPList({
                             className="bg-green-600 hover:bg-green-700"
                           >
                             <Check className="h-4 w-4 mr-1" />
-                            Approve
+                            {event.paymentRequired && event.qrCheckinEnabled ? 'Approve & QR' :
+                             !event.paymentRequired && event.qrCheckinEnabled ? 'Confirm & QR' :
+                             event.paymentRequired ? 'Approve' : 'Confirm'}
                           </Button>
                           <Button
                             onClick={() => onAction(rsvp.id, 'reject_payment')}
@@ -788,7 +796,9 @@ function RSVPDetailDialog({
                   className="bg-green-600 hover:bg-green-700"
                 >
                   <Check className="h-4 w-4 mr-2" />
-                  Approve Payment
+                  {event.paymentRequired && event.qrCheckinEnabled ? 'Approve Payment & Send QR' :
+                   !event.paymentRequired && event.qrCheckinEnabled ? 'Confirm & Send QR' :
+                   event.paymentRequired ? 'Approve Payment' : 'Confirm RSVP'}
                 </Button>
                 <Button
                   onClick={() => onAction(rsvp.id, 'reject_payment')}
@@ -796,7 +806,7 @@ function RSVPDetailDialog({
                   variant="destructive"
                 >
                   <X className="h-4 w-4 mr-2" />
-                  Reject Payment
+                  Reject
                 </Button>
               </>
             )}

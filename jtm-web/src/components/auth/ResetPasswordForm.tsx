@@ -110,7 +110,7 @@ export default function ResetPasswordForm() {
           Reset Password
         </CardTitle>
         <CardDescription className="text-base mt-2">
-          Enter your new password below.
+          Jacksonville Tamil Mandram — enter your new password below.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>

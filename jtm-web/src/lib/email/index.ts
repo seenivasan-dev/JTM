@@ -5,6 +5,8 @@ export {
   generateWelcomeEmail,
   generateRSVPConfirmationEmail,
   generateRSVPApprovedEmail,
+  generateRSVPConfirmedNoQREmail,
+  generateRSVPRejectedEmail,
   generateEventReminderEmail,
   generateRenewalRequestEmail,
   generateRenewalApprovedEmail,

@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import { sendEmail, generateRSVPApprovedEmail } from '@/lib/email'
+import { sendEmail, generateRSVPApprovedEmail, generateRSVPConfirmedNoQREmail, generateRSVPRejectedEmail } from '@/lib/email'
 import { generateQRCodeDataURL, generateEventQRCodeData } from '@/lib/qrcode'
 
 export async function POST(request: NextRequest) {
@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
             title: true,
             date: true,
             location: true,
+            qrCheckinEnabled: true,
+            paymentRequired: true,
           }
         }
       }
@@ -70,72 +72,108 @@ export async function POST(request: NextRequest) {
     let updatedRSVP
 
     if (action === 'approve_payment') {
-      // Generate QR code data
-      const qrCodeData = generateEventQRCodeData(rsvp.eventId, rsvp.userId)
-      
-      // Generate QR code image as data URL
-      let qrCodeImageURL: string | undefined
-      try {
-        qrCodeImageURL = await generateQRCodeDataURL(qrCodeData, {
-          width: 300,
-          margin: 2,
-          color: {
-            dark: '#10b981', // Green color matching the theme
-            light: '#FFFFFF',
+      const eventDateStr = rsvp.event.date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      })
+
+      if (rsvp.event.qrCheckinEnabled) {
+        // Generate QR code data
+        const qrCodeData = generateEventQRCodeData(rsvp.eventId, rsvp.userId)
+
+        // Generate QR code image as data URL
+        let qrCodeImageURL: string | undefined
+        try {
+          qrCodeImageURL = await generateQRCodeDataURL(qrCodeData, {
+            width: 300,
+            margin: 2,
+            color: {
+              dark: '#10b981',
+              light: '#FFFFFF',
+            },
+          })
+          console.log(`✅ QR code image generated for ${rsvp.user.email}`)
+        } catch (qrError) {
+          console.error('❌ Failed to generate QR code image:', qrError)
+        }
+
+        updatedRSVP = await prisma.rSVPResponse.update({
+          where: { id: rsvpId },
+          data: {
+            paymentConfirmed: true,
+            qrCode: qrCodeData,
           },
         })
-        console.log(`✅ QR code image generated for ${rsvp.user.email}`)
-      } catch (qrError) {
-        console.error('❌ Failed to generate QR code image:', qrError)
-        // Continue without image, will use text-based QR code
-      }
-      
-      updatedRSVP = await prisma.rSVPResponse.update({
-        where: { id: rsvpId },
-        data: {
-          paymentConfirmed: true,
-          qrCode: qrCodeData,
-        },
-      })
 
-      // Send RSVP approval email with QR code
-      try {
-        const emailTemplate = generateRSVPApprovedEmail({
-          firstName: rsvp.user.firstName,
-          eventTitle: rsvp.event.title,
-          eventDate: rsvp.event.date.toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit'
-          }),
-          eventLocation: rsvp.event.location,
+        try {
+          const emailTemplate = generateRSVPApprovedEmail({
+            firstName: rsvp.user.firstName,
+            eventTitle: rsvp.event.title,
+            eventDate: eventDateStr,
+            eventLocation: rsvp.event.location,
+            qrCodeData,
+            qrCodeUrl: qrCodeImageURL,
+          })
+
+          await sendEmail({
+            to: rsvp.user.email,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            text: emailTemplate.text,
+            tags: ['rsvp', 'approved', 'qr-code', rsvp.eventId],
+          })
+
+          console.log(`✅ RSVP approval email with QR code sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
+        } catch (emailError) {
+          console.error(`❌ Failed to send RSVP approval email to ${rsvp.user.email}:`, emailError)
+        }
+
+        return NextResponse.json({
+          success: true,
+          rsvp: updatedRSVP,
+          message: 'Payment approved and QR code generated',
           qrCodeData,
-          qrCodeUrl: qrCodeImageURL, // Include the QR code image
+        })
+      } else {
+        // No QR check-in — just confirm and send confirmation email (no QR)
+        updatedRSVP = await prisma.rSVPResponse.update({
+          where: { id: rsvpId },
+          data: {
+            paymentConfirmed: true,
+          },
         })
 
-        await sendEmail({
-          to: rsvp.user.email,
-          subject: emailTemplate.subject,
-          html: emailTemplate.html,
-          text: emailTemplate.text,
-          tags: ['rsvp', 'approved', 'qr-code', rsvp.eventId],
-        })
+        try {
+          const emailTemplate = generateRSVPConfirmedNoQREmail({
+            firstName: rsvp.user.firstName,
+            eventTitle: rsvp.event.title,
+            eventDate: eventDateStr,
+            eventLocation: rsvp.event.location,
+          })
 
-        console.log(`✅ RSVP approval email with QR code sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
-      } catch (emailError) {
-        // Don't fail the approval if email fails
-        console.error(`❌ Failed to send RSVP approval email to ${rsvp.user.email}:`, emailError)
+          await sendEmail({
+            to: rsvp.user.email,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+            text: emailTemplate.text,
+            tags: ['rsvp', 'confirmed', rsvp.eventId],
+          })
+
+          console.log(`✅ RSVP confirmation email sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
+        } catch (emailError) {
+          console.error(`❌ Failed to send RSVP confirmation email to ${rsvp.user.email}:`, emailError)
+        }
+
+        return NextResponse.json({
+          success: true,
+          rsvp: updatedRSVP,
+          message: 'RSVP confirmed',
+        })
       }
-      
-      return NextResponse.json({
-        success: true,
-        rsvp: updatedRSVP,
-        message: 'Payment approved and QR code generated',
-        qrCodeData,
-      })
     } else if (action === 'reject_payment') {
       updatedRSVP = await prisma.rSVPResponse.update({
         where: { id: rsvpId },
@@ -145,10 +183,38 @@ export async function POST(request: NextRequest) {
         },
       })
 
+      try {
+        const emailTemplate = generateRSVPRejectedEmail({
+          firstName: rsvp.user.firstName,
+          eventTitle: rsvp.event.title,
+          eventDate: rsvp.event.date.toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+          }),
+          eventLocation: rsvp.event.location,
+        })
+
+        await sendEmail({
+          to: rsvp.user.email,
+          subject: emailTemplate.subject,
+          html: emailTemplate.html,
+          text: emailTemplate.text,
+          tags: ['rsvp', 'rejected', rsvp.eventId],
+        })
+
+        console.log(`✅ RSVP rejection email sent to ${rsvp.user.email} for event: ${rsvp.event.title}`)
+      } catch (emailError) {
+        console.error(`❌ Failed to send RSVP rejection email to ${rsvp.user.email}:`, emailError)
+      }
+
       return NextResponse.json({
         success: true,
         rsvp: updatedRSVP,
-        message: 'Payment rejected',
+        message: 'RSVP rejected',
       })
     } else if (action === 'checkin') {
       updatedRSVP = await prisma.rSVPResponse.update({

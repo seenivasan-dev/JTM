@@ -85,7 +85,7 @@ export default function ForgotPasswordForm() {
           Forgot Password
         </CardTitle>
         <CardDescription className="text-base mt-2">
-          Enter your email address and we&apos;ll send you instructions to reset your password.
+          Jacksonville Tamil Mandram — enter your email to receive password reset instructions.
         </CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>

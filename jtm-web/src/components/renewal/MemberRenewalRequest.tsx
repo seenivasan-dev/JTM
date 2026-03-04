@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, Plus, CreditCard, Users, Calendar, Sparkles, RefreshCcw } from 'lucide-react'
 
@@ -369,23 +369,31 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                   )}
                 />
 
+                {/* Zelle payment instructions */}
+                <Alert className="border-blue-200 bg-blue-50">
+                  <CreditCard className="h-4 w-4 text-blue-600" />
+                  <AlertTitle className="text-blue-800 font-semibold">How to Pay Your Membership Fee</AlertTitle>
+                  <AlertDescription className="text-blue-700">
+                    Send payment via <strong>Zelle</strong> to{' '}
+                    <strong className="font-mono">payment@jaxtamilmandram.org</strong>
+                    {' '}and enter your Zelle confirmation number below.
+                  </AlertDescription>
+                </Alert>
+
                 <FormField
                   control={form.control}
                   name="paymentReference"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className="text-sm font-medium text-gray-700">Payment Reference Number</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">Zelle Confirmation Number</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="Enter payment confirmation number"
+                          placeholder="Enter your Zelle confirmation number"
                           className={inputCls}
                           {...field}
                         />
                       </FormControl>
                       <FormMessage />
-                      <p className="text-sm text-muted-foreground bg-blue-50 p-3 rounded-lg border border-blue-200 mt-2">
-                        💳 Please provide the payment confirmation number after completing your payment.
-                      </p>
                     </FormItem>
                   )}
                 />

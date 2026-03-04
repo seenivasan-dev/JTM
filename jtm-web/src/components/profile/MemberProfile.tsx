@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Badge } from '@/components/ui/badge'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Checkbox } from '@/components/ui/checkbox'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   User, 
@@ -160,20 +161,20 @@ export default function MemberProfile({ user }: MemberProfileProps) {
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-4 bg-gradient-to-r from-primary/5 to-secondary/5 p-1">
           <TabsTrigger value="profile" className="data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-md">
-            <User className="h-4 w-4 mr-2" />
-            Profile
+            <User className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden md:inline">Profile</span>
           </TabsTrigger>
           <TabsTrigger value="family" className="data-[state=active]:bg-white data-[state=active]:text-secondary data-[state=active]:shadow-md">
-            <Users className="h-4 w-4 mr-2" />
-            Family ({user.familyMembers.length})
+            <Users className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden md:inline">Family ({user.familyMembers.length})</span>
           </TabsTrigger>
           <TabsTrigger value="security" className="data-[state=active]:bg-white data-[state=active]:text-accent data-[state=active]:shadow-md">
-            <Key className="h-4 w-4 mr-2" />
-            Security
+            <Key className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden md:inline">Security</span>
           </TabsTrigger>
           <TabsTrigger value="notifications" className="data-[state=active]:bg-white data-[state=active]:text-gold data-[state=active]:shadow-md">
-            <Bell className="h-4 w-4 mr-2" />
-            Notifications
+            <Bell className="h-4 w-4 md:mr-2 shrink-0" />
+            <span className="hidden md:inline">Notifications</span>
           </TabsTrigger>
         </TabsList>
 
@@ -559,28 +560,39 @@ function NotificationsCard({ user }: { user: User }) {
     }
   }
 
+  const notificationLabels: Record<string, { title: string; desc: string }> = {
+    email: { title: 'Email Notifications', desc: 'Receive updates and confirmations via email' },
+    push: { title: 'Push Notifications', desc: 'Browser and device notifications' },
+    eventReminders: { title: 'Event Reminders', desc: 'Reminders before events you RSVPd for' },
+    membershipRenewal: { title: 'Membership Renewal', desc: 'Alerts when your membership is nearing expiry' },
+    adminUpdates: { title: 'Admin Updates', desc: 'Important messages from JTM administrators' },
+  }
+
   return (
     <Card>
       <CardHeader>
         <CardTitle>Notification Preferences</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        {Object.entries(notifications).map(([key, enabled]) => (
-          <div key={key} className="flex items-center justify-between">
-            <div>
-              <h4 className="font-medium capitalize">
-                {key.replace(/([A-Z])/g, ' $1').toLowerCase()}
-              </h4>
+        {Object.entries(notifications).map(([key, enabled]) => {
+          const meta = notificationLabels[key] || {
+            title: key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase()),
+            desc: '',
+          }
+          return (
+            <div key={key} className="flex items-center justify-between gap-4 py-1">
+              <div>
+                <p className="font-medium text-sm">{meta.title}</p>
+                {meta.desc && <p className="text-xs text-muted-foreground">{meta.desc}</p>}
+              </div>
+              <Checkbox
+                checked={enabled}
+                onCheckedChange={(checked) => updateNotifications(key, checked as boolean)}
+                disabled={isLoading}
+              />
             </div>
-            <input
-              type="checkbox"
-              checked={enabled}
-              onChange={(e) => updateNotifications(key, e.target.checked)}
-              disabled={isLoading}
-              className="h-4 w-4"
-            />
-          </div>
-        ))}
+          )
+        })}
       </CardContent>
     </Card>
   )

@@ -26,6 +26,8 @@ function serializeEvent(event: any) {
     maxParticipants: event.maxParticipants,
     rsvpForm: event.rsvpForm as { fields: { id: string; type: 'number' | 'select' | 'text' | 'checkbox' | 'radio'; label: string; required: boolean; options?: string[] }[] } | null,
     foodConfig: event.foodConfig ?? null,
+    paymentRequired: event.paymentRequired ?? false,
+    qrCheckinEnabled: event.qrCheckinEnabled ?? false,
     currentAttendees: event._count.rsvpResponses,
     rsvpResponses: Array.isArray(event.rsvpResponses)
       ? event.rsvpResponses.map((r: any) => ({

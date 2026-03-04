@@ -69,6 +69,8 @@ export const eventCreationSchema = z.object({
     kidsFood: z.boolean().default(false),
     allowNoFood: z.boolean().default(false),
   }).optional(),
+  paymentRequired: z.boolean().default(false),
+  qrCheckinEnabled: z.boolean().default(false),
 })
 
 export type MemberRegistrationInput = z.infer<typeof memberRegistrationSchema>
