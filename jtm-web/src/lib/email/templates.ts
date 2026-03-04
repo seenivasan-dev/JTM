@@ -265,11 +265,10 @@ export function generateRSVPApprovedEmail(params: {
     <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; text-align: center; margin: 25px 0;">
       <h3 style="margin-top: 0; color: #065f46; font-size: 18px;">🎫 Your Event QR Code</h3>
       <p style="color: #059669; margin-bottom: 15px;">Please show this QR code at the event entrance</p>
-      ${qrCodeUrl ? `
       <div class="qr-wrapper" style="display:inline-block;background-color:#ffffff;padding:16px;border-radius:8px;border:2px solid #10b981;">
-        <img class="qr-image" src="${qrCodeUrl}" alt="Event QR Code"
+        <img class="qr-image" src="cid:qrcode" alt="Event QR Code"
           style="display:block;background-color:#ffffff;max-width:250px;filter:none;" />
-      </div>` : ''}
+      </div>
       <p style="font-size: 12px; color: #6b7280; margin-top: 15px;">QR Code: ${qrCodeData}</p>
       <p style="font-size: 14px; color: #065f46; margin-top: 10px;"><strong>Tip:</strong> Save this email or take a screenshot for easy access</p>
     </div>
