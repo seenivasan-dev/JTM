@@ -584,6 +584,68 @@ export default function RSVPReports({ event, rsvps }: RSVPReportsProps) {
           </CardContent>
         </Card>
       )}
+
+      {/* Individual RSVP Responses */}
+      {rsvps.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Users className="h-5 w-5" />
+              Individual Responses ({rsvps.length})
+            </CardTitle>
+            <CardDescription>All RSVP submissions with form responses</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {rsvps.map(rsvp => {
+                const dynamicFields = event.rsvpForm?.fields || []
+                return (
+                  <div key={rsvp.id} className="border rounded-lg p-4 space-y-2">
+                    <div className="flex items-start justify-between gap-2 flex-wrap">
+                      <div>
+                        <p className="font-semibold">{rsvp.user.firstName} {rsvp.user.lastName}</p>
+                        <p className="text-sm text-muted-foreground">{rsvp.user.email}</p>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge variant={rsvp.paymentConfirmed ? 'default' : 'secondary'}>
+                          {rsvp.paymentConfirmed ? 'Approved' : 'Pending'}
+                        </Badge>
+                        {rsvp.checkedIn && (
+                          <Badge className="bg-green-100 text-green-800 border-green-300">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Checked In
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                    {dynamicFields.length > 0 && (
+                      <div className="grid gap-1 sm:grid-cols-2 pt-2 border-t text-sm">
+                        {dynamicFields.map(field => {
+                          const val = rsvp.responses[field.id]
+                          if (val === undefined || val === null || val === '') return null
+                          return (
+                            <div key={field.id} className="flex gap-2">
+                              <span className="text-muted-foreground shrink-0">{field.label}:</span>
+                              <span className="font-medium break-all">
+                                {typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val)}
+                              </span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+                    {rsvp.paymentReference && (
+                      <p className="text-xs text-muted-foreground border-t pt-1">
+                        Payment Ref: <span className="font-mono">{rsvp.paymentReference}</span>
+                      </p>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

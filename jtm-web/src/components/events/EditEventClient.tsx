@@ -27,7 +27,6 @@ import {
   ImageIcon
 } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface RSVPField {
   id: string
@@ -61,6 +60,7 @@ interface Event {
   } | null
   paymentRequired: boolean
   qrCheckinEnabled: boolean
+  status?: string
   currentAttendees: number
   createdAt: string
   updatedAt: string
@@ -99,6 +99,7 @@ export default function EditEventClient({ event }: EditEventClientProps) {
     },
     paymentRequired: event.paymentRequired ?? false,
     qrCheckinEnabled: event.qrCheckinEnabled ?? false,
+    status: event.status || 'PUBLISHED',
   })
 
   const updateFormData = (field: string, value: any) => {
@@ -246,6 +247,7 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       eventData.foodConfig = formData.foodConfig
       eventData.paymentRequired = formData.paymentRequired
       eventData.qrCheckinEnabled = formData.qrCheckinEnabled
+      eventData.status = formData.status
 
       const response = await fetch(`/api/events/${event.id}`, {
         method: 'PUT',
@@ -256,7 +258,7 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       })
 
       if (response.ok) {
-        router.push(`/events/${event.id}`)
+        router.push('/admin/events')
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to update event')
@@ -367,8 +369,9 @@ export default function EditEventClient({ event }: EditEventClientProps) {
             <Label>Event Flyer</Label>
             {flyerPreview ? (
               <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
-                <div className="relative h-40 w-full">
-                  <Image src={flyerPreview} alt="Flyer preview" fill className="object-cover" />
+                <div className="h-40 w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={flyerPreview} alt="Flyer preview" className="w-full h-full object-cover" />
                 </div>
                 <button
                   type="button"
@@ -686,11 +689,22 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       {/* Submit Button */}
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" asChild>
-          <Link href={`/events/${event.id}`}>Cancel</Link>
+          <Link href="/admin/events">Cancel</Link>
         </Button>
+        <div className="flex items-center gap-2 border rounded-lg px-3 py-1 bg-gray-50">
+          <span className="text-sm text-muted-foreground">Status:</span>
+          <select
+            value={formData.status}
+            onChange={(e) => updateFormData('status', e.target.value)}
+            className="text-sm font-medium bg-transparent border-0 outline-none cursor-pointer"
+          >
+            <option value="DRAFT">Draft</option>
+            <option value="PUBLISHED">Published</option>
+          </select>
+        </div>
         <Button type="submit" disabled={loading || flyerUploading}>
           <Save className="h-4 w-4 mr-2" />
-          {flyerUploading ? 'Uploading flyer...' : loading ? 'Updating...' : 'Update Event'}
+          {flyerUploading ? 'Uploading flyer...' : loading ? 'Saving...' : 'Save Changes'}
         </Button>
       </div>
     </form>

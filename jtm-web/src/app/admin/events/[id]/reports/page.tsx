@@ -88,6 +88,22 @@ export default async function RSVPReportsPage({ params }: RSVPReportsPageProps) 
     location: event.location,
     maxParticipants: event.maxParticipants,
     rsvpDeadline: event.rsvpDeadline?.toISOString() || null,
+    rsvpForm: event.rsvpForm as {
+      fields: Array<{
+        id: string
+        type: string
+        label: string
+        required: boolean
+        options?: string[]
+      }>
+    } | undefined,
+    foodConfig: event.foodConfig as {
+      enabled: boolean
+      vegFood: boolean
+      nonVegFood: boolean
+      kidsFood: boolean
+      allowNoFood: boolean
+    } | null,
   }
 
   const serializedRSVPs = event.rsvpResponses.map(rsvp => ({

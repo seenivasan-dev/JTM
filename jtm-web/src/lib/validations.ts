@@ -73,6 +73,7 @@ export const eventCreationSchema = z.object({
   }).optional(),
   paymentRequired: z.boolean().default(false),
   qrCheckinEnabled: z.boolean().default(false),
+  status: z.enum(['DRAFT', 'PUBLISHED']).default('PUBLISHED'),
 })
 
 export type MemberRegistrationInput = z.infer<typeof memberRegistrationSchema>

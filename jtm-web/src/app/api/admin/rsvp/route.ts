@@ -330,3 +330,35 @@ export async function GET(request: NextRequest) {
     )
   }
 }
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+
+    if (!session?.user?.email) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const admin = await prisma.admin.findUnique({
+      where: { email: session.user.email },
+    })
+
+    if (!admin) {
+      return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const rsvpId = searchParams.get('rsvpId')
+
+    if (!rsvpId) {
+      return NextResponse.json({ success: false, error: 'rsvpId is required' }, { status: 400 })
+    }
+
+    await prisma.rSVPResponse.delete({ where: { id: rsvpId } })
+
+    return NextResponse.json({ success: true, message: 'RSVP deleted successfully' })
+  } catch (error) {
+    console.error('Delete RSVP error:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+  }
+}

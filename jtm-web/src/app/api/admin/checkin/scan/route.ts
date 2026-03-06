@@ -52,6 +52,17 @@ export async function POST(request: NextRequest) {
     }
 
     const responses = rsvpResponse.responses as any
+    const rsvpFormFields: Array<{ id: string; label: string }> = (rsvpResponse.event.rsvpForm as any)?.fields || []
+
+    // Build labeled responses from the event's custom RSVP form fields
+    const labeledResponses: Array<{ label: string; value: string }> = rsvpFormFields
+      .filter(f => f.id !== 'auto_zelle_ref')
+      .map(f => {
+        const val = responses?.[f.id]
+        if (val === undefined || val === null || val === '') return null
+        return { label: f.label, value: typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val) }
+      })
+      .filter(Boolean) as Array<{ label: string; value: string }>
 
     // Return RSVP details
     return NextResponse.json({
@@ -72,8 +83,7 @@ export async function POST(request: NextRequest) {
         eventTime: (rsvpResponse.event as any).time || 'TBD',
         eventLocation: rsvpResponse.event.location,
         numberOfGuests: responses?.numberOfGuests || 0,
-        dietaryRestrictions: responses?.dietaryRestrictions,
-        specialRequests: responses?.specialRequests,
+        labeledResponses,
         responseStatus: responses?.responseStatus || 'ATTENDING'
       }
     })

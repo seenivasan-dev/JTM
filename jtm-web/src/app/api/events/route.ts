@@ -11,13 +11,12 @@ export async function GET(request: NextRequest) {
     const includeExpired = searchParams.get('includeExpired') === 'true'
 
     // Build where clause based on parameters
-    const whereClause = includeExpired 
-      ? {} 
-      : {
-          date: {
-            gte: new Date(), // Only future events
-          },
-        }
+    const whereClause: Record<string, any> = {
+      status: 'PUBLISHED', // Only published events for the public API
+    }
+    if (!includeExpired) {
+      whereClause.date = { gte: new Date() }
+    }
 
     // Fetch events from database — newest/latest first
     const events = await prisma.event.findMany({
@@ -51,6 +50,7 @@ export async function GET(request: NextRequest) {
       foodConfig: event.foodConfig,
       paymentRequired: event.paymentRequired,
       qrCheckinEnabled: event.qrCheckinEnabled,
+      status: event.status,
       currentAttendees: event._count.rsvpResponses,
       createdAt: event.createdAt,
       updatedAt: event.updatedAt

@@ -17,8 +17,7 @@ interface RSVPDetails {
   eventTime: string
   eventLocation: string
   numberOfGuests: number
-  dietaryRestrictions?: string
-  specialRequests?: string
+  labeledResponses?: Array<{ label: string; value: string }>
   responseStatus: string
 }
 
@@ -347,22 +346,18 @@ export default function CheckInPageClient({ eventId }: { eventId: string }) {
                   </div>
                 </div>
 
-                {/* Additional Info */}
-                {(scanResult.rsvp.dietaryRestrictions || scanResult.rsvp.specialRequests) && (
+                {/* RSVP Form Responses */}
+                {scanResult.rsvp.labeledResponses && scanResult.rsvp.labeledResponses.length > 0 && (
                   <div className="border-t pt-4">
-                    <h3 className="font-semibold text-gray-900 mb-3">Additional Information</h3>
-                    {scanResult.rsvp.dietaryRestrictions && (
-                      <div className="mb-2">
-                        <span className="font-medium text-gray-700">Dietary Restrictions:</span>
-                        <p className="text-gray-600">{scanResult.rsvp.dietaryRestrictions}</p>
-                      </div>
-                    )}
-                    {scanResult.rsvp.specialRequests && (
-                      <div>
-                        <span className="font-medium text-gray-700">Special Requests:</span>
-                        <p className="text-gray-600">{scanResult.rsvp.specialRequests}</p>
-                      </div>
-                    )}
+                    <h3 className="font-semibold text-gray-900 mb-3">RSVP Responses</h3>
+                    <div className="space-y-2">
+                      {scanResult.rsvp.labeledResponses.map((item, idx) => (
+                        <div key={idx} className="flex justify-between text-sm gap-2">
+                          <span className="text-gray-600 shrink-0">{item.label}:</span>
+                          <span className="font-medium text-right">{item.value}</span>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
 
