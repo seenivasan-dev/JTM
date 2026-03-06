@@ -74,6 +74,9 @@ export function generateQRCodeData(rsvpResponseId: string, eventId: string, user
 
 /**
  * Parse and verify QR code data
+ * Supports two formats:
+ *   - Format A (encrypted): AES-256-CBC encrypted JSON with rsvpId, eventId, userId, timestamp, token
+ *   - Format B (plain): JTM-EVENT:eventId:userId:timestamp
  */
 export function parseQRCodeData(qrData: string): {
   rsvpId: string
@@ -82,15 +85,16 @@ export function parseQRCodeData(qrData: string): {
   timestamp: number
   token: string
 } | null {
+  // Try Format A: encrypted JSON
   try {
     const decrypted = decryptQRData(qrData)
     const parsed = JSON.parse(decrypted)
-    
+
     // Validate required fields
     if (!parsed.rsvpId || !parsed.eventId || !parsed.userId || !parsed.timestamp || !parsed.token) {
       return null
     }
-    
+
     return {
       rsvpId: parsed.rsvpId,
       eventId: parsed.eventId,
@@ -98,10 +102,30 @@ export function parseQRCodeData(qrData: string): {
       timestamp: parsed.timestamp,
       token: parsed.token
     }
-  } catch (error) {
-    console.error('QR code parsing error:', error)
-    return null
+  } catch {
+    // Format A decryption/parsing failed — try Format B
   }
+
+  // Try Format B: JTM-EVENT:eventId:userId:timestamp (plain, no encryption)
+  if (qrData.startsWith('JTM-EVENT:')) {
+    const parts = qrData.split(':')
+    if (parts.length >= 4) {
+      const eventId = parts[1]
+      const userId = parts[2]
+      const timestamp = parseInt(parts[3])
+      if (eventId && userId && !isNaN(timestamp)) {
+        return {
+          rsvpId: '',    // not present in plain format — DB lookup uses qrCode exact match
+          eventId,
+          userId,
+          timestamp,
+          token: ''
+        }
+      }
+    }
+  }
+
+  return null
 }
 
 /**

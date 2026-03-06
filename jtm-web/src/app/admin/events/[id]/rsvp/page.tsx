@@ -83,6 +83,10 @@ export default async function AdminRSVPPage({ params }: AdminRSVPPageProps) {
     checkedInAt: rsvp.checkedInAt?.toISOString() || null,
     createdAt: rsvp.createdAt.toISOString(),
     updatedAt: rsvp.updatedAt.toISOString(),
+    vegCount: rsvp.vegCount ?? 0,
+    nonVegCount: rsvp.nonVegCount ?? 0,
+    kidsCount: rsvp.kidsCount ?? 0,
+    noFood: rsvp.noFood ?? false,
     user: rsvp.user,
   }))
 

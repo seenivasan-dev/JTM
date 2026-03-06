@@ -47,6 +47,7 @@ export const passwordChangeSchema = z.object({
 export const eventCreationSchema = z.object({
   title: z.string().min(1, 'Event title is required'),
   description: z.string().min(1, 'Event description is required'),
+  eventType: z.string().optional(),
   date: z.string().datetime('Invalid date format'),
   location: z.string().min(1, 'Event location is required'),
   rsvpRequired: z.boolean().default(false),
@@ -67,6 +68,7 @@ export const eventCreationSchema = z.object({
     vegFood: z.boolean().default(false),
     nonVegFood: z.boolean().default(false),
     kidsFood: z.boolean().default(false),
+    kidsEatFree: z.boolean().default(false),
     allowNoFood: z.boolean().default(false),
   }).optional(),
   paymentRequired: z.boolean().default(false),

@@ -68,8 +68,9 @@ export default async function AdminEventsPage() {
   const eventsWithStats = events.map(event => {
     const rsvps = event.rsvpResponses
     const totalRSVPs = rsvps.length
+    const approved = rsvps.filter(r => r.paymentConfirmed).length
     const checkedIn = rsvps.filter(r => r.checkedIn).length
-    const pending = rsvps.filter(r => !r.checkedIn).length
+    const pending = rsvps.filter(r => !r.paymentConfirmed).length
 
     return {
       ...event,
@@ -87,6 +88,7 @@ export default async function AdminEventsPage() {
       })),
       stats: {
         totalRSVPs,
+        approved,
         checkedIn,
         pending,
         isActive: new Date(event.date) >= new Date(),

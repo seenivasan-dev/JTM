@@ -44,6 +44,7 @@ export async function GET(
       id: event.id,
       title: event.title,
       description: event.description,
+      eventType: event.eventType,
       flyer: event.flyer,
       date: event.date,
       location: event.location,
@@ -94,6 +95,7 @@ export async function PUT(
       data: {
         title: body.title,
         description: body.description,
+        eventType: body.eventType ?? null,
         date: body.date ? new Date(body.date) : undefined,
         location: body.location,
         rsvpRequired: body.rsvpRequired,

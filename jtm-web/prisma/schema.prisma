@@ -70,6 +70,7 @@ model Event {
   id              String          @id @default(cuid())
   title           String
   description     String
+  eventType       String?         // Cultural | Sports | Yoga | Picnic | Movie | Literature | Celebrity | Online | Youth | General
   flyer           String?
   date            DateTime
   location        String
@@ -77,7 +78,7 @@ model Event {
   rsvpDeadline    DateTime?
   maxParticipants Int?
   rsvpForm        Json?           // Dynamic form configuration
-  foodConfig      Json?           // { enabled, vegFood, nonVegFood, kidsFood, allowNoFood }
+  foodConfig      Json?           // { enabled, vegFood, nonVegFood, kidsFood, kidsEatFree, allowNoFood }
   paymentRequired  Boolean         @default(false) // Members must submit payment before RSVP is confirmed
   qrCheckinEnabled Boolean         @default(false) // Admin can generate QR codes for confirmed attendees
   rsvpResponses   RSVPResponse[]

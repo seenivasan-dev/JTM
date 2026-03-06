@@ -3,6 +3,8 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "@/components/providers/SessionProvider";
 import AutoExpirationChecker from "@/components/membership/AutoExpirationChecker";
+import { getServerSession } from "next-auth/next";
+import { authOptions } from "@/lib/auth";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,15 +33,17 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await getServerSession(authOptions);
+
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} antialiased`}>
-        <Providers>
+        <Providers session={session}>
           <AutoExpirationChecker />
           <div className="relative min-h-screen bg-background">
             <main className="relative">

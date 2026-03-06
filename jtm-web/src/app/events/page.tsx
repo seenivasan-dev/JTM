@@ -65,6 +65,7 @@ export default async function EventsPage() {
       id: event.id,
       title: event.title,
       description: event.description,
+      eventType: event.eventType,
       flyer: event.flyer,
       date: event.date.toISOString(),
       location: event.location,
