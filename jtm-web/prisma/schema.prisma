@@ -81,6 +81,7 @@ model Event {
   foodConfig      Json?           // { enabled, vegFood, nonVegFood, kidsFood, kidsEatFree, allowNoFood }
   paymentRequired  Boolean         @default(false) // Members must submit payment before RSVP is confirmed
   qrCheckinEnabled Boolean         @default(false) // Admin can generate QR codes for confirmed attendees
+  status           String          @default("PUBLISHED") // "DRAFT" | "PUBLISHED"
   rsvpResponses   RSVPResponse[]
   createdAt       DateTime        @default(now())
   updatedAt       DateTime        @updatedAt

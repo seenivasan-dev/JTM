@@ -128,6 +128,17 @@ export async function POST(request: NextRequest) {
 
       // Send RSVP confirmation email
       try {
+        // Build rsvpFields from event's form definition + member's responses
+        const rsvpFormFields = (event.rsvpForm as any)?.fields || []
+        const rsvpFields: Array<{ label: string; value: string }> = rsvpFormFields
+          .filter((f: any) => f.id !== 'auto_zelle_ref')
+          .map((f: any) => {
+            const val = responses[f.id]
+            if (val === undefined || val === null || val === '') return null
+            return { label: f.label, value: typeof val === 'boolean' ? (val ? 'Yes' : 'No') : String(val) }
+          })
+          .filter(Boolean)
+
         const emailTemplate = generateRSVPConfirmationEmail({
           firstName: user.firstName,
           eventTitle: event.title,
@@ -142,6 +153,7 @@ export async function POST(request: NextRequest) {
           eventLocation: event.location,
           paymentReference: paymentReference || 'N/A',
           paymentRequired: event.paymentRequired,
+          rsvpFields: rsvpFields.length > 0 ? rsvpFields : undefined,
         })
 
         await sendEmail({

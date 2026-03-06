@@ -136,8 +136,9 @@ export function generateRSVPConfirmationEmail(params: {
   eventLocation: string
   paymentReference: string
   paymentRequired?: boolean
+  rsvpFields?: Array<{ label: string; value: string }>
 }): { subject: string; html: string; text: string } {
-  const { firstName, eventTitle, eventDate, eventLocation, paymentReference, paymentRequired = true } = params
+  const { firstName, eventTitle, eventDate, eventLocation, paymentReference, paymentRequired = true, rsvpFields } = params
 
   const subject = `RSVP Submitted - ${eventTitle}`
 
@@ -153,6 +154,13 @@ export function generateRSVPConfirmationEmail(params: {
 
   const paymentRowHtml = paymentRequired
     ? `<p style="margin: 10px 0;"><strong>Payment Reference:</strong> <code style="background-color: #dcfce7; padding: 4px 8px; border-radius: 4px;">${paymentReference}</code></p>`
+    : ''
+
+  const rsvpResponsesHtml = rsvpFields && rsvpFields.length > 0
+    ? `<div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; border-left: 4px solid #6366f1; margin: 25px 0;">
+      <h3 style="margin-top: 0; color: #3730a3; font-size: 16px;">📋 Your RSVP Responses</h3>
+      ${rsvpFields.map(f => `<p style="margin: 8px 0;"><strong>${f.label}:</strong> ${f.value}</p>`).join('')}
+    </div>`
     : ''
 
   const html = `
@@ -177,6 +185,8 @@ export function generateRSVPConfirmationEmail(params: {
     </div>
 
     ${nextStepsHtml}
+
+    ${rsvpResponsesHtml}
 
     <p>We look forward to seeing you at the event!</p>
 
@@ -207,6 +217,7 @@ Location: ${eventLocation}
 ${paymentRequired ? `Payment Reference: ${paymentReference}` : ''}
 
 ${nextStepsText}
+${rsvpFields && rsvpFields.length > 0 ? `\nYour RSVP Responses:\n${rsvpFields.map(f => `${f.label}: ${f.value}`).join('\n')}` : ''}
 
 We look forward to seeing you at the event!
 

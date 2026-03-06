@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
-import { 
+import {
   Calendar,
   MapPin,
   Users,
@@ -19,7 +19,11 @@ import {
   Clock,
   TrendingUp,
   Sparkles,
-  Upload
+  Upload,
+  Pencil,
+  Trash2,
+  Globe,
+  EyeOff
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -61,6 +65,7 @@ interface Event {
   rsvpForm?: Record<string, unknown>
   qrCheckinEnabled?: boolean
   eventType?: string | null
+  status?: string
   rsvpResponses: RSVPResponse[]
   stats: {
     totalRSVPs: number
@@ -80,9 +85,41 @@ interface AdminEventsViewProps {
 export default function AdminEventsView({ events }: AdminEventsViewProps) {
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | 'upcoming' | 'past'>('all')
+  const [eventsList, setEventsList] = useState(events)
+
+  const handleDelete = async (eventId: string, title: string) => {
+    if (!window.confirm(`Delete "${title}"? This will also delete all RSVPs for this event.`)) return
+    const res = await fetch(`/api/events/${eventId}`, { method: 'DELETE' })
+    if (res.ok) {
+      setEventsList(prev => prev.filter(e => e.id !== eventId))
+    } else {
+      alert('Failed to delete event. Please try again.')
+    }
+  }
+
+  const handleToggleStatus = async (event: Event) => {
+    const newStatus = event.status === 'PUBLISHED' ? 'DRAFT' : 'PUBLISHED'
+    const res = await fetch(`/api/events/${event.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title: event.title,
+        description: event.description,
+        date: event.date,
+        location: event.location,
+        rsvpRequired: event.rsvpRequired,
+        status: newStatus,
+      }),
+    })
+    if (res.ok) {
+      setEventsList(prev => prev.map(e => e.id === event.id ? { ...e, status: newStatus } : e))
+    } else {
+      alert('Failed to update event status.')
+    }
+  }
 
   // Filter events
-  const filteredEvents = events.filter(event => {
+  const filteredEvents = eventsList.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          event.location.toLowerCase().includes(searchTerm.toLowerCase())
     
@@ -95,11 +132,11 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
 
   // Calculate overall statistics
   const overallStats = {
-    totalEvents: events.length,
-    upcomingEvents: events.filter(e => e.stats.isUpcoming).length,
-    pastEvents: events.filter(e => e.stats.isPast).length,
-    totalRSVPs: events.reduce((sum, e) => sum + e.stats.totalRSVPs, 0),
-    avgRSVPsPerEvent: Math.round(events.reduce((sum, e) => sum + e.stats.totalRSVPs, 0) / Math.max(events.length, 1))
+    totalEvents: eventsList.length,
+    upcomingEvents: eventsList.filter(e => e.stats.isUpcoming).length,
+    pastEvents: eventsList.filter(e => e.stats.isPast).length,
+    totalRSVPs: eventsList.reduce((sum, e) => sum + e.stats.totalRSVPs, 0),
+    avgRSVPsPerEvent: Math.round(eventsList.reduce((sum, e) => sum + e.stats.totalRSVPs, 0) / Math.max(eventsList.length, 1))
   }
 
   const exportEventData = (event: Event) => {
@@ -257,6 +294,11 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                       <Badge variant={event.stats.isUpcoming ? 'default' : 'secondary'}>
                         {event.stats.isUpcoming ? 'Upcoming' : 'Past'}
                       </Badge>
+                      {event.status === 'DRAFT' && (
+                        <Badge variant="outline" className="border-orange-400 text-orange-600 bg-orange-50">
+                          Draft
+                        </Badge>
+                      )}
                     </div>
                     <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
                       <div className="flex items-center gap-2">
@@ -354,6 +396,37 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                     <Download className="h-4 w-4 mr-2" />
                     Export
                   </Button>
+                  <div className="ml-auto flex gap-2">
+                    <Link href={`/admin/events/${event.id}/edit`}>
+                      <Button variant="outline" size="sm" className="text-blue-600 border-blue-200 hover:bg-blue-50">
+                        <Pencil className="h-4 w-4 mr-2" />
+                        Edit
+                      </Button>
+                    </Link>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className={event.status === 'PUBLISHED'
+                        ? 'text-orange-600 border-orange-200 hover:bg-orange-50'
+                        : 'text-green-600 border-green-200 hover:bg-green-50'}
+                      onClick={() => handleToggleStatus(event)}
+                    >
+                      {event.status === 'PUBLISHED' ? (
+                        <><EyeOff className="h-4 w-4 mr-2" />Unpublish</>
+                      ) : (
+                        <><Globe className="h-4 w-4 mr-2" />Publish</>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-red-600 border-red-200 hover:bg-red-50"
+                      onClick={() => handleDelete(event.id, event.title)}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>

@@ -26,7 +26,6 @@ import {
   ImageIcon
 } from 'lucide-react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 interface RSVPField {
   id: string
@@ -69,6 +68,7 @@ export default function CreateEventForm() {
   const [flyerFile, setFlyerFile] = useState<File | null>(null)
   const [flyerPreview, setFlyerPreview] = useState<string>('')
   const [flyerUploading, setFlyerUploading] = useState(false)
+  const pendingStatusRef = React.useRef<'DRAFT' | 'PUBLISHED'>('PUBLISHED')
   const [formData, setFormData] = useState<EventFormData>({
     title: '',
     description: '',
@@ -246,6 +246,7 @@ export default function CreateEventForm() {
       // Always include paymentRequired and qrCheckinEnabled
       eventData.paymentRequired = formData.paymentRequired
       eventData.qrCheckinEnabled = formData.qrCheckinEnabled
+      eventData.status = pendingStatusRef.current
 
       const response = await fetch('/api/events', {
         method: 'POST',
@@ -256,7 +257,7 @@ export default function CreateEventForm() {
       })
 
       if (response.ok) {
-        router.push('/events')
+        router.push('/admin/events')
       } else {
         const error = await response.json()
         alert(error.error || 'Failed to create event')
@@ -360,8 +361,9 @@ export default function CreateEventForm() {
             <Label>Event Flyer</Label>
             {flyerPreview ? (
               <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
-                <div className="relative h-40 w-full">
-                  <Image src={flyerPreview} alt="Flyer preview" fill className="object-cover" />
+                <div className="h-40 w-full">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={flyerPreview} alt="Flyer preview" className="w-full h-full object-cover" />
                 </div>
                 <button
                   type="button"
@@ -668,21 +670,43 @@ export default function CreateEventForm() {
         </Card>
       )}
 
-      {/* Submit Button */}
+      {/* Submit Buttons */}
       <div className="flex justify-end gap-4">
         <Button type="button" variant="outline" asChild>
           <Link href="/events">Cancel</Link>
         </Button>
-        <Button type="submit" disabled={loading || flyerUploading}>
-          {(loading || flyerUploading) ? (
+        <Button
+          type="submit"
+          variant="outline"
+          disabled={loading || flyerUploading}
+          onClick={() => { pendingStatusRef.current = 'DRAFT' }}
+        >
+          {(loading && pendingStatusRef.current === 'DRAFT') ? (
             <div className="flex items-center gap-2">
-              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-              {flyerUploading ? 'Uploading flyer...' : 'Creating...'}
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              Saving...
             </div>
           ) : (
             <>
               <Save className="h-4 w-4 mr-2" />
-              Create Event
+              Save as Draft
+            </>
+          )}
+        </Button>
+        <Button
+          type="submit"
+          disabled={loading || flyerUploading}
+          onClick={() => { pendingStatusRef.current = 'PUBLISHED' }}
+        >
+          {(loading && pendingStatusRef.current === 'PUBLISHED') ? (
+            <div className="flex items-center gap-2">
+              <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+              {flyerUploading ? 'Uploading flyer...' : 'Publishing...'}
+            </div>
+          ) : (
+            <>
+              <Save className="h-4 w-4 mr-2" />
+              Publish Event
             </>
           )}
         </Button>

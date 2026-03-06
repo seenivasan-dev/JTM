@@ -8,10 +8,10 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay'
-import { 
-  Check, 
-  X, 
-  Search, 
+import {
+  Check,
+  X,
+  Search,
   Filter,
   Download,
   QrCode,
@@ -22,7 +22,8 @@ import {
   DollarSign,
   Eye,
   Mail,
-  BarChart3
+  BarChart3,
+  Trash2
 } from 'lucide-react'
 import { format } from 'date-fns'
 import Link from 'next/link'
@@ -153,6 +154,20 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
       console.error('Error updating RSVP:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteRSVP = async (rsvpId: string, userName: string) => {
+    if (!window.confirm(`Delete "${userName}"'s RSVP? This action cannot be undone.`)) return
+    try {
+      const res = await fetch(`/api/admin/rsvp?rsvpId=${rsvpId}`, { method: 'DELETE' })
+      if (res.ok) {
+        setRSVPs(prev => prev.filter(r => r.id !== rsvpId))
+      } else {
+        alert('Failed to delete RSVP.')
+      }
+    } catch {
+      alert('Failed to delete RSVP.')
     }
   }
 
@@ -411,36 +426,39 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
         </TabsList>
 
         <TabsContent value="all" className="space-y-4">
-          <RSVPList 
+          <RSVPList
             rsvps={filteredRSVPs}
             event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
+            onDelete={handleDeleteRSVP}
             setSelectedRSVP={setSelectedRSVP}
             loading={loading}
           />
         </TabsContent>
 
         <TabsContent value="pending" className="space-y-4">
-          <RSVPList 
+          <RSVPList
             rsvps={filteredRSVPs.filter(r => !r.paymentConfirmed)}
             event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
+            onDelete={handleDeleteRSVP}
             setSelectedRSVP={setSelectedRSVP}
             loading={loading}
           />
         </TabsContent>
 
         <TabsContent value="approved" className="space-y-4">
-          <RSVPList 
+          <RSVPList
             rsvps={filteredRSVPs.filter(r => r.paymentConfirmed)}
             event={event}
             bulkSelection={bulkSelection}
             setBulkSelection={setBulkSelection}
             onAction={handleRSVPAction}
+            onDelete={handleDeleteRSVP}
             setSelectedRSVP={setSelectedRSVP}
             loading={loading}
           />
@@ -462,20 +480,22 @@ export default function AdminRSVPManagement({ event, initialRSVPs }: AdminRSVPMa
 }
 
 // RSVP List Component
-function RSVPList({ 
+function RSVPList({
   rsvps,
   event,
-  bulkSelection, 
-  setBulkSelection, 
-  onAction, 
-  setSelectedRSVP, 
-  loading 
+  bulkSelection,
+  setBulkSelection,
+  onAction,
+  onDelete,
+  setSelectedRSVP,
+  loading
 }: {
   rsvps: RSVPResponse[]
   event: Event
   bulkSelection: string[]
   setBulkSelection: (selection: string[]) => void
   onAction: (rsvpId: string, action: 'approve_payment' | 'reject_payment' | 'checkin') => void
+  onDelete: (rsvpId: string, userName: string) => void
   setSelectedRSVP: (rsvp: RSVPResponse) => void
   loading: boolean
 }) {
@@ -614,6 +634,16 @@ function RSVPList({
                           Check In
                         </Button>
                       )}
+                      <Button
+                        onClick={() => onDelete(rsvp.id, `${rsvp.user.firstName} ${rsvp.user.lastName}`)}
+                        disabled={loading}
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 border-red-200 hover:bg-red-50"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
                     </div>
                   </div>
                 </div>
