@@ -7,9 +7,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { 
-  Calendar, 
-  MapPin, 
-  Users, 
+  Calendar,
+  MapPin,
+  Users,
   Plus,
   Eye,
   QrCode,
@@ -18,7 +18,8 @@ import {
   CheckCircle,
   Clock,
   TrendingUp,
-  Sparkles
+  Sparkles,
+  Upload
 } from 'lucide-react'
 import Link from 'next/link'
 import { format } from 'date-fns'
@@ -333,6 +334,12 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                       </Button>
                     </Link>
                   )}
+                  <Link href={`/admin/events/${event.id}/qr-upload`}>
+                    <Button variant="outline" size="sm">
+                      <Upload className="h-4 w-4 mr-2" />
+                      Bulk Upload
+                    </Button>
+                  </Link>
                   <Link href={`/admin/events/${event.id}/reports`}>
                     <Button variant="outline" size="sm">
                       <Sparkles className="h-4 w-4 mr-2" />
