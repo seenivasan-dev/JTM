@@ -57,7 +57,7 @@ const registrationSchema = z.object({
 
 type RegistrationFormData = z.infer<typeof registrationSchema>;
 
-const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl';
+const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl placeholder:text-gray-400 placeholder:italic';
 const selectCls = 'h-11 border-gray-200 bg-white rounded-xl';
 
 function SectionHeader({
@@ -202,14 +202,14 @@ export default function RegistrationForm() {
                 <FormField control={form.control} name="firstName" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="Ravi" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="e.g. Ravi" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="lastName" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="Kumar" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="e.g. Kumar" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -220,7 +220,7 @@ export default function RegistrationForm() {
                   <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                     <Mail className="h-3.5 w-3.5 text-gray-400" /> Email Address
                   </FormLabel>
-                  <FormControl><Input className={inputCls} type="email" placeholder="ravi.kumar@example.com" {...field} /></FormControl>
+                  <FormControl><Input className={inputCls} type="email" placeholder="e.g. ravi@example.com" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -231,7 +231,7 @@ export default function RegistrationForm() {
                     <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                       <Phone className="h-3.5 w-3.5 text-gray-400" /> Mobile Number
                     </FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="+1 (904) 555-0100" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="+1 (XXX) XXX-XXXX" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -280,7 +280,7 @@ export default function RegistrationForm() {
                   <FormLabel className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                     <MapPin className="h-3.5 w-3.5 text-gray-400" /> Street Address
                   </FormLabel>
-                  <FormControl><Input className={inputCls} placeholder="123 Baymeadows Rd" {...field} /></FormControl>
+                  <FormControl><Input className={inputCls} placeholder="e.g. 123 Main St" {...field} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )} />
@@ -288,21 +288,21 @@ export default function RegistrationForm() {
                 <FormField control={form.control} name="address.city" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">City</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="Jacksonville" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="City" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="address.state" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">State</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="FL" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="State" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
                 <FormField control={form.control} name="address.zipCode" render={({ field }) => (
                   <FormItem>
                     <FormLabel className="text-sm font-medium text-gray-700">ZIP</FormLabel>
-                    <FormControl><Input className={inputCls} placeholder="32258" {...field} /></FormControl>
+                    <FormControl><Input className={inputCls} placeholder="ZIP Code" {...field} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )} />
@@ -334,7 +334,7 @@ export default function RegistrationForm() {
 
               <FormField control={form.control} name="initialPaymentMethod" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Payment Method (Optional)</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-700">Payment Method</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger className={selectCls}><SelectValue placeholder="Select payment method" /></SelectTrigger>
@@ -342,11 +342,6 @@ export default function RegistrationForm() {
                     <SelectContent>
                       <SelectItem value="ZELLE">Zelle (Recommended)</SelectItem>
                       <SelectItem value="CASH">Cash</SelectItem>
-                      <SelectItem value="CHECK">Check</SelectItem>
-                      <SelectItem value="VENMO">Venmo</SelectItem>
-                      <SelectItem value="PAYPAL">PayPal</SelectItem>
-                      <SelectItem value="CREDIT_CARD">Credit Card</SelectItem>
-                      <SelectItem value="OTHER">Other</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
@@ -355,7 +350,7 @@ export default function RegistrationForm() {
 
               <FormField control={form.control} name="initialPaymentConfirmation" render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-sm font-medium text-gray-700">Zelle Confirmation Number (Optional)</FormLabel>
+                  <FormLabel className="text-sm font-medium text-gray-700">Zelle Confirmation Number</FormLabel>
                   <FormControl>
                     <Input className={inputCls} placeholder="e.g. ZE-XXXXXXXXX" {...field} value={field.value || ''} />
                   </FormControl>
@@ -457,7 +452,7 @@ export default function RegistrationForm() {
                         <FormField control={form.control} name={`familyMembers.${index}.contactNumber`} render={({ field }) => (
                           <FormItem>
                             <FormLabel className="text-xs font-medium text-gray-600">Phone (Optional)</FormLabel>
-                            <FormControl><Input className={inputCls} placeholder="+1 (904)..." {...field} value={field.value || ''} /></FormControl>
+                            <FormControl><Input className={inputCls} placeholder="+1 (XXX)..." {...field} value={field.value || ''} /></FormControl>
                             <FormMessage />
                           </FormItem>
                         )} />

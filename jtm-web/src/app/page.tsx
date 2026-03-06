@@ -105,77 +105,123 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           1. HERO — Full viewport, cinematic
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative min-h-screen flex flex-col justify-end overflow-hidden">
-        {/* Background banner image */}
-        <Image
-          src="/images/banner.png"
-          alt="Jacksonville Tamil Mandram"
-          fill
-          className="object-cover object-top"
-          priority
-          quality={95}
-        />
-        {/* Gradient overlay — bottom heavy for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
-        {/* Kolam pattern overlay */}
-        <div className="absolute inset-0 bg-kolam-pattern opacity-5" />
+      <section className="relative overflow-hidden bg-gradient-to-br from-cyan-900 via-blue-900 to-indigo-950">
 
-        {/* Silver Jubilee badge — top right */}
-        <div className="absolute top-24 right-4 md:right-8 z-20">
-          <div className="relative flex flex-col items-center">
-            <div className="w-20 h-20 md:w-28 md:h-28 rounded-full bg-gradient-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-2xl flex flex-col items-center justify-center border-4 border-white/40 ring-2 ring-amber-400/50">
-              <span className="text-xl md:text-3xl font-black text-amber-900 leading-none">25</span>
-              <span className="text-[9px] md:text-xs font-bold text-amber-800 uppercase tracking-tight leading-none">Years</span>
+        {/* ── MOBILE: banner rendered at natural proportions ── */}
+        <div className="md:hidden">
+          {/* pt-20 offsets the fixed PublicNav */}
+          <div className="relative pt-20">
+            <Image
+              src="/images/banner.png"
+              alt="Jacksonville Tamil Mandram"
+              width={1920}
+              height={400}
+              className="w-full h-auto"
+              priority
+              quality={95}
+            />
+            {/* Fade bottom of image into dark section */}
+            <div className="absolute bottom-0 left-0 right-0 h-10 bg-gradient-to-t from-cyan-900 to-transparent" />
+            {/* Silver Jubilee badge — overlaid on banner */}
+            <div className="absolute top-22 right-4 z-20">
+              <div className="relative flex flex-col items-center">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-xl flex flex-col items-center justify-center border-4 border-white/40 ring-2 ring-amber-400/50">
+                  <span className="text-lg font-black text-amber-900 leading-none">25</span>
+                  <span className="text-[8px] font-bold text-amber-800 uppercase tracking-tight leading-none">Years</span>
+                </div>
+                <div className="mt-1 bg-amber-400/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow">
+                  <span className="text-[8px] font-black text-amber-900 uppercase tracking-widest">Silver Jubilee</span>
+                </div>
+              </div>
             </div>
-            <div className="mt-1 bg-amber-400/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow">
-              <span className="text-[9px] md:text-[10px] font-black text-amber-900 uppercase tracking-widest">Silver Jubilee</span>
+          </div>
+          {/* Kolam pattern */}
+          <div className="absolute inset-0 bg-kolam-pattern opacity-10 pointer-events-none" />
+          {/* Text content below banner */}
+          <div className="relative z-10 px-5 pt-4 pb-10">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-4">
+              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white/90 text-sm font-medium">Jacksonville, Florida · Est. 2001</span>
+            </div>
+            <h1 className="text-4xl font-black text-white leading-none mb-2 drop-shadow-xl">வணக்கம்</h1>
+            <h2 className="text-xl font-bold text-white/90 mb-3 drop-shadow-lg">Jacksonville Tamil Mandram</h2>
+            <p className="text-sm text-white/75 max-w-xl mb-6 leading-relaxed">
+              Celebrating 25 years of Tamil culture, heritage, and community in Northeast Florida.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/auth/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-6 py-3 rounded-xl shadow-xl shadow-amber-500/30 transition-all duration-200 active:scale-95">
+                Join JTM <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/events" className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200">
+                View Events <Calendar className="h-4 w-4" />
+              </Link>
             </div>
           </div>
         </div>
 
-        {/* Hero text content */}
-        <div className="relative z-10 px-6 pb-16 md:pb-24 md:px-12 max-w-5xl">
-          <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
-            <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-white/90 text-sm font-medium">Jacksonville, Florida · Est. 2001</span>
+        {/* ── DESKTOP: full-screen cinematic hero ── */}
+        <div className="hidden md:flex flex-col justify-end min-h-screen relative">
+          {/* Background image */}
+          <div className="absolute inset-0">
+            <Image
+              src="/images/banner.png"
+              alt="Jacksonville Tamil Mandram"
+              fill
+              className="object-cover object-top"
+              priority
+              quality={95}
+            />
           </div>
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white leading-none mb-3 drop-shadow-xl">
-            வணக்கம்
-          </h1>
-          <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white/90 mb-4 drop-shadow-lg">
-            Jacksonville Tamil Mandram
-          </h2>
-          <p className="text-base md:text-xl text-white/75 max-w-xl mb-8 leading-relaxed">
-            Celebrating 25 years of Tamil culture, heritage, and community in Northeast Florida.
-          </p>
-          <div className="flex flex-wrap gap-3">
-            <Link
-              href="/auth/register"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-6 py-3 rounded-xl shadow-xl shadow-amber-500/30 transition-all duration-200 hover:scale-105">
-              Join JTM
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-            <Link
-              href="/events"
-              className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200">
-              View Events
-              <Calendar className="h-4 w-4" />
-            </Link>
+          {/* Kolam pattern */}
+          <div className="absolute inset-0 bg-kolam-pattern opacity-10" />
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+          {/* Silver Jubilee badge */}
+          <div className="absolute top-28 right-8 z-20">
+            <div className="relative flex flex-col items-center">
+              <div className="w-28 h-28 rounded-full bg-gradient-to-br from-amber-400 via-yellow-300 to-amber-500 shadow-2xl flex flex-col items-center justify-center border-4 border-white/40 ring-2 ring-amber-400/50">
+                <span className="text-3xl font-black text-amber-900 leading-none">25</span>
+                <span className="text-xs font-bold text-amber-800 uppercase tracking-tight leading-none">Years</span>
+              </div>
+              <div className="mt-1 bg-amber-400/90 backdrop-blur-sm px-2 py-0.5 rounded-full shadow">
+                <span className="text-[10px] font-black text-amber-900 uppercase tracking-widest">Silver Jubilee</span>
+              </div>
+            </div>
+          </div>
+          {/* Hero text */}
+          <div className="relative z-10 px-12 pb-28 max-w-5xl">
+            <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 mb-6">
+              <span className="h-2 w-2 rounded-full bg-green-400 animate-pulse" />
+              <span className="text-white/90 text-sm font-medium">Jacksonville, Florida · Est. 2001</span>
+            </div>
+            <h1 className="text-7xl lg:text-8xl font-black text-white leading-none mb-2 drop-shadow-xl">வணக்கம்</h1>
+            <h2 className="text-4xl lg:text-5xl font-bold text-white/90 mb-3 drop-shadow-lg">Jacksonville Tamil Mandram</h2>
+            <p className="text-xl text-white/75 max-w-xl mb-6 leading-relaxed">
+              Celebrating 25 years of Tamil culture, heritage, and community in Northeast Florida.
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/auth/register" className="inline-flex items-center gap-2 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold px-6 py-3 rounded-xl shadow-xl shadow-amber-500/30 transition-all duration-200 hover:scale-105">
+                Join JTM <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link href="/events" className="inline-flex items-center gap-2 bg-white/15 hover:bg-white/25 backdrop-blur-sm border border-white/30 text-white font-semibold px-6 py-3 rounded-xl transition-all duration-200">
+                View Events <Calendar className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+          {/* Scroll indicator */}
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 animate-bounce">
+            <ChevronDown className="h-6 w-6 text-white/50" />
           </div>
         </div>
 
-        {/* Scroll indicator */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 animate-bounce">
-          <ChevronDown className="h-6 w-6 text-white/50" />
-        </div>
       </section>
 
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           2. STATS BAR — Dark impact strip
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="bg-gray-950 py-10 md:py-14">
+      <section className="bg-gray-950 py-8 md:py-14">
         <div className="container mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 gap-y-6 md:gap-8 text-center">
             {[
               { value: '375+', label: 'Active Members', icon: <Users className="h-5 w-5" /> },
               { value: '25', label: 'Years of Heritage', icon: <Star className="h-5 w-5" /> },
@@ -184,8 +230,8 @@ export default function Home() {
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col items-center gap-1">
                 <div className="text-amber-400 mb-1">{stat.icon}</div>
-                <span className="text-4xl md:text-5xl font-black text-white tracking-tight">{stat.value}</span>
-                <span className="text-gray-400 text-sm font-medium">{stat.label}</span>
+                <span className="text-3xl md:text-5xl font-black text-white tracking-tight">{stat.value}</span>
+                <span className="text-gray-400 text-xs md:text-sm font-medium">{stat.label}</span>
               </div>
             ))}
           </div>
@@ -195,27 +241,27 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           3. SILVER JUBILEE + EC 2026 SPOTLIGHT
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 md:py-28 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 relative overflow-hidden">
+      <section className="py-12 md:py-28 bg-gradient-to-br from-amber-50 via-orange-50 to-rose-50 relative overflow-hidden">
         {/* Tamil kolam pattern */}
         <div className="absolute inset-0 bg-kolam-pattern opacity-5" />
         {/* Background glow */}
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-200/40 rounded-full blur-3xl" />
+        <div className="hidden md:block absolute top-0 left-1/4 w-96 h-96 bg-amber-200/40 rounded-full blur-3xl" />
+        <div className="hidden md:block absolute bottom-0 right-1/4 w-96 h-96 bg-orange-200/40 rounded-full blur-3xl" />
 
         <div className="container mx-auto px-6 relative z-10">
           {/* Section header */}
-          <div className="text-center mb-14">
+          <div className="text-center mb-8 md:mb-14">
             <div className="inline-flex items-center gap-2 bg-amber-100 border border-amber-300 rounded-full px-5 py-2 mb-5">
               <Sparkles className="h-4 w-4 text-amber-600" />
               <span className="text-amber-700 font-bold text-sm uppercase tracking-widest">Silver Jubilee 2026</span>
             </div>
-            <h2 className="text-4xl md:text-6xl font-black text-gray-900 mb-4">
+            <h2 className="text-3xl md:text-6xl font-black text-gray-900 mb-3">
               Celebrating{' '}
               <span className="bg-gradient-to-r from-amber-500 to-orange-500 bg-clip-text text-transparent">
                 25 Years
               </span>
             </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto">
               From a small gathering in 2001 to a thriving community of 375+ families —
               2026 marks our Silver Jubilee, a milestone of Tamil pride in Jacksonville.
             </p>
@@ -265,7 +311,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           4. EVENTS — 2026 Calendar
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="flex items-end justify-between mb-10">
             <div>
@@ -287,7 +333,7 @@ export default function Home() {
             {eventImages.map((event) => (
               <div
                 key={event.title}
-                className="relative flex-none w-72 md:w-auto rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group snap-start cursor-pointer"
+                className="relative flex-none w-[78vw] max-w-[300px] md:w-auto rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1 group snap-start cursor-pointer"
               >
                 <div className="relative aspect-[4/3]">
                   <Image
@@ -324,18 +370,18 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           5. OUR STORY — Mission + compact history
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-gray-950 text-white relative overflow-hidden">
+      <section className="py-12 md:py-20 bg-gray-950 text-white relative overflow-hidden">
         <div className="absolute inset-0 bg-kolam-pattern opacity-5" />
         <div className="container mx-auto px-6 relative z-10">
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 md:gap-20 items-center">
+            <div className="grid md:grid-cols-2 gap-10 md:gap-20 items-center">
               {/* Left — story text */}
               <div>
                 <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
                   <Heart className="h-3.5 w-3.5 text-rose-400" />
                   <span className="text-white/80 font-bold text-xs uppercase tracking-widest">Our Story</span>
                 </div>
-                <h2 className="text-4xl md:text-5xl font-black mb-6 leading-tight">
+                <h2 className="text-3xl md:text-5xl font-black mb-5 leading-tight">
                   25 Years of{' '}
                   <span className="bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent">
                     Tamil Pride
@@ -391,7 +437,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           6. GALLERY — Bento asymmetric grid
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 md:py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl md:text-5xl font-black text-gray-900 mb-3">
@@ -440,10 +486,10 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           7. TAMIL CLASSES
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12 items-center">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12 items-center">
               <div>
                 <div className="inline-flex items-center gap-2 bg-cyan-50 border border-cyan-200 rounded-full px-4 py-1.5 mb-5">
                   <BookOpen className="h-3.5 w-3.5 text-cyan-600" />
@@ -493,7 +539,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           8. SPONSORS — Tiered display (replaces old slider)
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 md:py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-1.5 mb-5 shadow-sm">
@@ -535,7 +581,7 @@ export default function Home() {
               </div>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
-            <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-8 gap-3">
               {sponsors.Gold.map((s) => (
                 <div key={s.name} className="bg-white rounded-xl overflow-hidden shadow border border-amber-50 hover:shadow-md transition-shadow">
                   <div className="relative aspect-[3/2]">
@@ -575,7 +621,7 @@ export default function Home() {
               </div>
               <div className="h-px flex-1 bg-gray-200" />
             </div>
-            <div className="grid grid-cols-5 gap-3 max-w-2xl mx-auto">
+            <div className="grid grid-cols-3 sm:grid-cols-5 gap-3 max-w-2xl mx-auto">
               {sponsors.Bronze.map((s) => (
                 <div key={s.name} className="bg-white rounded-xl overflow-hidden shadow border border-gray-100 hover:shadow-md transition-shadow">
                   <div className="relative aspect-[3/2]">
@@ -611,7 +657,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           9. FAQ — Native accordion
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-white">
+      <section className="py-12 md:py-20 bg-white">
         <div className="container mx-auto px-6">
           <div className="max-w-3xl mx-auto">
             <div className="text-center mb-12">
@@ -643,10 +689,10 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           10. CONTACT
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-12 md:py-20 bg-gray-50">
         <div className="container mx-auto px-6">
           <div className="max-w-6xl mx-auto">
-            <div className="grid md:grid-cols-2 gap-12">
+            <div className="grid md:grid-cols-2 gap-8 md:gap-12">
               {/* Contact info */}
               <div>
                 <h2 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">Get In Touch</h2>
@@ -680,23 +726,23 @@ export default function Home() {
               <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-8">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Send us a message</h3>
                 <form action="mailto:jtmec2026@gmail.com" method="post" encType="text/plain" className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">First Name</label>
-                      <input name="firstName" type="text" placeholder="Ravi" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all" />
+                      <input name="firstName" type="text" placeholder="First name" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all placeholder:text-gray-400 placeholder:italic" />
                     </div>
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-1.5">Last Name</label>
-                      <input name="lastName" type="text" placeholder="Kumar" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all" />
+                      <input name="lastName" type="text" placeholder="Last name" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all placeholder:text-gray-400 placeholder:italic" />
                     </div>
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email</label>
-                    <input name="email" type="email" placeholder="you@email.com" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all" />
+                    <input name="email" type="email" placeholder="you@email.com" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all placeholder:text-gray-400 placeholder:italic" />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">Message</label>
-                    <textarea name="message" rows={4} placeholder="How can we help you?" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all resize-none" />
+                    <textarea name="message" rows={4} placeholder="How can we help you?" className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 focus:border-transparent transition-all resize-none placeholder:text-gray-400 placeholder:italic" />
                   </div>
                   <button type="submit" className="w-full bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-bold py-3 rounded-xl transition-all duration-200 hover:scale-[1.02] shadow-lg">
                     Send Message
@@ -711,7 +757,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           11. CTA — Silver Jubilee join strip
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <section className="relative py-20 overflow-hidden bg-gradient-to-br from-cyan-700 via-blue-700 to-indigo-800">
+      <section className="relative py-14 md:py-20 overflow-hidden bg-gradient-to-br from-cyan-700 via-blue-700 to-indigo-800">
         <div className="absolute inset-0 bg-kolam-pattern opacity-10" />
         <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-white/30 to-transparent" />
         <div className="container mx-auto px-6 text-center relative z-10">
@@ -719,7 +765,7 @@ export default function Home() {
             <Sparkles className="h-4 w-4 text-amber-300" />
             <span className="text-white/90 font-bold text-sm">Silver Jubilee 2026</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-black text-white mb-4 drop-shadow-lg">
+          <h2 className="text-3xl md:text-6xl font-black text-white mb-3 drop-shadow-lg">
             Be Part of the<br />
             <span className="bg-gradient-to-r from-amber-300 to-yellow-300 bg-clip-text text-transparent">
               Silver Jubilee
@@ -748,7 +794,7 @@ export default function Home() {
       {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
           12. FOOTER
       ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-      <footer className="bg-gray-950 text-white pt-16 pb-8">
+      <footer className="bg-gray-950 text-white pt-10 md:pt-16 pb-8">
         <div className="container mx-auto px-6">
           <div className="grid md:grid-cols-4 gap-10 mb-12">
             {/* Brand */}
