@@ -37,7 +37,7 @@ import {
   Lock,
 } from 'lucide-react'
 
-const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl'
+const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl placeholder:text-gray-400 placeholder:italic'
 const saveBtnCls = 'bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white rounded-xl h-11'
 
 // Validation schemas
@@ -332,7 +332,7 @@ function PersonalInfoCard({ user, isEditing }: { user: User, isEditing: boolean 
               <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                 <Phone className="h-3.5 w-3.5 text-gray-400" /> Mobile Number
               </Label>
-              <Input className={inputCls} {...form.register('mobileNumber')} placeholder="+1 (904) 555-0100" />
+              <Input className={inputCls} {...form.register('mobileNumber')} placeholder="+1 (XXX) XXX-XXXX" />
               {form.formState.errors.mobileNumber && (
                 <p className="text-red-500 text-xs">{form.formState.errors.mobileNumber.message}</p>
               )}
@@ -442,7 +442,7 @@ function AddressCard({ user, isEditing }: { user: User, isEditing: boolean }) {
               <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
                 <MapPin className="h-3.5 w-3.5 text-gray-400" /> Street Address
               </Label>
-              <Input className={inputCls} placeholder="123 Baymeadows Rd" {...form.register('street')} />
+              <Input className={inputCls} placeholder="e.g. 123 Main St" {...form.register('street')} />
               {form.formState.errors.street && (
                 <p className="text-red-500 text-xs">{form.formState.errors.street.message}</p>
               )}
@@ -451,21 +451,21 @@ function AddressCard({ user, isEditing }: { user: User, isEditing: boolean }) {
             <div className="grid grid-cols-3 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-gray-700">City</Label>
-                <Input className={inputCls} placeholder="Jacksonville" {...form.register('city')} />
+                <Input className={inputCls} placeholder="City" {...form.register('city')} />
                 {form.formState.errors.city && (
                   <p className="text-red-500 text-xs">{form.formState.errors.city.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-gray-700">State</Label>
-                <Input className={inputCls} placeholder="FL" {...form.register('state')} />
+                <Input className={inputCls} placeholder="State" {...form.register('state')} />
                 {form.formState.errors.state && (
                   <p className="text-red-500 text-xs">{form.formState.errors.state.message}</p>
                 )}
               </div>
               <div className="space-y-1.5">
                 <Label className="text-sm font-medium text-gray-700">ZIP</Label>
-                <Input className={inputCls} placeholder="32258" {...form.register('zipCode')} />
+                <Input className={inputCls} placeholder="ZIP Code" {...form.register('zipCode')} />
                 {form.formState.errors.zipCode && (
                   <p className="text-red-500 text-xs">{form.formState.errors.zipCode.message}</p>
                 )}
@@ -1012,7 +1012,7 @@ function FamilyMemberDialog({ open, onOpenChange, member, userId }: any) {
             <Label className="text-sm font-medium text-gray-700 flex items-center gap-1.5">
               <Phone className="h-3.5 w-3.5 text-gray-400" /> Contact Number (Optional)
             </Label>
-            <Input className={inputCls} placeholder="+1 (904)..." {...form.register('contactNumber')} />
+            <Input className={inputCls} placeholder="+1 (XXX)..." {...form.register('contactNumber')} />
           </div>
 
           <div className="space-y-1.5">

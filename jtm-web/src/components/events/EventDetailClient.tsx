@@ -13,10 +13,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { QRCodeDisplay } from '@/components/qr/QRCodeDisplay'
-import { 
-  Calendar, 
-  MapPin, 
-  Users, 
+import {
+  Calendar,
+  MapPin,
+  Users,
   Clock,
   ArrowLeft,
   Send,
@@ -24,12 +24,14 @@ import {
   QrCode,
   Edit,
   Trash2,
-  AlertCircle
+  AlertCircle,
+  UserPlus,
+  LogIn
 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 
-const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500'
+const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500 placeholder:text-gray-400 placeholder:italic'
 const selectCls = 'h-11 border-gray-300 bg-white'
 
 interface Event {
@@ -417,13 +419,15 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
             </CardHeader>
             
             {event.flyer && (
-              <div className="px-6">
-                <div className="relative h-64 w-full rounded-lg overflow-hidden">
+              <div className="px-4 sm:px-6 pb-2">
+                <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
                   <Image
                     src={event.flyer}
-                    alt={event.title}
-                    fill
-                    className="object-cover"
+                    alt={`${event.title} flyer`}
+                    width={1200}
+                    height={900}
+                    className="w-full h-auto block"
+                    priority
                   />
                 </div>
               </div>
@@ -543,19 +547,32 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
 
       {/* RSVP Section - Login prompt for non-logged-in visitors */}
       {event.rsvpRequired && !user && (
-        <Card>
+        <Card className="border-2 border-cyan-100 shadow-md">
           <CardContent className="pt-6">
             <div className="text-center py-6 space-y-4">
-              <QrCode className="h-12 w-12 text-muted-foreground mx-auto" />
+              <div className="h-14 w-14 rounded-2xl bg-gradient-to-br from-cyan-500 to-indigo-600 flex items-center justify-center mx-auto shadow-lg">
+                <QrCode className="h-7 w-7 text-white" />
+              </div>
               <div>
-                <p className="text-lg font-semibold">RSVP Required</p>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Sign in to your JTM account to RSVP for this event.
+                <p className="text-lg font-bold text-gray-900">Members-Only RSVP</p>
+                <p className="text-sm text-gray-500 mt-1 max-w-xs mx-auto">
+                  RSVP is available to JTM members only. Join our community or sign in to secure your spot.
                 </p>
               </div>
-              <Button asChild className="bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-700 hover:to-indigo-700 text-white">
-                <Link href="/auth/login">Sign In to RSVP</Link>
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center pt-1">
+                <Button asChild className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-white font-bold shadow-lg shadow-amber-200">
+                  <Link href="/auth/register">
+                    <UserPlus className="h-4 w-4 mr-2" />
+                    Become a Member
+                  </Link>
+                </Button>
+                <Button asChild variant="outline" className="border-cyan-600 text-cyan-700 hover:bg-cyan-50 font-semibold">
+                  <Link href="/auth/login">
+                    <LogIn className="h-4 w-4 mr-2" />
+                    Sign In
+                  </Link>
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -52,7 +52,7 @@ export const eventCreationSchema = z.object({
   rsvpRequired: z.boolean().default(false),
   rsvpDeadline: z.string().datetime().optional(),
   maxParticipants: z.number().positive().optional(),
-  flyer: z.string().url().optional(),
+  flyer: z.union([z.string().url(), z.string().startsWith('/')]).optional(),
   rsvpForm: z.object({
     fields: z.array(z.object({
       id: z.string(),

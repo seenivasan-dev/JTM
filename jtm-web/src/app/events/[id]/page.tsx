@@ -7,6 +7,8 @@ import { redirect } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import MemberLayout from '@/components/layout/MemberLayout'
 import AdminLayout from '@/components/admin/AdminLayout'
+import { PublicNav } from '@/components/layout/PublicNav'
+import { PublicBottomNav } from '@/components/layout/PublicBottomNav'
 import EventDetailClient from '@/components/events/EventDetailClient'
 
 interface EventDetailPageProps {
@@ -132,15 +134,33 @@ export default async function EventDetailPage({ params }: EventDetailPageProps) 
 
   const serializedEvent = { ...serializeEvent(event), rsvpResponses: [] }
 
+  if (userData) {
+    return (
+      <MemberLayout>
+        <Suspense fallback={<div className="p-8">Loading event details...</div>}>
+          <EventDetailClient
+            event={serializedEvent}
+            user={{ ...userData, isAdmin: false }}
+            userRsvp={serializedUserRsvp}
+          />
+        </Suspense>
+      </MemberLayout>
+    )
+  }
+
   return (
-    <MemberLayout>
-      <Suspense fallback={<div className="p-8">Loading event details...</div>}>
-        <EventDetailClient
-          event={serializedEvent}
-          user={userData ? { ...userData, isAdmin: false } : null}
-          userRsvp={serializedUserRsvp}
-        />
-      </Suspense>
-    </MemberLayout>
+    <>
+      <PublicNav />
+      <div className="pt-20 pb-20 lg:pb-0 min-h-screen bg-gray-50">
+        <Suspense fallback={<div className="p-8">Loading event details...</div>}>
+          <EventDetailClient
+            event={serializedEvent}
+            user={null}
+            userRsvp={null}
+          />
+        </Suspense>
+      </div>
+      <PublicBottomNav />
+    </>
   )
 }

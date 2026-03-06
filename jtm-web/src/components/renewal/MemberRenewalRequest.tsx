@@ -16,7 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
 import { Trash2, Plus, CreditCard, Users, Calendar, Sparkles, RefreshCcw } from 'lucide-react'
 
-const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500'
+const inputCls = 'h-11 border-gray-300 bg-white focus-visible:ring-blue-500 placeholder:text-gray-400 placeholder:italic'
 const selectCls = 'h-11 border-gray-300 bg-white'
 
 // Validation schema
@@ -448,7 +448,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                   <FormItem>
                                     <FormLabel className="text-sm font-medium text-gray-700">First Name</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="John" className={inputCls} {...field} />
+                                      <Input placeholder="e.g. John" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -461,7 +461,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                   <FormItem>
                                     <FormLabel className="text-sm font-medium text-gray-700">Last Name</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="Doe" className={inputCls} {...field} />
+                                      <Input placeholder="e.g. Doe" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -510,7 +510,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                   <FormItem>
                                     <FormLabel className="text-sm font-medium text-gray-700">Contact Number (Optional)</FormLabel>
                                     <FormControl>
-                                      <Input placeholder="+1 (555) 123-4567" className={inputCls} {...field} />
+                                      <Input placeholder="+1 (XXX) XXX-XXXX" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>
@@ -523,7 +523,7 @@ export default function MemberRenewalRequest({ user, pendingRenewal }: MemberRen
                                   <FormItem>
                                     <FormLabel className="text-sm font-medium text-gray-700">Email (Optional)</FormLabel>
                                     <FormControl>
-                                      <Input type="email" placeholder="jane.doe@example.com" className={inputCls} {...field} />
+                                      <Input type="email" placeholder="e.g. user@example.com" className={inputCls} {...field} />
                                     </FormControl>
                                     <FormMessage />
                                   </FormItem>

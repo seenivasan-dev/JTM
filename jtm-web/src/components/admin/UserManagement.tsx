@@ -481,20 +481,20 @@ export default function UserManagement({
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="firstName">First Name</Label>
-                <Input id="firstName" placeholder="John" />
+                <Input id="firstName" placeholder="First name" />
               </div>
               <div>
                 <Label htmlFor="lastName">Last Name</Label>
-                <Input id="lastName" placeholder="Doe" />
+                <Input id="lastName" placeholder="Last name" />
               </div>
             </div>
             <div>
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="john@example.com" />
+              <Input id="email" type="email" placeholder="e.g. user@example.com" />
             </div>
             <div>
               <Label htmlFor="phone">Phone</Label>
-              <Input id="phone" type="tel" placeholder="+1 (555) 123-4567" />
+              <Input id="phone" type="tel" placeholder="+1 (XXX) XXX-XXXX" />
             </div>
             <div>
               <Label htmlFor="membershipType">Membership Type</Label>

@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { LogIn, Sparkles, Eye, EyeOff, Mail, Lock } from 'lucide-react'
 
-const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl'
+const inputCls = 'h-11 border-gray-200 bg-white focus-visible:ring-cyan-500 focus-visible:border-cyan-500 rounded-xl placeholder:text-gray-400 placeholder:italic'
 
 export function LoginForm() {
   const [email, setEmail] = useState('')

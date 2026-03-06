@@ -139,18 +139,13 @@ const PaymentMethodSelector = ({
   onSelect: (method: string) => void
 }) => {
   const methods = [
-    { value: 'CASH', label: 'Cash', icon: 'cash' },
     { value: 'CHECK', label: 'Check', icon: 'document-text' },
     { value: 'ZELLE', label: 'Zelle', icon: 'phone-portrait' },
-    { value: 'VENMO', label: 'Venmo', icon: 'logo-venmo' },
-    { value: 'PAYPAL', label: 'PayPal', icon: 'logo-paypal' },
-    { value: 'CREDIT_CARD', label: 'Card', icon: 'card' },
-    { value: 'OTHER', label: 'Other', icon: 'ellipsis-horizontal' },
   ]
 
   return (
     <View style={styles.paymentMethodContainer}>
-      <Text style={styles.inputLabel}>Payment Method (Optional)</Text>
+      <Text style={styles.inputLabel}>Payment Method</Text>
       <ScrollView 
         horizontal 
         showsHorizontalScrollIndicator={false}

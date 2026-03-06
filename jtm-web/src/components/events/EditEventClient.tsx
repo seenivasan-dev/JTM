@@ -21,9 +21,13 @@ import {
   Plus,
   Trash2,
   GripVertical,
-  UtensilsCrossed
+  UtensilsCrossed,
+  Upload,
+  X,
+  ImageIcon
 } from 'lucide-react'
 import Link from 'next/link'
+import Image from 'next/image'
 
 interface RSVPField {
   id: string
@@ -67,6 +71,9 @@ interface EditEventClientProps {
 export default function EditEventClient({ event }: EditEventClientProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [flyerFile, setFlyerFile] = useState<File | null>(null)
+  const [flyerPreview, setFlyerPreview] = useState<string>(event.flyer || '')
+  const [flyerUploading, setFlyerUploading] = useState(false)
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description,
@@ -105,6 +112,21 @@ export default function EditEventClient({ event }: EditEventClientProps) {
         [field]: value
       }
     }))
+  }
+
+  const handleFlyerChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setFlyerFile(file)
+    const reader = new FileReader()
+    reader.onload = (ev) => setFlyerPreview(ev.target?.result as string)
+    reader.readAsDataURL(file)
+  }
+
+  const removeFlyerFile = () => {
+    setFlyerFile(null)
+    setFlyerPreview('')
+    updateFormData('flyer', '')
   }
 
   const addRSVPField = () => {
@@ -166,6 +188,25 @@ export default function EditEventClient({ event }: EditEventClientProps) {
     setLoading(true)
 
     try {
+      // Upload new flyer file first if one was selected
+      let flyerUrl = formData.flyer
+      if (flyerFile) {
+        setFlyerUploading(true)
+        const uploadData = new FormData()
+        uploadData.append('file', flyerFile)
+        const uploadRes = await fetch('/api/upload/flyer', { method: 'POST', body: uploadData })
+        setFlyerUploading(false)
+        if (uploadRes.ok) {
+          const { url } = await uploadRes.json()
+          flyerUrl = url
+        } else {
+          const err = await uploadRes.json()
+          alert(err.error || 'Failed to upload flyer')
+          setLoading(false)
+          return
+        }
+      }
+
       // Build event data object, omitting optional fields that are empty
       const eventData: Record<string, any> = {
         title: formData.title,
@@ -176,8 +217,8 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       }
 
       // Only include optional fields if they have values
-      if (formData.flyer && formData.flyer.trim()) {
-        eventData.flyer = formData.flyer
+      if (flyerUrl && flyerUrl.trim()) {
+        eventData.flyer = flyerUrl
       }
 
       if (formData.rsvpDeadline) {
@@ -299,14 +340,36 @@ export default function EditEventClient({ event }: EditEventClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="flyer">Event Flyer URL</Label>
-              <Input
-                id="flyer"
-                type="url"
-                value={formData.flyer}
-                onChange={(e) => updateFormData('flyer', e.target.value)}
-                placeholder="https://example.com/flyer.jpg"
-              />
+              <Label>Event Flyer</Label>
+              {flyerPreview ? (
+                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
+                  <div className="relative h-40 w-full">
+                    <Image src={flyerPreview} alt="Flyer preview" fill className="object-cover" />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={removeFlyerFile}
+                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
+                  <div className="bg-gray-50 px-3 py-1.5 text-xs text-gray-500 flex items-center gap-1.5 border-t border-gray-200">
+                    <ImageIcon className="h-3 w-3" />
+                    {flyerFile ? flyerFile.name : 'Current flyer'}
+                    <label className="ml-auto text-cyan-600 cursor-pointer hover:underline font-medium">
+                      Replace
+                      <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-36 w-full border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-cyan-500 hover:bg-cyan-50/50 transition-colors group">
+                  <Upload className="h-8 w-8 text-gray-400 group-hover:text-cyan-500 mb-2 transition-colors" />
+                  <span className="text-sm font-medium text-gray-600 group-hover:text-cyan-600">Click to upload flyer</span>
+                  <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · Max 5MB</span>
+                  <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
+                </label>
+              )}
             </div>
           </div>
         </CardContent>
@@ -573,9 +636,9 @@ export default function EditEventClient({ event }: EditEventClientProps) {
         <Button type="button" variant="outline" asChild>
           <Link href={`/events/${event.id}`}>Cancel</Link>
         </Button>
-        <Button type="submit" disabled={loading}>
+        <Button type="submit" disabled={loading || flyerUploading}>
           <Save className="h-4 w-4 mr-2" />
-          {loading ? 'Updating...' : 'Update Event'}
+          {flyerUploading ? 'Uploading flyer...' : loading ? 'Updating...' : 'Update Event'}
         </Button>
       </div>
     </form>
