@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     // Don't fail on TypeScript errors during build
     ignoreBuildErrors: false,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
+  },
   webpack: (config, { isServer }) => {
     // Suppress outdated webpack API warnings from third-party plugins (e.g. serwist/copy-webpack-plugin)
     config.ignoreWarnings = [

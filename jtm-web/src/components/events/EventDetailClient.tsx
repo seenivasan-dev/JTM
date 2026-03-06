@@ -410,14 +410,15 @@ export default function EventDetailClient({ event, user, userRsvp }: EventDetail
             {event.flyer && (
               <div className="px-4 sm:px-6 pb-2">
                 <div className="rounded-2xl overflow-hidden border border-gray-100 shadow-sm bg-gray-50">
-                  <Image
-                    src={event.flyer}
-                    alt={`${event.title} flyer`}
-                    width={1200}
-                    height={900}
-                    className="w-full h-auto block"
-                    priority
-                  />
+                  <div className="relative w-full aspect-[16/7]">
+                    <Image
+                      src={event.flyer}
+                      alt={`${event.title} flyer`}
+                      fill
+                      className="object-cover"
+                      priority
+                    />
+                  </div>
                 </div>
               </div>
             )}
