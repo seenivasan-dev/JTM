@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth/next'
 import { authOptions } from '@/lib/auth'
-import { writeFile, mkdir } from 'fs/promises'
-import { existsSync } from 'fs'
-import { join } from 'path'
+import { put } from '@vercel/blob'
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif']
 const MAX_SIZE = 5 * 1024 * 1024 // 5MB
@@ -30,21 +28,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'File size must be less than 5MB' }, { status: 400 })
     }
 
-    const bytes = await file.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Generate unique filename using timestamp + original extension
     const originalExt = file.name.split('.').pop()?.toLowerCase() || 'jpg'
-    const filename = `flyer_${Date.now()}.${originalExt}`
+    const filename = `events/flyer_${Date.now()}.${originalExt}`
 
-    const uploadDir = join(process.cwd(), 'public', 'images', 'events')
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true })
-    }
+    const blob = await put(filename, file, {
+      access: 'public',
+      contentType: file.type,
+    })
 
-    await writeFile(join(uploadDir, filename), buffer)
-
-    return NextResponse.json({ url: `/images/events/${filename}` })
+    return NextResponse.json({ url: blob.url })
   } catch (error) {
     console.error('Flyer upload error:', error)
     return NextResponse.json({ error: 'Failed to upload file' }, { status: 500 })
