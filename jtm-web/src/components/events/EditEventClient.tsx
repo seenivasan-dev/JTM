@@ -41,6 +41,7 @@ interface Event {
   id: string
   title: string
   description: string
+  eventType?: string | null
   flyer?: string | null
   date: string
   location: string
@@ -55,6 +56,7 @@ interface Event {
     vegFood: boolean
     nonVegFood: boolean
     kidsFood: boolean
+    kidsEatFree: boolean
     allowNoFood: boolean
   } | null
   paymentRequired: boolean
@@ -77,6 +79,7 @@ export default function EditEventClient({ event }: EditEventClientProps) {
   const [formData, setFormData] = useState({
     title: event.title,
     description: event.description,
+    eventType: event.eventType || '',
     flyer: event.flyer || '',
     date: event.date.substring(0, 16), // Format for datetime-local input
     location: event.location,
@@ -91,6 +94,7 @@ export default function EditEventClient({ event }: EditEventClientProps) {
       vegFood: event.foodConfig?.vegFood ?? false,
       nonVegFood: event.foodConfig?.nonVegFood ?? false,
       kidsFood: event.foodConfig?.kidsFood ?? false,
+      kidsEatFree: event.foodConfig?.kidsEatFree ?? false,
       allowNoFood: event.foodConfig?.allowNoFood ?? false,
     },
     paymentRequired: event.paymentRequired ?? false,
@@ -216,6 +220,11 @@ export default function EditEventClient({ event }: EditEventClientProps) {
         rsvpRequired: formData.rsvpRequired,
       }
 
+      // Include eventType if set
+      if (formData.eventType) {
+        eventData.eventType = formData.eventType
+      }
+
       // Only include optional fields if they have values
       if (flyerUrl && flyerUrl.trim()) {
         eventData.flyer = flyerUrl
@@ -305,14 +314,17 @@ export default function EditEventClient({ event }: EditEventClientProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="location">Location *</Label>
-              <Input
-                id="location"
-                value={formData.location}
-                onChange={(e) => updateFormData('location', e.target.value)}
-                placeholder="Event location"
-                required
-              />
+              <Label htmlFor="eventType">Event Type</Label>
+              <Select value={formData.eventType} onValueChange={(v) => updateFormData('eventType', v)}>
+                <SelectTrigger id="eventType">
+                  <SelectValue placeholder="Select event type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {['Cultural', 'Sports', 'Yoga', 'Picnic', 'Movie', 'Literature', 'Celebrity', 'Online', 'Youth', 'General'].map(t => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
@@ -330,6 +342,16 @@ export default function EditEventClient({ event }: EditEventClientProps) {
 
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
+              <Label htmlFor="location">Location *</Label>
+              <Input
+                id="location"
+                value={formData.location}
+                onChange={(e) => updateFormData('location', e.target.value)}
+                placeholder="Event location"
+                required
+              />
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="date">Event Date & Time *</Label>
               <Input
                 id="date"
@@ -339,38 +361,39 @@ export default function EditEventClient({ event }: EditEventClientProps) {
                 required
               />
             </div>
-            <div className="space-y-2">
-              <Label>Event Flyer</Label>
-              {flyerPreview ? (
-                <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
-                  <div className="relative h-40 w-full">
-                    <Image src={flyerPreview} alt="Flyer preview" fill className="object-cover" />
-                  </div>
-                  <button
-                    type="button"
-                    onClick={removeFlyerFile}
-                    className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                  <div className="bg-gray-50 px-3 py-1.5 text-xs text-gray-500 flex items-center gap-1.5 border-t border-gray-200">
-                    <ImageIcon className="h-3 w-3" />
-                    {flyerFile ? flyerFile.name : 'Current flyer'}
-                    <label className="ml-auto text-cyan-600 cursor-pointer hover:underline font-medium">
-                      Replace
-                      <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
-                    </label>
-                  </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label>Event Flyer</Label>
+            {flyerPreview ? (
+              <div className="relative rounded-xl overflow-hidden border-2 border-gray-200">
+                <div className="relative h-40 w-full">
+                  <Image src={flyerPreview} alt="Flyer preview" fill className="object-cover" />
                 </div>
-              ) : (
-                <label className="flex flex-col items-center justify-center h-36 w-full border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-cyan-500 hover:bg-cyan-50/50 transition-colors group">
-                  <Upload className="h-8 w-8 text-gray-400 group-hover:text-cyan-500 mb-2 transition-colors" />
-                  <span className="text-sm font-medium text-gray-600 group-hover:text-cyan-600">Click to upload flyer</span>
-                  <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · Max 5MB</span>
-                  <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
-                </label>
-              )}
-            </div>
+                <button
+                  type="button"
+                  onClick={removeFlyerFile}
+                  className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1 hover:bg-black/80 transition-colors"
+                >
+                  <X className="h-3.5 w-3.5" />
+                </button>
+                <div className="bg-gray-50 px-3 py-1.5 text-xs text-gray-500 flex items-center gap-1.5 border-t border-gray-200">
+                  <ImageIcon className="h-3 w-3" />
+                  {flyerFile ? flyerFile.name : 'Current flyer'}
+                  <label className="ml-auto text-cyan-600 cursor-pointer hover:underline font-medium">
+                    Replace
+                    <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
+                  </label>
+                </div>
+              </div>
+            ) : (
+              <label className="flex flex-col items-center justify-center h-36 w-full border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-cyan-500 hover:bg-cyan-50/50 transition-colors group">
+                <Upload className="h-8 w-8 text-gray-400 group-hover:text-cyan-500 mb-2 transition-colors" />
+                <span className="text-sm font-medium text-gray-600 group-hover:text-cyan-600">Click to upload flyer</span>
+                <span className="text-xs text-gray-400 mt-1">PNG, JPG, WEBP · Max 5MB</span>
+                <input type="file" accept="image/*" className="hidden" onChange={handleFlyerChange} />
+              </label>
+            )}
           </div>
         </CardContent>
       </Card>
@@ -427,7 +450,28 @@ export default function EditEventClient({ event }: EditEventClientProps) {
                   <Checkbox
                     id="paymentRequired"
                     checked={formData.paymentRequired}
-                    onCheckedChange={(checked: boolean) => updateFormData('paymentRequired', checked)}
+                    onCheckedChange={(checked: boolean) => {
+                      if (checked) {
+                        const hasZelleField = formData.rsvpForm.fields.some(f => f.id === 'auto_zelle_ref')
+                        setFormData(prev => ({
+                          ...prev,
+                          paymentRequired: true,
+                          rsvpRequired: true,
+                          rsvpForm: {
+                            fields: hasZelleField ? prev.rsvpForm.fields : [
+                              ...prev.rsvpForm.fields,
+                              { id: 'auto_zelle_ref', type: 'text' as const, label: 'Zelle Confirmation Number', required: true, options: [] }
+                            ]
+                          }
+                        }))
+                      } else {
+                        setFormData(prev => ({
+                          ...prev,
+                          paymentRequired: false,
+                          rsvpForm: { fields: prev.rsvpForm.fields.filter(f => f.id !== 'auto_zelle_ref') }
+                        }))
+                      }
+                    }}
                   />
                   <Label htmlFor="paymentRequired">Payment required — members must pay before spot is confirmed</Label>
                 </div>
@@ -616,6 +660,14 @@ export default function EditEventClient({ event }: EditEventClientProps) {
                     onCheckedChange={(checked: boolean) => updateFoodConfig('kidsFood', checked)}
                   />
                   <Label htmlFor="kidsFood">🧒 Kids Meals</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="kidsEatFree"
+                    checked={formData.foodConfig.kidsEatFree}
+                    onCheckedChange={(checked: boolean) => updateFoodConfig('kidsEatFree', checked)}
+                  />
+                  <Label htmlFor="kidsEatFree">🆓 Kids Eat Free</Label>
                 </div>
                 <div className="flex items-center space-x-2">
                   <Checkbox

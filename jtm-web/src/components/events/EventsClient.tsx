@@ -29,6 +29,7 @@ interface Event {
   id: string
   title: string
   description: string
+  eventType?: string | null
   flyer?: string | null
   date: string
   location: string
@@ -84,6 +85,22 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
       return { status: 'full', label: 'Full', color: 'bg-red-500' }
     if (event.rsvpRequired) return { status: 'rsvp-open', label: 'RSVP Open', color: 'bg-green-500' }
     return { status: 'upcoming', label: 'Upcoming', color: 'bg-blue-500' }
+  }
+
+  const getEventTypeColor = (type?: string | null) => {
+    const map: Record<string, string> = {
+      Cultural: 'bg-indigo-100 text-indigo-700',
+      Sports: 'bg-green-100 text-green-700',
+      Yoga: 'bg-violet-100 text-violet-700',
+      Picnic: 'bg-amber-100 text-amber-700',
+      Movie: 'bg-rose-100 text-rose-700',
+      Literature: 'bg-purple-100 text-purple-700',
+      Celebrity: 'bg-orange-100 text-orange-700',
+      Online: 'bg-blue-100 text-blue-700',
+      Youth: 'bg-cyan-100 text-cyan-700',
+      General: 'bg-gray-100 text-gray-600',
+    }
+    return type ? (map[type] ?? 'bg-gray-100 text-gray-600') : null
   }
 
   const upcomingCount = events.filter(e => getEventStatus(e).status !== 'past').length
@@ -223,9 +240,16 @@ export default function EventsClient({ initialEvents, user }: EventsClientProps)
                     <h3 className="font-bold text-gray-900 text-base leading-snug line-clamp-2 group-hover:text-cyan-700 transition-colors">
                       {event.title}
                     </h3>
-                    <div className="flex items-center gap-1.5 mt-1.5 text-gray-400 text-xs">
-                      <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span className="line-clamp-1">{event.location}</span>
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                      <div className="flex items-center gap-1.5 text-gray-400 text-xs">
+                        <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+                        <span className="line-clamp-1">{event.location}</span>
+                      </div>
+                      {event.eventType && getEventTypeColor(event.eventType) && (
+                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${getEventTypeColor(event.eventType)}`}>
+                          {event.eventType}
+                        </span>
+                      )}
                     </div>
                   </div>
 

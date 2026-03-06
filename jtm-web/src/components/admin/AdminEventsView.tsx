@@ -58,9 +58,12 @@ interface Event {
   rsvpDeadline?: string | null
   maxParticipants?: number | null
   rsvpForm?: Record<string, unknown>
+  qrCheckinEnabled?: boolean
+  eventType?: string | null
   rsvpResponses: RSVPResponse[]
   stats: {
     totalRSVPs: number
+    approved: number
     checkedIn: number
     pending: number
     isActive: boolean
@@ -272,14 +275,6 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                         View RSVPs
                       </Button>
                     </Link>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => exportEventData(event)}
-                    >
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </Button>
                   </div>
                 </div>
               </CardHeader>
@@ -287,7 +282,7 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                 <CardDescription className="mb-4 line-clamp-2">{event.description}</CardDescription>
                 
                 {/* Event Statistics */}
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
                     <div className="flex items-center gap-2 text-blue-600 mb-1">
                       <Users className="h-4 w-4" />
@@ -296,9 +291,17 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                     <div className="text-2xl font-bold text-blue-700">{event.stats.totalRSVPs}</div>
                   </div>
 
+                  <div className="p-3 rounded-lg bg-cyan-50 border border-cyan-200">
+                    <div className="flex items-center gap-2 text-cyan-600 mb-1">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-xs font-medium">Approved</span>
+                    </div>
+                    <div className="text-2xl font-bold text-cyan-700">{event.stats.approved}</div>
+                  </div>
+
                   <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
                     <div className="flex items-center gap-2 text-emerald-600 mb-1">
-                      <CheckCircle className="h-4 w-4" />
+                      <TrendingUp className="h-4 w-4" />
                       <span className="text-xs font-medium">Checked In</span>
                     </div>
                     <div className="text-2xl font-bold text-emerald-700">{event.stats.checkedIn}</div>
@@ -315,19 +318,35 @@ export default function AdminEventsView({ events }: AdminEventsViewProps) {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 mt-4 pt-4 border-t">
-                  <Link href={`/admin/events/${event.id}/rsvp`} className="flex-1">
-                    <Button variant="outline" className="w-full">
-                      <QrCode className="h-4 w-4 mr-2" />
-                      QR Check-in
+                <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+                  <Link href={`/admin/events/${event.id}/rsvp`}>
+                    <Button variant="outline" size="sm">
+                      <Users className="h-4 w-4 mr-2" />
+                      Manage RSVPs
                     </Button>
                   </Link>
-                  <Link href={`/admin/events/${event.id}/reports`} className="flex-1">
-                    <Button variant="outline" className="w-full">
+                  {event.qrCheckinEnabled && (
+                    <Link href={`/admin/events/${event.id}/checkin`}>
+                      <Button variant="outline" size="sm">
+                        <QrCode className="h-4 w-4 mr-2" />
+                        QR Check-in
+                      </Button>
+                    </Link>
+                  )}
+                  <Link href={`/admin/events/${event.id}/reports`}>
+                    <Button variant="outline" size="sm">
                       <Sparkles className="h-4 w-4 mr-2" />
                       Reports
                     </Button>
                   </Link>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => exportEventData(event)}
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </Button>
                 </div>
               </CardContent>
             </Card>

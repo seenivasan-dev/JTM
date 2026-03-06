@@ -19,11 +19,11 @@ export async function GET(request: NextRequest) {
           },
         }
 
-    // Fetch events from database
+    // Fetch events from database — newest/latest first
     const events = await prisma.event.findMany({
       where: whereClause,
       orderBy: {
-        date: 'asc',
+        date: 'desc',
       },
       take: limit,
       include: {
@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
       id: event.id,
       title: event.title,
       description: event.description,
+      eventType: event.eventType,
       flyer: event.flyer,
       date: event.date,
       location: event.location,

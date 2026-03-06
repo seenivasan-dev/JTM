@@ -16,6 +16,14 @@ const nextConfig: NextConfig = {
     // Don't fail on TypeScript errors during build
     ignoreBuildErrors: false,
   },
+  webpack: (config, { isServer }) => {
+    // Suppress outdated webpack API warnings from third-party plugins (e.g. serwist/copy-webpack-plugin)
+    config.ignoreWarnings = [
+      { message: /deprecated webpack/ },
+      { message: /\[DEP_WEBPACK\]/ },
+    ];
+    return config;
+  },
 };
 
 export default withSerwist(nextConfig);
